@@ -1,17 +1,13 @@
+// src/app.js
 // Punt d'entrada principal de l'aplicació.
-// Des d'aquí només cridem la inicialització.
 
-import {
-  setupInstallPrompt,
-  monitorDisplayMode,
-} from "./services/pwaService.js";
 import { initializeApp } from "./init.js";
 
-// Configuració del PWA (instal·lació, display mode, etc.)
-setupInstallPrompt();
-monitorDisplayMode();
+// Quan el DOM estigui completament carregat, inicialitzem l'aplicació.
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeApp);
+} else {
+  initializeApp(); // Si el DOM ja està carregat
+}
 
-// Quan el DOM estigui carregat, inicialitzem l'app
-document.addEventListener("DOMContentLoaded", () => {
-  initializeApp();
-});
+console.log("App.js carregat, esperant DOMContentLoaded per inicialitzar...");

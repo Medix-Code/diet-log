@@ -81,8 +81,8 @@
             aria-label="Guardar dieta"
             role="menuitem"
           >
-            <img src="assets/icons/save.svg" alt="" class="icon" /> Guardar
-            datos
+            <img src="assets/icons/save_green.svg" alt="" class="icon" />
+            Guardar
           </button>
 
           <!-- Botó BAIXAR (PDF) -->
@@ -92,7 +92,7 @@
             aria-label="Generar PDF"
             role="menuitem"
           >
-            <img src="assets/icons/download.svg" alt="" class="icon" />
+            <img src="assets/icons/download_blue.svg" alt="" class="icon" />
             Descargar PDF
           </button>
 
@@ -138,6 +138,7 @@
     </nav>
 
     <main id="main-content" class="tab-content-container">
+      <!--<div class="tab-content-wrapper"> -->
       <!-- PESTANYA DADES -->
       <section
         id="dades-tab-content"
@@ -145,13 +146,22 @@
         role="tabpanel"
         aria-labelledby="tab-dades"
       >
-        <!-- Data -->
+        <!-- GRUPO Datos de la jornada -->
+
         <div class="form-group">
           <label for="date">Fecha</label>
           <input type="date" id="date" name="date" />
         </div>
+        <div class="form-group">
+          <label for="diet-type">Franja horària</label>
+          <select id="diet-type" name="diet-type">
+            <option value="" disabled selected hidden></option>
+            <!-- Opció buida inicial -->
+            <option value="lunch">Comida</option>
+            <option value="dinner">Cena</option>
+          </select>
+        </div>
 
-        <!-- Empresa-->
         <div class="form-group">
           <label for="empresa">Empresa</label>
           <select id="empresa" name="empresa">
@@ -166,25 +176,37 @@
           </select>
         </div>
 
-        <!-- Franja horària -->
-        <div class="form-group">
-          <label for="diet-type">Franja horaria</label>
-          <select id="diet-type" name="diet-type">
-            <option value="" disabled selected hidden>
-              Selecciona una opción
-            </option>
-            <option value="lunch">Comida</option>
-            <option value="dinner">Cena</option>
-          </select>
-        </div>
+        <!-- Grup Dotació -->
 
-        <!-- Vehicle (no obligatori) -->
+        <div class="group-header">
+          <!-- Títol -->
+          <h2 class="group-title">Dotación</h2>
+
+          <!-- Botons a sota del títol (en la mateixa línia, però sota el text "Dotación") -->
+          <div class="group-btns">
+            <button
+              type="button"
+              class="group-btn btn-save"
+              id="add-dotacio"
+              aria-label="Nova dotació"
+            >
+              <img src="assets/icons/save_white.svg" alt="Nova dotació" />
+            </button>
+
+            <button
+              type="button"
+              class="group-btn btn-options"
+              id="open-dotacio-modal"
+              aria-label="Opcions"
+            >
+              <img src="assets/icons/id_card.svg" alt="Opcions" />
+            </button>
+          </div>
+        </div>
         <div class="form-group">
           <label for="vehicle-number">Vehículo</label>
           <input type="text" id="vehicle-number" name="vehicle-number" />
         </div>
-
-        <!-- Conductor (no obligatori) -->
         <div class="form-group signature-group">
           <label for="person1">Conductor</label>
           <div class="input-with-icon">
@@ -194,7 +216,6 @@
               name="person1"
               class="txt-person1"
             />
-            <!-- Botó per obrir modal de firma del Conductor -->
             <button
               type="button"
               class="signature-btn"
@@ -205,8 +226,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Ajudant (no obligatori) -->
         <div class="form-group signature-group">
           <label for="person2">Ayudante</label>
           <div class="input-with-icon">
@@ -219,7 +238,6 @@
               inputmode="text"
               autocomplete="off"
             />
-            <!-- Botó per obrir modal de firma de l'Ajudant -->
             <button
               type="button"
               class="signature-btn"
@@ -265,30 +283,31 @@
               >
                 <img src="assets/icons/eraser.svg" alt="Borrar" class="icon" />
               </button>
-
-              <button
-                type="button"
-                class="option-btn camera-btn"
-                id="camera-in-dropdown"
-                aria-label="Escanear datos (OCR)"
-                disabled
-              >
-                <img src="assets/icons/camera.svg" alt="Cámara" class="icon" />
-              </button>
             </div>
           </div>
-        </div>
-
-        <!-- Afegeix aquest element a la teva pàgina, per exemple dins del main -->
-        <div id="ocr-progress-container" class="hidden">
-          <p id="ocr-progress-text">Procesando la imagen......</p>
-          <progress id="ocr-progress" value="0" max="100"></progress>
         </div>
 
         <!-- Contenidor dels 4 serveis -->
         <div id="services-container">
           <!-- SERVEI 1 -->
-          <div class="service service-1" aria-labelledby="servei-1">
+          <div
+            class="service service-1"
+            aria-labelledby="servei-1"
+            tabindex="-1"
+          >
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+
+            <p class="chip-group-title">Resultado del servicio</p>
+
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
             <div class="form-group">
               <label for="service-number-1">N.º de servicio</label>
               <input
@@ -305,7 +324,7 @@
               <label for="origin-1">Origen (municipio)</label>
               <input type="text" id="origin-1" name="origin-1" class="origin" />
             </div>
-            <div class="form-group">
+            <div class="form-group destination-group">
               <label for="destination-1">Destino (hospital, centro...)</label>
               <input
                 type="text"
@@ -317,8 +336,24 @@
                 autocomplete="off"
               />
             </div>
+            <hr class="section-divider" />
+
             <div class="form-group">
-              <label for="origin-time-1">Hora de origen</label>
+              <!-- NOU: Contenidor per a l'etiqueta i el botó d'escaneig -->
+              <div class="label-action-container">
+                <label for="origin-time-1">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-1"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                  <!-- Text més curt per a un botó petit -->
+                </button>
+              </div>
+
               <div class="time-wrapper">
                 <input
                   type="time"
@@ -356,7 +391,19 @@
           </div>
 
           <!-- SERVEI 2 -->
-          <div class="service service-2" style="display: none">
+          <div class="service service-2" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
             <div class="form-group">
               <label for="service-number-2">N.º de servicio</label>
               <input
@@ -373,7 +420,7 @@
               <label for="origin-2">Origen (municipio)</label>
               <input type="text" id="origin-2" name="origin-2" class="origin" />
             </div>
-            <div class="form-group">
+            <div class="form-group destination-group">
               <label for="destination-2">Destino (hospital, centro...)</label>
               <input
                 type="text"
@@ -385,8 +432,21 @@
                 autocomplete="off"
               />
             </div>
+            <hr class="section-divider" />
             <div class="form-group">
-              <label for="origin-time-2">Hora de origen</label>
+              <div class="label-action-container">
+                <label for="origin-time-2">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-2"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                  <!-- Text més curt per a un botó petit -->
+                </button>
+              </div>
               <div class="time-wrapper">
                 <input
                   type="time"
@@ -397,7 +457,8 @@
                 />
               </div>
             </div>
-            <div class="form-group">
+
+            <div class="form-group destination-time-group">
               <label for="destination-time-2">Hora de destino</label>
               <div class="time-wrapper">
                 <input
@@ -424,7 +485,19 @@
           </div>
 
           <!-- SERVEI 3 -->
-          <div class="service service-3" style="display: none">
+          <div class="service service-3" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
             <div class="form-group">
               <label for="service-number-3">N.º de servicio</label>
               <input
@@ -441,7 +514,7 @@
               <label for="origin-3">Origen (municipio)</label>
               <input type="text" id="origin-3" name="origin-3" class="origin" />
             </div>
-            <div class="form-group">
+            <div class="form-group destination-group">
               <label for="destination-3">Destino (hospital, centro...)</label>
               <input
                 type="text"
@@ -453,8 +526,21 @@
                 autocomplete="off"
               />
             </div>
+            <hr class="section-divider" />
             <div class="form-group">
-              <label for="origin-time-3">Hora de origen</label>
+              <div class="label-action-container">
+                <label for="origin-time-3">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-3"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                  <!-- Text més curt per a un botó petit -->
+                </button>
+              </div>
               <div class="time-wrapper">
                 <input
                   type="time"
@@ -465,7 +551,7 @@
                 />
               </div>
             </div>
-            <div class="form-group">
+            <div class="form-group destination-time-group">
               <label for="destination-time-3">Hora de destino</label>
               <div class="time-wrapper">
                 <input
@@ -492,7 +578,19 @@
           </div>
 
           <!-- SERVEI 4 -->
-          <div class="service service-4" style="display: none">
+          <div class="service service-4" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
             <div class="form-group">
               <label for="service-number-4">N.º de servicio</label>
               <input
@@ -509,7 +607,7 @@
               <label for="origin-4">Origen (municipio)</label>
               <input type="text" id="origin-4" name="origin-4" class="origin" />
             </div>
-            <div class="form-group">
+            <div class="form-group destination-group">
               <label for="destination-4">Destino (hospital, centro...)</label>
               <input
                 type="text"
@@ -521,8 +619,21 @@
                 autocomplete="off"
               />
             </div>
+            <hr class="section-divider" />
             <div class="form-group">
-              <label for="origin-time-4">Hora de origen</label>
+              <div class="label-action-container">
+                <label for="origin-time-4">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-4"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                  <!-- Text més curt per a un botó petit -->
+                </button>
+              </div>
               <div class="time-wrapper">
                 <input
                   type="time"
@@ -533,7 +644,7 @@
                 />
               </div>
             </div>
-            <div class="form-group">
+            <div class="form-group destination-time-group">
               <label for="destination-time-4">Hora de destino</label>
               <div class="time-wrapper">
                 <input
@@ -576,12 +687,19 @@
           <p id="no-diets-text" class="no-diets-text hidden">
             No hay dietas guardadas.
           </p>
+
           <!-- Aquí es crearà dinàmicament la llista de dietes en una sola línia -->
           <div
             id="diet-options"
             class="diet-list"
             aria-label="Opciones de dietas"
           ></div>
+
+          <div class="modal-footer">
+            <button id="close-diet-modal" class="close-diet-button">
+              Cerrar
+            </button>
+          </div>
         </div>
       </div>
 
@@ -614,6 +732,8 @@
 
       <!-- Contenidor del Toast -->
       <div id="toast-container"></div>
+
+      <!--      </div>   Fi de .tab-content-wrapper -->
     </main>
 
     <!-- FOOTER -->
@@ -663,6 +783,60 @@
       </div>
     </footer>
 
+    <!-- TEMPLATE DOTACIÓN -->
+    <template id="dotacio-template">
+      <div class="dotacio-item">
+        <span class="dotacio-info"></span>
+        <div class="button-container">
+          <button class="dotacio-delete" aria-label="Eliminar dotació">
+            <img src="assets/icons/delete.svg" alt="Eliminar" class="icon" />
+            <span class="btn-text">Eliminar</span>
+          </button>
+          <button class="dotacio-load" aria-label="Cargar dotació">
+            <img src="assets/icons/upload.svg" alt="Cargar" class="icon" />
+            <span class="btn-text">Cargar</span>
+          </button>
+        </div>
+      </div>
+    </template>
+    <div
+      id="dotacio-modal"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dotacio-modal-title"
+    >
+      <div class="modal-content dotacio-modal-content">
+        <h3 id="dotacio-modal-title">Gestor de dotaciones</h3>
+
+        <!-- Missatge quan no hi ha dotacions -->
+        <div id="no-dotacio-text" class="hidden">
+          No hay dotaciones, guarde antes:
+          <img
+            src="assets/icons/save_green.svg"
+            alt="Guardar"
+            class="save-icon"
+          />
+        </div>
+
+        <!-- Llistat scrollable -->
+        <div
+          id="dotacio-options"
+          class="dotacio-list"
+          aria-label="Opciones de dotaciones"
+        >
+          <!-- Aquí es crearà dinàmicament cada ítem -->
+        </div>
+
+        <!-- Footer on posem el botó de Tancar -->
+        <div class="modal-footer">
+          <button id="close-dotacio-modal" class="close-dotacio-button">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL INFO APP -->
     <div
       id="about-modal"
@@ -707,6 +881,44 @@
       </div>
     </div>
 
+    <!-- MODAL que apareixerà des de sota amb 2 botons: "Cámara" i "Galería" -->
+    <div id="camera-gallery-modal" class="modal-bottom hidden">
+      <div class="modal-bottom-content">
+        <!-- Títol amb l'etiqueta BETA -->
+        <div class="modal-title-container">
+          <h3 class="modal-bottom-title">Escanear horas</h3>
+          <span class="beta-tag">BETA</span>
+        </div>
+
+        <!-- Descripció més neta i centrada en la instrucció -->
+        <p class="modal-bottom-description">
+          Para una mejor detección, asegúrate de que la foto
+          <b>encuadre de cerca la fila completa de cada estado</b> (mensaje y
+          fecha).
+        </p>
+
+        <!-- Contenidor horitzontal per als 2 botons -->
+        <div class="modal-bottom-row">
+          <button id="option-gallery" class="modal-bottom-btn">
+            <img src="assets/icons/gallery.svg" alt="Galería" />
+            <span class="modal-bottom-text">Galería</span>
+          </button>
+          <button id="option-camera" class="modal-bottom-btn">
+            <img src="assets/icons/camera.svg" alt="Cámara" />
+            <span class="modal-bottom-text">Cámara</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input ocult per fer la foto o seleccionar imatge -->
+    <input
+      type="file"
+      accept="image/*"
+      id="camera-input"
+      style="display: none"
+    />
+
     <!-- PDF-lib (CDN) -->
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"
@@ -726,11 +938,9 @@
     <!-- Codi principal de la teva app -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@6.0.0/dist/tesseract.min.js"></script>
     <script type="module" src="./src/app.js"></script>
-    <script src="./src/ui/theme.js"></script>
     <input
       type="file"
       accept="image/*"
-      capture="environment"
       id="camera-input"
       style="display: none"
     />

@@ -3,47 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>404 - Página no encontrada</title>
+    <title>404 - Página no encontrada - MisDietas</title>
+    <!-- Títol més descriptiu -->
+
+    <!-- Enllaç al teu CSS principal -->
+    <link rel="stylesheet" href="/css/main.css" />
+    <!-- AJUSTA LA RUTA si és diferent -->
+
+    <!-- Opcional: Estils addicionals només per a la pàgina 404 -->
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f2f2f2;
-        margin: 0;
+      /* Sobreescriu o afegeix estils només per a aquesta pàgina si cal */
+      .body-404 {
+        /* Classe afegida al body */
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        min-height: 100vh; /* Usa min-height en lloc de height */
         text-align: center;
-        color: #333;
+        padding: 20px; /* Afegeix padding per a pantalles petites */
+        background-color: var(--clr-background); /* Usa variable CSS */
+        color: var(--clr-text-primary); /* Usa variable CSS */
+        font-family: "Roboto Serif", serif; /* Usa la font principal */
       }
-      .container {
-        padding: 20px;
+      .container-404 {
+        /* No calen estils addicionals si el body ja centra */
       }
-      h1 {
-        font-size: 4rem;
-        margin: 0;
+      .title-404 {
+        font-size: clamp(4rem, 15vw, 8rem); /* Mida responsive per al 404 */
+        font-weight: bold;
+        margin: 0 0 10px 0;
+        color: var(--clr-primary); /* Color primari */
       }
-      p {
-        font-size: 1.2rem;
-        margin: 10px 0;
+      .message-404 {
+        font-size: clamp(1rem, 4vw, 1.3rem); /* Mida responsive */
+        margin: 10px 0 20px 0;
+        color: var(--clr-text-secondary); /* Text secundari */
       }
-      a {
-        color: #1470c2;
+      .link-404 {
+        color: var(--clr-primary); /* Color primari per a l'enllaç */
         text-decoration: none;
         font-weight: bold;
+        border-bottom: 2px solid transparent; /* Prepara per a hover */
+        transition: border-color 0.3s ease;
       }
-      a:hover {
-        text-decoration: underline;
+      .link-404:hover,
+      .link-404:focus {
+        /* Afegit :focus per accessibilitat */
+        text-decoration: none; /* Mantenim sense subratllat */
+        border-bottom-color: var(--clr-primary); /* Subratllat subtil */
       }
     </style>
   </head>
-  <body>
-    <div class="container">
-      <h1>404</h1>
-      <p>Lo sentimos, la página que buscas no existe.</p>
-      <p>
-        Visita nuestro sitio:
-        <a href="https://www.misdietas.com">www.misdietas.com</a>
+  <!-- Afegeix una classe específica al body per aplicar estils 404 -->
+  <body class="body-404">
+    <div class="container-404">
+      <!-- Classe específica -->
+      <h1 class="title-404">404</h1>
+      <!-- Classe específica -->
+      <p class="message-404">Lo sentimos, la página que buscas no existe.</p>
+      <!-- Classe específica -->
+      <p class="message-404">
+        Puedes volver a la
+        <!-- Text de l'enllaç més descriptiu -->
+        <a href="https://www.misdietas.com" class="link-404"
+          >página principal de MisDietas</a
+        >.
       </p>
     </div>
   </body>
