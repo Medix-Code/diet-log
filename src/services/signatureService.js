@@ -1,369 +1,490 @@
 /**
- * Lògica de signatures (canvas, modal, etc.).
+ * @file signatureService.js
+ * @description Gestiona la captura de signatures mitjançant un canvas en un modal.
+ *              Emmagatzema les signatures per a 'person1' (conductor) i 'person2' (ajudant).
+ * @module signatureService
  */
 
-// Variables de l'estat de la signatura
-let signatureConductor = "";
-let signatureAjudant = "";
+import { setSwipeEnabled } from "../ui/tabs.js";
 
-let currentSignatureTarget = null;
-let drawing = false;
-let ctx = null;
+// --- Constants ---
+const DOM_IDS = {
+  MODAL: "signature-modal",
+  CANVAS: "signature-canvas",
+  CANCEL_BTN: "signature-cancel",
+  ACCEPT_BTN: "signature-accept",
+  SIGN_PERSON1_BTN: "sign-person1",
+  SIGN_PERSON2_BTN: "sign-person2",
+  TITLE: "signature-title",
+};
 
-// Paràmetres per gestionar els tocs (multitouch, doble clic, etc.)
+const CSS_CLASSES = {
+  MODAL_OPEN: "modal-open", // Classe per al body quan el modal està obert
+  SIGNED: "signed", // Classe per al botó quan té una signatura
+};
+
+const CONFIG = {
+  LINE_WIDTH: 2,
+  LINE_CAP: "round",
+  STROKE_STYLE: "#000000",
+  IMAGE_FORMAT: "image/png",
+  DOUBLE_CLICK_TIMEOUT: 300, // ms
+  DOUBLE_TAP_TIMEOUT: 300, // ms
+  DOUBLE_TAP_MAX_DIST: 20, // px
+};
+
+const ICONS = {
+  SIGNATURE_PENDING: "assets/icons/signature.svg",
+  SIGNATURE_OK: "assets/icons/signature_ok.svg",
+};
+
+const TITLES = {
+  PERSON1: "Firma del conductor",
+  PERSON2: "Firma del ayudante",
+};
+
+// --- Variables d'Estat del Mòdul ---
+let signatureConductor = ""; // Base64 DataURL o string buit
+let signatureAjudant = ""; // Base64 DataURL o string buit
+
+let currentSignatureTarget = null; // 'person1' o 'person2'
+let isDrawing = false;
+let canvasContext = null;
+let signatureCanvasElement = null;
+let signatureModalElement = null;
+let signPerson1Button = null;
+let signPerson2Button = null;
+
+let hasUserDrawn = false; // per controlar si s'ha dibuixat
+
+// Variables per a doble clic/tap
 let lastTouchTime = 0;
 let lastTouchX = 0;
 let lastTouchY = 0;
-
 let clickCount = 0;
 let clickTimer = null;
 
-// Referències als elements del DOM
-let signatureModal;
-let signatureCanvas;
-let signatureCancelBtn;
-let signatureAcceptBtn;
-let signPerson1Btn;
-let signPerson2Btn;
+// --- Funcions Privades ---
 
-/**
- * Inicialitza tot el mòdul de signatures.
- * S’encarrega de seleccionar els elements del DOM,
- * preparar el canvas i afegir els events necessaris.
- */
-export function initSignature() {
-  signatureModal = document.getElementById("signature-modal");
-  signatureCanvas = document.getElementById("signature-canvas");
-  signatureCancelBtn = document.getElementById("signature-cancel");
-  signatureAcceptBtn = document.getElementById("signature-accept");
-  signPerson1Btn = document.getElementById("sign-person1");
-  signPerson2Btn = document.getElementById("sign-person2");
-
-  if (!signatureModal || !signatureCanvas) {
-    console.warn("No s'ha trobat el modal o canvas de firma.");
-    return;
+/** Redimensiona el canvas i configura el context. */
+function resizeCanvas() {
+  if (!signatureCanvasElement || !signatureCanvasElement.parentElement) return;
+  const container = signatureCanvasElement.parentElement;
+  // Obtenim el context només si no el tenim ja o la mida canvia dràsticament
+  if (!canvasContext) {
+    canvasContext = signatureCanvasElement.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!canvasContext) {
+      console.error("No s'ha pogut obtenir el context 2D del canvas.");
+      return;
+    }
   }
 
-  // Ajustem el canvas a la mida del contenidor i configurem el context
-  resizeCanvas();
-  initCanvasEvents();
+  signatureCanvasElement.width = container.offsetWidth;
+  signatureCanvasElement.height = container.offsetHeight;
 
-  // Events per tancar i acceptar el modal de signatura
-  signatureCancelBtn?.addEventListener("click", closeSignatureModal);
-  signatureAcceptBtn?.addEventListener("click", acceptSignature);
+  // Aplica estils al context
+  canvasContext.lineWidth = CONFIG.LINE_WIDTH;
+  canvasContext.lineCap = CONFIG.LINE_CAP;
+  canvasContext.strokeStyle = CONFIG.STROKE_STYLE;
+}
 
-  // Events per obrir el modal de signatura
-  signPerson1Btn?.addEventListener("click", () =>
-    openSignatureModal("person1")
+/** Neteja el contingut del canvas. */
+function clearCanvas() {
+  if (!canvasContext || !signatureCanvasElement) return;
+  canvasContext.clearRect(
+    0,
+    0,
+    signatureCanvasElement.width,
+    signatureCanvasElement.height
   );
-  signPerson2Btn?.addEventListener("click", () =>
-    openSignatureModal("person2")
-  );
 
-  // Tancar el modal si es fa clic fora
-  window.addEventListener("click", (evt) => {
-    if (evt.target === signatureModal) {
-      closeSignatureModal();
-    }
-  });
-
-  // Quan es redimensiona la finestra, recalculam la mida del canvas
-  window.addEventListener("resize", resizeCanvas);
+  // >>> NOU: Reseteja el flag quan es neteja el canvas <<<
+  hasUserDrawn = false;
+  console.log("[Signature] Canvas netejat, hasUserDrawn = false");
 }
 
-/**
- * Ajusta el canvas a la mida del seu contenidor i defineix l'estil del traç.
- */
-function resizeCanvas() {
-  if (!signatureCanvas) return;
-  const container = signatureCanvas.parentElement;
-  ctx = signatureCanvas.getContext("2d", { willReadFrequently: true });
+/** Obté les coordenades (x, y) relatives al canvas des d'un esdeveniment. */
+function getEventCoordinates(event) {
+  if (!signatureCanvasElement) return { x: 0, y: 0 };
+  const rect = signatureCanvasElement.getBoundingClientRect();
+  let clientX, clientY;
 
-  signatureCanvas.width = container.offsetWidth;
-  signatureCanvas.height = container.offsetHeight;
+  if (event.touches && event.touches.length > 0) {
+    clientX = event.touches[0].clientX;
+    clientY = event.touches[0].clientY;
+  } else {
+    clientX = event.clientX;
+    clientY = event.clientY;
+  }
 
-  ctx.lineWidth = 2;
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "#000";
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top,
+  };
 }
 
-/**
- * Afegeix esdeveniments del ratolí i tàctils (touch) al canvas
- * per poder dibuixar la signatura.
- */
-function initCanvasEvents() {
-  // Ratolí
-  signatureCanvas.addEventListener("mousedown", startDrawing);
-  signatureCanvas.addEventListener("mousemove", draw);
-  signatureCanvas.addEventListener("mouseup", stopDrawing);
-  signatureCanvas.addEventListener("mouseout", stopDrawing);
+/** Inicia el procés de dibuix. */
+function startDrawing(event) {
+  if (!canvasContext) return;
+  isDrawing = true;
 
-  // Control de clics (simple/doble) per esborrar
-  signatureCanvas.addEventListener("click", handleClick);
+  // Marca que l'usuari ha començat a dibuixar <<<
+  hasUserDrawn = true;
+  console.log("[Signature] Començant a dibuixar, hasUserDrawn = true");
 
-  // Tàctil
-  signatureCanvas.addEventListener("touchstart", startDrawing, {
-    passive: false,
-  });
-  signatureCanvas.addEventListener("touchmove", draw, { passive: false });
-  signatureCanvas.addEventListener("touchend", stopDrawing);
-  signatureCanvas.addEventListener("touchcancel", stopDrawing);
-  signatureCanvas.addEventListener("touchend", onTouchEnd, { passive: false });
+  canvasContext.beginPath();
+  const { x, y } = getEventCoordinates(event);
+  canvasContext.moveTo(x, y);
 }
 
-/**
- * Gestió del clic per detectar si és un simple o doble clic
- * en el canvas. Amb el doble clic es neteja el canvas.
- */
-function handleClick(e) {
+/** Dibuixa una línia mentre l'usuari es mou. */
+function draw(event) {
+  if (!isDrawing || !canvasContext) return;
+  event.preventDefault(); // Prevé scroll en dispositius tàctils mentre es dibuixa
+  const { x, y } = getEventCoordinates(event);
+  canvasContext.lineTo(x, y);
+  canvasContext.stroke();
+}
+
+/** Atura el procés de dibuix. */
+function stopDrawing() {
+  if (!isDrawing || !canvasContext) return;
+  isDrawing = false;
+  // No cal closePath si només són línies, però no fa mal
+  // canvasContext.closePath();
+}
+
+/** Gestiona el clic per detectar doble clic (esborrar). */
+function handleCanvasClick(event) {
   clickCount++;
   if (clickCount === 1) {
     clickTimer = setTimeout(() => {
-      clickCount = 0;
-    }, 300);
+      clickCount = 0; // Reseteja si no hi ha segon clic
+    }, CONFIG.DOUBLE_CLICK_TIMEOUT);
   } else if (clickCount === 2) {
     clearTimeout(clickTimer);
     clickCount = 0;
-    e.preventDefault();
+    event.preventDefault();
     clearCanvas();
   }
 }
 
-/**
- * Inicia el dibuix quan es premsa el ratolí o s'inicia un touch.
- */
-function startDrawing(e) {
-  drawing = true;
-  ctx.beginPath();
-  const { x, y } = getXY(e);
-  ctx.moveTo(x, y);
-}
+/** Gestiona la fi del toc per detectar doble tap (esborrar). */
+function handleCanvasTouchEnd(event) {
+  // Només si no s'està fent scroll (si només hi ha un punt de contacte)
+  if (event.touches.length > 0) return;
 
-/**
- * Dibuixa la línia mentre l'usuari arrossega el ratolí o el dit.
- */
-function draw(e) {
-  if (!drawing) return;
-  e.preventDefault();
-  const { x, y } = getXY(e);
-  ctx.lineTo(x, y);
-  ctx.stroke();
-}
-
-/**
- * Finalitza el dibuix en deixar el ratolí o el dit.
- */
-function stopDrawing() {
-  if (!drawing) return;
-  drawing = false;
-  ctx.closePath();
-}
-
-/**
- * Gestiona l'esdeveniment "touchend" per detectar un segon toc proper
- * i esborrar la signatura si es considera un "doble toc".
- */
-function onTouchEnd(e) {
   const now = Date.now();
-  const { x, y } = getXY(e);
+  // Necessitem les coordenades del 'changedTouches' que s'acaba d'aixecar
+  const touch = event.changedTouches[0];
+  if (!touch) return;
+
+  const { x, y } = getEventCoordinates({
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  }); // Simula event per a getEventCoordinates
+
   const timeDiff = now - lastTouchTime;
   const distX = Math.abs(x - lastTouchX);
   const distY = Math.abs(y - lastTouchY);
 
-  if (timeDiff < 300 && distX < 20 && distY < 20) {
+  if (
+    timeDiff < CONFIG.DOUBLE_TAP_TIMEOUT &&
+    distX < CONFIG.DOUBLE_TAP_MAX_DIST &&
+    distY < CONFIG.DOUBLE_TAP_MAX_DIST
+  ) {
+    // Doble Tap detectat
+    event.preventDefault(); // Prevé zoom o altres accions
     clearCanvas();
-    lastTouchTime = 0;
+    lastTouchTime = 0; // Reseteja per evitar triple tap accidental
   } else {
+    // Emmagatzema per al pròxim tap
     lastTouchTime = now;
     lastTouchX = x;
     lastTouchY = y;
   }
 }
 
-/**
- * Esborra completament el contingut del canvas.
- */
-function clearCanvas() {
-  if (!ctx) return;
-  ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+/** Registra els esdeveniments del canvas (ratolí i tàctil). */
+function initCanvasEvents() {
+  if (!signatureCanvasElement) return;
+
+  // Esdeveniments del Ratolí
+  signatureCanvasElement.addEventListener("mousedown", startDrawing);
+  signatureCanvasElement.addEventListener("mousemove", draw);
+  signatureCanvasElement.addEventListener("mouseup", stopDrawing);
+  signatureCanvasElement.addEventListener("mouseout", stopDrawing); // Atura si surt del canvas
+  signatureCanvasElement.addEventListener("click", handleCanvasClick);
+
+  // Esdeveniments Tàctils
+  // Usem 'passive: false' per poder cridar preventDefault() a 'draw' i 'handleCanvasTouchEnd'
+  signatureCanvasElement.addEventListener("touchstart", startDrawing, {
+    passive: false,
+  });
+  signatureCanvasElement.addEventListener("touchmove", draw, {
+    passive: false,
+  });
+  signatureCanvasElement.addEventListener("touchend", stopDrawing);
+  signatureCanvasElement.addEventListener("touchcancel", stopDrawing); // Si el sistema cancel·la el toc
+  signatureCanvasElement.addEventListener("touchend", handleCanvasTouchEnd, {
+    passive: false,
+  });
 }
 
-/**
- * Retorna les coordenades X i Y relatives al canvas, tant per ratolí com touch.
- */
-function getXY(e) {
-  const rect = signatureCanvas.getBoundingClientRect();
-  let clientX, clientY;
-
-  if (e.touches && e.touches.length > 0) {
-    clientX = e.touches[0].clientX;
-    clientY = e.touches[0].clientY;
-  } else {
-    clientX = e.clientX;
-    clientY = e.clientY;
-  }
-
-  return { x: clientX - rect.left, y: clientY - rect.top };
-}
-
-/**
- * Obre el modal de signatura per "person1" o "person2" i
- * carrega la signatura anterior si n'hi havia.
- */
+/** Obre el modal de signatura per a un objectiu específic ('person1' o 'person2'). */
 function openSignatureModal(target) {
+  if (!signatureModalElement || !canvasContext) return;
+  // DESHABILITEM EL SWIPE DE PESTANYES
+  setSwipeEnabled(false);
+
   currentSignatureTarget = target;
 
-  // Actualitza el títol del modal segons el target
-  const modalTitleEl = document.getElementById("signature-title");
-  if (modalTitleEl) {
-    if (target === "person1") modalTitleEl.textContent = "Firma del conductor";
-    else modalTitleEl.textContent = "Firma del ayudante";
+  // Actualitza títol del modal
+  const titleElement = document.getElementById(DOM_IDS.TITLE);
+  if (titleElement) {
+    titleElement.textContent =
+      target === "person1" ? TITLES.PERSON1 : TITLES.PERSON2;
   }
 
   // Mostra el modal
-  signatureModal.style.display = "block";
-  document.body.classList.add("modal-open");
+  signatureModalElement.style.display = "block";
+  document.body.classList.add(CSS_CLASSES.MODAL_OPEN); // Evita scroll del fons
 
-  // Ajustem el canvas i l'esborrem
-  resizeCanvas();
+  // Prepara el canvas
+  resizeCanvas(); // Assegura mida correcta
   clearCanvas();
 
-  // Carrega la signatura anterior si existia
-  let oldSig = "";
-  if (target === "person1") oldSig = signatureConductor;
-  else if (target === "person2") oldSig = signatureAjudant;
+  // Carrega signatura existent si n'hi ha
+  const existingSignature =
+    target === "person1" ? signatureConductor : signatureAjudant;
+  if (existingSignature) {
+    drawSignatureFromDataUrl(existingSignature);
+  }
 
-  if (oldSig) {
-    drawSignatureFromDataUrl(oldSig);
+  // TODO (Accessibilitat): Moure el focus a dins del modal, possiblement al botó Acceptar/Cancel·lar.
+  document.getElementById(DOM_IDS.ACCEPT_BTN)?.focus();
+}
+
+/** Tanca el modal de signatura. */
+function closeSignatureModal() {
+  if (!signatureModalElement) return;
+  // >>> TORNEM A HABILITAR EL SWIPE DE PESTANYES <<<
+  setSwipeEnabled(true);
+
+  signatureModalElement.style.display = "none";
+  document.body.classList.remove(CSS_CLASSES.MODAL_OPEN);
+  currentSignatureTarget = null; // Reseteja l'objectiu
+  // TODO (Accessibilitat): Retornar el focus a l'element que va obrir el modal.
+  // Això requereix guardar una referència a l'element que el va obrir.
+  (currentSignatureTarget === "person1"
+    ? signPerson1Button
+    : signPerson2Button
+  )?.focus();
+}
+
+/** Comprova si el canvas està buit (transparent). */
+function isCanvasEmpty() {
+  if (!canvasContext || !signatureCanvasElement) return true;
+  try {
+    const pixelBuffer = new Uint32Array(
+      canvasContext.getImageData(
+        0,
+        0,
+        signatureCanvasElement.width,
+        signatureCanvasElement.height
+      ).data.buffer
+    );
+    // `some` és més eficient que iterar tot l'array si troba un píxel no transparent aviat
+    return !pixelBuffer.some((color) => color !== 0);
+  } catch (e) {
+    console.error(
+      "Error llegint les dades del canvas per comprovar si està buit:",
+      e
+    );
+    return false; // Assumeix que no està buit en cas d'error
   }
 }
 
-/**
- * Dibuixa la signatura a partir d'un dataURL en el canvas.
- */
+/** Desa la signatura actual en la variable corresponent i tanca el modal. */
+function acceptSignature() {
+  if (!canvasContext || !signatureCanvasElement || !currentSignatureTarget)
+    return;
+
+  const isEmpty = isCanvasEmpty();
+  const dataURL = isEmpty
+    ? ""
+    : signatureCanvasElement.toDataURL(CONFIG.IMAGE_FORMAT);
+
+  let targetButton = null;
+  if (currentSignatureTarget === "person1") {
+    signatureConductor = dataURL;
+    targetButton = signPerson1Button;
+  } else if (currentSignatureTarget === "person2") {
+    signatureAjudant = dataURL;
+    targetButton = signPerson2Button;
+  }
+
+  updateSignatureUI(targetButton, !isEmpty);
+  closeSignatureModal();
+}
+
+/** Dibuixa una signatura desada (DataURL) al canvas. */
 function drawSignatureFromDataUrl(dataUrl) {
+  if (!canvasContext || !dataUrl) return;
   const image = new Image();
   image.onload = () => {
-    ctx.drawImage(image, 0, 0, signatureCanvas.width, signatureCanvas.height);
+    // Dibuixa la imatge escalant-la si cal (encara que resizeCanvas hauria d'ajustar)
+    canvasContext.drawImage(
+      image,
+      0,
+      0,
+      signatureCanvasElement.width,
+      signatureCanvasElement.height
+    );
+  };
+  image.onerror = () => {
+    console.error(
+      "No s'ha pogut carregar la imatge de la signatura des de DataURL."
+    );
   };
   image.src = dataUrl;
 }
 
-/**
- * Tanca el modal de signatura i reinicia el target actual.
- */
-function closeSignatureModal() {
-  if (!signatureModal) return;
-  signatureModal.style.display = "none";
-  document.body.classList.remove("modal-open");
-  currentSignatureTarget = null;
-}
-
-/**
- * Accepta la signatura actual i la desa en la variable corresponent (conductor/ajudant).
- * Si el canvas és buit, s'interpreta com "sense signatura".
- */
-function acceptSignature() {
-  const dataURL = signatureCanvas.toDataURL("image/png");
-  const emptyCanvas = isCanvasEmpty();
-
-  if (currentSignatureTarget === "person1") {
-    if (emptyCanvas) {
-      signatureConductor = "";
-      updateSignatureUI(signPerson1Btn, false);
-    } else {
-      signatureConductor = dataURL;
-      updateSignatureUI(signPerson1Btn, true);
-    }
-  } else if (currentSignatureTarget === "person2") {
-    if (emptyCanvas) {
-      signatureAjudant = "";
-      updateSignatureUI(signPerson2Btn, false);
-    } else {
-      signatureAjudant = dataURL;
-      updateSignatureUI(signPerson2Btn, true);
-    }
-  }
-  closeSignatureModal();
-}
-
-/**
- * Retorna cert si el canvas és buit (no s'hi ha dibuixat res).
- */
-function isCanvasEmpty() {
-  if (!ctx) return true;
-  const pixels = ctx.getImageData(
-    0,
-    0,
-    signatureCanvas.width,
-    signatureCanvas.height
-  ).data;
-  for (let i = 3; i < pixels.length; i += 4) {
-    if (pixels[i] !== 0) return false;
-  }
-  return true;
-}
-
-/**
- * Actualitza l'aspecte del botó de signatura (ícona, classe "signed", etc.)
- * @param {HTMLElement} button - El botó a actualitzar
- * @param {boolean} hasSignature - Si existeix una signatura o no
- */
+/** Actualitza l'aspecte del botó de signatura (icona, classe). */
 function updateSignatureUI(button, hasSignature) {
+  // 'hasSignature' és un booleà (true/false)
   if (!button) return;
-  const icon = button.querySelector(".icon");
+  const icon = button.querySelector(".icon"); // Assumeix que la teva icona té la classe '.icon'
+  if (!icon) return;
+
   if (hasSignature) {
-    button.classList.add("signed");
-    if (icon) icon.src = "assets/icons/signature_ok.svg";
+    // Si HI HA signatura
+    button.classList.add("signed"); // Afegeix una classe per a possibles estils addicionals
+    icon.src = "assets/icons/signature_ok.svg"; // <<< Posa l'icona VERDA
   } else {
+    // Si NO HI HA signatura
     button.classList.remove("signed");
-    if (icon) icon.src = "assets/icons/signature.svg";
+    icon.src = "assets/icons/signature.svg"; // <<< Posa l'icona NORMAL (no verda)
   }
 }
 
+// --- Funcions Públiques / Exportades ---
+
 /**
- * Retorna la signatura del conductor en base64.
+ * Inicialitza el servei de signatures: busca elements DOM i configura listeners.
+ * @export
  */
+export function initSignature() {
+  // Cacheig d'elements DOM
+  signatureModalElement = document.getElementById(DOM_IDS.MODAL);
+  signatureCanvasElement = document.getElementById(DOM_IDS.CANVAS);
+  const signatureCancelBtn = document.getElementById(DOM_IDS.CANCEL_BTN);
+  const signatureAcceptBtn = document.getElementById(DOM_IDS.ACCEPT_BTN);
+  signPerson1Button = document.getElementById(DOM_IDS.SIGN_PERSON1_BTN);
+  signPerson2Button = document.getElementById(DOM_IDS.SIGN_PERSON2_BTN);
+
+  // Comprovació d'elements essencials
+  if (
+    !signatureModalElement ||
+    !signatureCanvasElement ||
+    !signatureCancelBtn ||
+    !signatureAcceptBtn ||
+    !signPerson1Button ||
+    !signPerson2Button
+  ) {
+    console.warn(
+      "Signature Service: Falten un o més elements del DOM necessaris. La funcionalitat pot estar incompleta."
+    );
+    return; // Atura si falten elements clau
+  }
+
+  // Configura canvas i listeners
+  resizeCanvas(); // Crida inicial
+  initCanvasEvents();
+
+  // Listeners dels botons del modal
+  signatureCancelBtn.addEventListener("click", closeSignatureModal);
+  signatureAcceptBtn.addEventListener("click", acceptSignature);
+
+  // Listeners dels botons principals per obrir el modal
+  signPerson1Button.addEventListener("click", () =>
+    openSignatureModal("person1")
+  );
+  signPerson2Button.addEventListener("click", () =>
+    openSignatureModal("person2")
+  );
+
+  // Listener per tancar el modal clicant fora (al fons semitransparent)
+  signatureModalElement.addEventListener("click", (event) => {
+    // Tanca només si es clica directament sobre el fons del modal, no sobre el contingut
+    if (event.target === signatureModalElement) {
+      closeSignatureModal();
+    }
+  });
+
+  // Listener per redimensionar el canvas si la finestra canvia de mida
+  // Podem afegir un debounce aquí si el resize és molt freqüent o costós
+  window.addEventListener("resize", debounce(resizeCanvas, 150));
+
+  // Listener per tancar amb tecla 'Escape' (Accessibilitat)
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      signatureModalElement.style.display === "block"
+    ) {
+      closeSignatureModal();
+    }
+  });
+
+  console.log("Signature Service inicialitzat.");
+  // Inicialitza la UI dels botons per si ja hi ha signatures (p.ex., carregades de localStorage)
+  updateSignatureIcons();
+}
+
+/** Retorna la signatura del conductor (DataURL base64). */
 export function getSignatureConductor() {
   return signatureConductor;
 }
 
-/**
- * Assigna la signatura del conductor (base64).
- */
-export function setSignatureConductor(value) {
-  signatureConductor = value;
-}
-
-/**
- * Retorna la signatura de l'ajudant en base64.
- */
+/** Retorna la signatura de l'ajudant (DataURL base64). */
 export function getSignatureAjudant() {
   return signatureAjudant;
 }
 
-/**
- * Assigna la signatura de l'ajudant (base64).
- */
+/** Estableix la signatura del conductor (p.ex., al carregar dades). */
+export function setSignatureConductor(value) {
+  signatureConductor = value || ""; // Assegura que és string buit si és null/undefined
+  updateSignatureUI(signPerson1Button, !!signatureConductor); // Actualitza UI
+}
+
+/** Estableix la signatura de l'ajudant (p.ex., al carregar dades). */
 export function setSignatureAjudant(value) {
-  signatureAjudant = value;
+  signatureAjudant = value || "";
+  updateSignatureUI(signPerson2Button, !!signatureAjudant); // Actualitza UI
 }
 
 /**
- * Actualitza els botons de signatura segons si ja hi ha signatura o no.
+ * Actualitza les icones de tots els botons de signatura segons l'estat actual.
+ * Útil per cridar després de carregar dades inicials.
+ * @export
  */
 export function updateSignatureIcons() {
-  // Conductor
-  if (signatureConductor && signPerson1Btn) {
-    updateSignatureUI(signPerson1Btn, true);
-  } else {
-    updateSignatureUI(signPerson1Btn, false);
-  }
+  updateSignatureUI(signPerson1Button, !!signatureConductor);
+  updateSignatureUI(signPerson2Button, !!signatureAjudant);
+}
 
-  // Ajudant
-  if (signatureAjudant && signPerson2Btn) {
-    updateSignatureUI(signPerson2Btn, true);
-  } else {
-    updateSignatureUI(signPerson2Btn, false);
-  }
+// Incloem debounce aquí o l'importem des d'utils si és compartit
+/** Funció Debounce */
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func.apply(this, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
 }
