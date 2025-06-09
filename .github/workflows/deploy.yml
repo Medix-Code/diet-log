@@ -1,39 +1,33 @@
-name: Desplegar en GitHub Pages
+name: Desplegar en GitHub Pages (PROD)
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - main # O la rama principal que utilices
+      - main
+
+permissions:
+  contents: write
+  pages: write
 
 jobs:
   build-and-deploy:
+    name: Build and Deploy (PROD)
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Hacer checkout del código
-      - name: Checkout del código
-        uses: actions/checkout@v2
+      - name: Checkout del codi
+        uses: actions/checkout@v4
 
-      # 2. Actualizar la versión del Service Worker
-      - name: Actualizar versión del Service Worker
+      - name: Actualizar versió del Service Worker
         run: |
-
           VERSION=$(date +'%Y%m%d%H%M%S')
-          echo "Nueva versión: $VERSION"
-          # Suponemos que el Service Worker se encuentra en la raíz del proyecto con el nombre "service-worker.js".
-          # Si la ruta es distinta, modifícala en la siguiente línea.
+          echo "Nova versió del Service Worker: $VERSION"
           sed -i "s/const CACHE_NAME = \"dieta-cache-v[^\"]*\"/const CACHE_NAME = \"dieta-cache-v$VERSION\"/g" service-worker.js
-          echo "Service Worker actualizado con CACHE_NAME = dieta-cache-v${VERSION}"
+          echo "Service Worker actualitzat."
 
-      # 3. Mostrar los primeros 5 renglones del Service Worker (opcional, para depuración)
-      - name: Mostrar contenido del Service Worker actualizado
-        run: |
-          head -n 5 service-worker.js
-
-      # 4. Desplegar a GitHub Pages
-      - name: Desplegar en GitHub Pages
+      - name: Desplegar a GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./ # Ajusta este directorio según la ubicación de tus archivos estáticos
+          publish_dir: ./
           cname: www.misdietas.com
