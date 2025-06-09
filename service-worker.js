@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Nom del caché principal (incrementa la versió si canvies PRECACHE_FILES)
-const CACHE_NAME = "dieta-cache-v20250609094703"; // <-- Incrementat per reflectir canvis
+const CACHE_NAME = "dieta-cache-v20250609095616"; // <-- Incrementat per reflectir canvis
 
 // Fitxers essencials per a la funcionalitat offline inicial (App Shell)
 const PRECACHE_FILES = [
