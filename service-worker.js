@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Nom del caché principal (incrementa la versió si canvies PRECACHE_FILES)
-const CACHE_NAME = "dieta-cache-v20250708201546"; // <-- Incrementat per reflectir canvis
+const CACHE_NAME = "dieta-cache-v20250708202249"; // <-- Incrementat per reflectir canvis
 
 // Fitxers essencials per a la funcionalitat offline inicial (App Shell)
 const PRECACHE_FILES = [
@@ -108,114 +108,70 @@ self.addEventListener("install", (event) => {
 
 // --- FETCH ---
 self.addEventListener("fetch", (event) => {
+  // Ignora peticions no-GET i de les extensions de Chrome
+  if (
+    event.request.method !== "GET" ||
+    event.request.url.startsWith("chrome-extension://")
+  ) {
+    return;
+  }
+
+  // >>> PAS 1: Comprovem si la petició és per a un dels fitxers PRECACHE <<<
+  // La URL de la petició pot ser absoluta, així que la convertim a una ruta relativa per comparar.
   const requestUrl = new URL(event.request.url);
 
-  // Ignora peticions que no siguin GET (POST, PUT, etc.)
-  if (event.request.method !== "GET") {
-    // console.log(`[ServiceWorker] Ignorant petició no-GET: ${event.request.method} ${requestUrl.pathname}`);
-    return;
-  }
+  // Creem un objecte URL a partir de l'àmbit del SW per poder resoldre camins relatius.
+  const scopeUrl = new URL(self.registration.scope);
+  const relativePath = "./" + requestUrl.href.substring(scopeUrl.href.length);
 
-  // Ignora peticions a extensions de Chrome o eines de desenvolupament
-  if (requestUrl.protocol.startsWith("chrome-extension:")) {
-    return;
-  }
+  const isPrecachedFile =
+    PRECACHE_FILES.includes(event.request.url) ||
+    PRECACHE_FILES.includes(relativePath);
 
-  // Estratègia: Network First per als RUNTIME_FILES
-  // Comprova si la ruta de la petició coincideix parcialment amb alguna URL de RUNTIME_FILES
-  const isRuntimeFile = RUNTIME_FILES.some((runtimeUrl) => {
-    // Compara només el pathname per a recursos locals
-    if (
-      !runtimeUrl.startsWith("http") &&
-      !requestUrl.protocol.startsWith("http")
-    ) {
-      return requestUrl.pathname.endsWith(runtimeUrl.substring(1)); // Compara pathnames relatius
-    }
-    // Compara URLs completes per a recursos externs
-    return requestUrl.href === runtimeUrl;
-  });
-
-  if (isRuntimeFile) {
-    // console.log(`[ServiceWorker] Fetch (NetworkFirst): ${requestUrl.pathname}`);
+  // >>> PAS 2A: Si és un fitxer PRECACHE, apliquem "Cache First" <<<
+  if (isPrecachedFile) {
     event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          // Comprova si la resposta és vàlida abans de cachejar
-          if (
-            networkResponse &&
-            networkResponse.status === 200 &&
-            networkResponse.type === "basic"
-          ) {
-            // Desa una còpia al cache per a ús offline futur
-            return caches.open(CACHE_NAME).then((cache) => {
-              // console.log(`[ServiceWorker] Cachejant ${requestUrl.pathname} des de xarxa.`);
-              cache.put(event.request, networkResponse.clone());
-              return networkResponse;
-            });
-          }
-          // Si la resposta de xarxa no és vàlida, la retornem igualment
-          // però no la desem al cache.
-          return networkResponse;
-        })
-        .catch(() => {
-          // Si falla la xarxa, intenta obtenir del cache
-          // console.warn(`[ServiceWorker] Xarxa fallida per ${requestUrl.pathname}, intentant cache...`);
-          return caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-              //   console.log(`[ServiceWorker] Servint ${requestUrl.pathname} des de cache.`);
-              return cachedResponse;
-            }
-            // Si tampoc està al cache, retorna un error (o una pàgina offline genèrica)
-            console.error(
-              `[ServiceWorker] Fallada de xarxa i ${requestUrl.pathname} no trobat al cache.`
-            );
-            return new Response("Contingut no disponible offline.", {
-              status: 404,
-              statusText: "Not Found Offline",
-            });
-          });
-        })
+      caches.match(event.request).then((cachedResponse) => {
+        // Si trobem la resposta al cache, la retornem.
+        // Si no (la qual cosa seria rara si el precaching ha anat bé), anem a la xarxa com a fallback.
+        return cachedResponse || fetch(event.request);
+      })
     );
-    return; // Acaba aquí per als runtime files
+    return; // Important: acabem l'execució aquí
   }
 
-  // Estratègia: Cache First per a la resta (inclou PRECACHE_FILES i navegació)
-  //   console.log(`[ServiceWorker] Fetch (CacheFirst): ${requestUrl.pathname}`);
+  // >>> PAS 2B: Si NO és un fitxer PRECACHE, apliquem "Network First" <<<
+  // Aquesta estratègia és ideal per a APIs, llibreries de CDN o qualsevol altre recurs
+  // que vulguem que estigui el més actualitzat possible.
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // console.log(`[ServiceWorker] Servint ${requestUrl.pathname} des de cache.`);
-        return cachedResponse;
-      }
-
-      // Si no està al cache, anem a la xarxa
-      //   console.log(`[ServiceWorker] ${requestUrl.pathname} no al cache, intentant xarxa...`);
-      return fetch(event.request)
-        .then((networkResponse) => {
-          // Opcional: Podríem cachejar aquí també els recursos no-runtime que es demanen?
-          // Depèn de si vols que el cache creixi amb l'ús o només contingui els predefinits.
-          // Per ara, no els desem per mantenir el cache més controlat.
-          // if (networkResponse && networkResponse.status === 200) {
-          //     caches.open(CACHE_NAME).then(cache => {
-          //         cache.put(event.request, networkResponse.clone());
-          //     });
-          // }
-          return networkResponse;
-        })
-        .catch((error) => {
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Si la resposta de la xarxa és bona, la guardem al cache per a futures ocasions offline.
+        if (networkResponse && networkResponse.status === 200) {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+        }
+        // Si la resposta no és bona (p.ex. 404), la retornem sense desar-la.
+        return networkResponse;
+      })
+      .catch(() => {
+        // Si la xarxa falla, busquem al cache com a fallback.
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Si tampoc està al cache, retornem un error.
           console.error(
-            `[ServiceWorker] Error durant el fetch (CacheFirst) per ${requestUrl.pathname}:`,
-            error
+            `[ServiceWorker] Fallada de xarxa i ${requestUrl.pathname} no trobat al cache.`
           );
-          // Retorna un error genèric si falla la xarxa i no estava al cache
-          // Podria retornar una pàgina offline personalitzada aquí
-          // return caches.match('/offline.html');
-          return new Response("Error de xarxa o recurs no trobat.", {
-            status: 503,
-            statusText: "Service Unavailable",
+          return new Response("Contingut no disponible offline.", {
+            status: 404,
+            statusText: "Not Found Offline",
           });
         });
-    })
+      })
   );
 });
 
