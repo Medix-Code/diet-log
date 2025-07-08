@@ -255,7 +255,7 @@ main {
 }
 
 .ajustes-btn {
-  background: transparent;
+  background: transparent; // El botó base sempre és transparent
   border: none;
   outline: none;
   width: 42px;
@@ -263,10 +263,68 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease; // Transició només pel fons si s'aplica aquí
 
-  &.open {
+  // >>> INICI DELS CANVIS CLAU PER AL FEEDBACK VISUAL (CORREGIT) <<<
+
+  // Efecte "ripple" general per a estats de feedback
+  position: relative; // Per posicionar el cercle de color a dins
+  overflow: hidden; // Per assegurar que el cercle no es surti del botó
+  border-radius: 50%; // Assegurem que el botó és rodó si té fons de color
+
+  // El cercle de color que apareix i desapareix.
+  // Es basa en el color de fons del botó (.ajustes-btn) o del tema.
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: transparent; // Per defecte, transparent
+    transform: scale(0); // Per defecte, amagat
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    z-index: -1; // Perquè estigui darrere de l'hamburguesa
+  }
+
+  // Estat: Canvis pendents (el cercle es fa groc i apareix)
+  &.has-changes {
+    &::before {
+      background-color: #ffc107; // Fons groc fort
+      transform: scale(1); // El cercle apareix
+    }
+    // L'hamburguesa no gira
     .hamburger {
+      animation: none;
+      transform: rotate(0deg);
+      span {
+        background: var(--title-color);
+      } // Barres blanques
+    }
+  }
+
+  // Estat: Guardant (el cercle es fa blau i l'hamburguesa gira)
+  &.saving {
+    &::before {
+      background-color: var(--primary-color); // Fons blau (color principal)
+      transform: scale(1); // El cercle apareix
+    }
+    .hamburger {
+      animation: spin-hamburger 1s linear infinite; // L'hamburguesa gira
+      span {
+        background: var(--title-color);
+      } // Barres blanques
+    }
+  }
+
+  // Quan el panell està obert (la X)
+  &.open {
+    &::before {
+      background-color: transparent; // El cercle de color desapareix quan la X és activa
+    }
+    .hamburger {
+      animation: none; // Atura el gir si obrim el menú
       span {
         background: var(--title-color);
         &:nth-child(1) {
@@ -283,30 +341,6 @@ main {
       }
     }
   }
-  // >>> INICI DELS CANVIS CLAU PER AL FEEDBACK VISUAL <<<
-
-  // Estat: HI HA CANVIS PENDENTS (icona groga de fons)
-  &.has-changes {
-    background-color: #ffc107; /* Fons groc fort */
-    border-radius: 50%; /* Per fer-lo circular */
-    .hamburger span {
-      background: var(--text-color); /* Barres fosques sobre fons groc */
-    }
-  }
-
-  // Estat: GUARDANT (icona girant)
-  &.saving {
-    background-color: #007bff; /* Fons blau per indicar activitat */
-    border-radius: 50%; /* Per fer-lo circular */
-    // IMPORTANT: L'animació de gir ara l'aplicarem al .hamburger
-    // per assegurar que giri la forma de l'hamburguesa, no el botó sencer
-    .hamburger {
-      animation: spin-hamburger 1s linear infinite; // Apliquem l'animació al .hamburger
-    }
-    .hamburger span {
-      background: var(--title-color); /* Barres blanques sobre fons blau */
-    }
-  }
 
   // >>> FI DELS CANVIS CLAU <<<
 }
@@ -317,11 +351,11 @@ main {
   position: relative;
   cursor: pointer;
   pointer-events: none;
-  transform: rotate(0deg); // Assegurem un estat inicial de rotació
-  transition: transform 0.2s ease; // Afegim transició per a rotació
+  transform: rotate(0deg);
+  transition: transform 0.2s ease; // Per a la transició de la X
 
   span {
-    background: var(--title-color);
+    background: var(--title-color); // Barres blanques per defecte
     position: absolute;
     height: 3px;
     width: 100%;
@@ -341,6 +375,7 @@ main {
     bottom: 0;
   }
 }
+
 // Keyframes per a l'animació de gir de l'HAMBURGUESA
 @keyframes spin-hamburger {
   0% {
