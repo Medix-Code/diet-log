@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Nom del caché principal (incrementa la versió si canvies PRECACHE_FILES)
-const CACHE_NAME = "dieta-cache-v20250708194848"; // <-- Incrementat per reflectir canvis
+const CACHE_NAME = "dieta-cache-v20250708195445"; // <-- Incrementat per reflectir canvis
 
 // Fitxers essencials per a la funcionalitat offline inicial (App Shell)
 const PRECACHE_FILES = [
@@ -20,6 +20,7 @@ const PRECACHE_FILES = [
   "./src/services/formService.js", // Cridat per init.js per listeners/estat inicial
   "./src/services/signatureService.js", // Cridat per initSignature a l'inici
   "./src/ui/theme.js", // Cridat per initThemeSwitcher a l'inici
+  "./src/ui/saveIndicator.js",
 
   // Icones principals
   "./assets/images/icons-192.png",
@@ -66,7 +67,7 @@ const RUNTIME_FILES = [
 
   // Altres assets que no siguin crítics inicialment (p.ex., altres icones menys usades)
   "./assets/icons/eraser.svg",
-  "./assets/icons/ocr.svg",
+  "./assets/icons/ic_ocr.svg",
   "./assets/icons/delete.svg",
   "./assets/icons/upload.svg",
   "./assets/icons/info.svg",
