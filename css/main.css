@@ -1342,15 +1342,27 @@ button .fa {
   }
 }
 /* Afegeix això al final de src/css/main.css */
-/* Estil per al botó de desar quan està deshabilitat */
-.big-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background-color: transparent !important;
+/* -------------------------------------- */
+/* Feedback d'Autoguardat a la TopBar     */
+/* -------------------------------------- */
+/* Animació de gir per a la icona d'ajustos (hamburguesa) */
+@keyframes spin-settings {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Classe que aplicarem amb JS per activar l'animació */
+.ajustes-btn.saving {
+  animation: spin-settings 1.2s linear infinite;
 }
 
-.big-btn:disabled:hover {
-  transform: none;
+/* (Opcional) Estil per a "canvis pendents" */
+.ajustes-btn.has-changes .hamburger span {
+  /* Podem fer que les línies de l'hamburguesa canviïn de color */
+  background: #ffc107; /* Un color ambre d'avís */
 }
 
 .signature-group .input-with-icon {
