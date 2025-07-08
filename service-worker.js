@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Nom del caché principal (incrementa la versió si canvies PRECACHE_FILES)
-const CACHE_NAME = "dieta-cache-v20250708202249"; // <-- Incrementat per reflectir canvis
+const CACHE_NAME = "dieta-cache-v20250708202827"; // <-- Incrementat per reflectir canvis
 
 // Fitxers essencials per a la funcionalitat offline inicial (App Shell)
 const PRECACHE_FILES = [
@@ -78,32 +78,47 @@ const RUNTIME_FILES = [
 ];
 
 // --- INSTALL ---
+// A service-worker.js
+
+// >>> SUBSTITUEIX EL TEU 'self.addEventListener("install", ...)' PER AQUEST <<<
+
 self.addEventListener("install", (event) => {
-  console.log("[ServiceWorker] Instal·lant...");
+  console.log("[ServiceWorker] Iniciant instal·lació...");
+
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => {
-        console.log(
-          "[ServiceWorker] Precaching fitxers essencials:",
-          PRECACHE_FILES
+    caches.open(CACHE_NAME).then(async (cache) => {
+      console.log(
+        "[ServiceWorker] Precaching fitxers essencials un per un per a depuració..."
+      );
+
+      let allOk = true;
+      // Usem un bucle 'for...of' per poder fer 'await' a dins
+      for (const url of PRECACHE_FILES) {
+        try {
+          // Intentem afegir cada fitxer individualment
+          await cache.add(url);
+        } catch (error) {
+          // Si un fitxer falla, ho registrem a la consola
+          console.error(
+            `[ServiceWorker] ERROR: No s'ha pogut cachejar el fitxer: "${url}"`
+          );
+          console.error(error); // Mostrem l'error complet
+          allOk = false; // Marquem que hi ha hagut un problema
+        }
+      }
+
+      if (!allOk) {
+        // Si algun fitxer ha fallat, fem que la instal·lació del SW falli explícitament.
+        // Això evita que un SW a mitges quedi instal·lat.
+        throw new Error(
+          "La instal·lació ha fallat perquè un o més fitxers no s'han pogut cachejar."
         );
-        // Usem addAll, que falla si algun fitxer no es pot descarregar
-        return cache.addAll(PRECACHE_FILES).catch((error) => {
-          console.error("[ServiceWorker] Error durant el precaching:", error);
-          // Podríem intentar cachejar individualment per depurar quin falla
-          // PRECACHE_FILES.forEach(file => {
-          //     cache.add(file).catch(err => console.warn(`No s'ha pogut cachejar ${file}:`, err));
-          // });
-          // O simplement llançar l'error per fer fallar la instal·lació si un fitxer crític falla
-          throw error;
-        });
-      })
-      .then(() => {
-        console.log("[ServiceWorker] Precaching completat.");
-      })
+      }
+
+      console.log("[ServiceWorker] Precaching completat amb èxit.");
+      return self.skipWaiting();
+    })
   );
-  self.skipWaiting(); // Activa el nou SW més ràpid
 });
 
 // --- FETCH ---
