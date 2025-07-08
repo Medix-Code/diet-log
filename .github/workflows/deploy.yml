@@ -22,7 +22,8 @@ jobs:
         run: |
           VERSION=$(date +'%Y%m%d%H%M%S')
           echo "Nova versió del Service Worker: $VERSION"
-          sed -i "s/const CACHE_NAME = \"dieta-cache-v[^\"]*\"/const CACHE_NAME = \"dieta-cache-v$VERSION\"/g" service-worker.js
+          # >>> LÍNIA MODIFICADA: Ara busquem i reemplacem la línia de la versió <<<
+          sed -i "s/const VERSION = \"[^\"]*\"/const VERSION = \"$VERSION\"/g" service-worker.js
           echo "Service Worker actualitzat."
 
       - name: Desplegar a GitHub Pages
