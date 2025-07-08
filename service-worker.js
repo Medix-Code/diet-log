@@ -78,10 +78,6 @@ const RUNTIME_FILES = [
 ];
 
 // --- INSTALL ---
-// A service-worker.js
-
-// >>> SUBSTITUEIX EL TEU 'self.addEventListener("install", ...)' PER AQUEST <<<
-
 self.addEventListener("install", (event) => {
   console.log("[ServiceWorker] Iniciant instal·lació...");
 
@@ -123,70 +119,50 @@ self.addEventListener("install", (event) => {
 
 // --- FETCH ---
 self.addEventListener("fetch", (event) => {
-  // Ignora peticions no-GET i de les extensions de Chrome
-  if (
-    event.request.method !== "GET" ||
-    event.request.url.startsWith("chrome-extension://")
-  ) {
+  const requestUrl = new URL(event.request.url);
+
+  // >>> PAS 1: Comprovem si la petició és al nostre propi domini <<<
+  // Si l'origen de la URL de la petició és diferent de l'origen del nostre lloc web,
+  // ignorem la petició i deixem que el navegador la gestioni.
+  // Això evita problemes amb scripts de tercers com Cloudflare, Google Analytics, etc.
+  if (requestUrl.origin !== self.location.origin) {
+    // console.log(`[ServiceWorker] Ignorant petició a domini extern: ${requestUrl.origin}`);
     return;
   }
 
-  // >>> PAS 1: Comprovem si la petició és per a un dels fitxers PRECACHE <<<
-  // La URL de la petició pot ser absoluta, així que la convertim a una ruta relativa per comparar.
-  const requestUrl = new URL(event.request.url);
-
-  // Creem un objecte URL a partir de l'àmbit del SW per poder resoldre camins relatius.
-  const scopeUrl = new URL(self.registration.scope);
-  const relativePath = "./" + requestUrl.href.substring(scopeUrl.href.length);
-
-  const isPrecachedFile =
-    PRECACHE_FILES.includes(event.request.url) ||
-    PRECACHE_FILES.includes(relativePath);
-
-  // >>> PAS 2A: Si és un fitxer PRECACHE, apliquem "Cache First" <<<
-  if (isPrecachedFile) {
-    event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        // Si trobem la resposta al cache, la retornem.
-        // Si no (la qual cosa seria rara si el precaching ha anat bé), anem a la xarxa com a fallback.
-        return cachedResponse || fetch(event.request);
-      })
-    );
-    return; // Important: acabem l'execució aquí
+  // Ignora altres peticions que no siguin GET
+  if (event.request.method !== "GET") {
+    return;
   }
 
-  // >>> PAS 2B: Si NO és un fitxer PRECACHE, apliquem "Network First" <<<
-  // Aquesta estratègia és ideal per a APIs, llibreries de CDN o qualsevol altre recurs
-  // que vulguem que estigui el més actualitzat possible.
+  // Estratègia: Stale-While-Revalidate (la que ja teníem, que és excel·lent)
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // Si la resposta de la xarxa és bona, la guardem al cache per a futures ocasions offline.
-        if (networkResponse && networkResponse.status === 200) {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, networkResponse.clone());
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
             return networkResponse;
+          })
+          .catch((err) => {
+            console.warn(
+              `[ServiceWorker] La petició de xarxa per a ${event.request.url} ha fallat.`
+            );
+            // Si la xarxa falla i no tenim res al cache, retornarem un error
+            if (!cachedResponse) {
+              return new Response("Contingut no disponible offline.", {
+                status: 503,
+                statusText: "Service Unavailable",
+              });
+            }
           });
-        }
-        // Si la resposta no és bona (p.ex. 404), la retornem sense desar-la.
-        return networkResponse;
-      })
-      .catch(() => {
-        // Si la xarxa falla, busquem al cache com a fallback.
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Si tampoc està al cache, retornem un error.
-          console.error(
-            `[ServiceWorker] Fallada de xarxa i ${requestUrl.pathname} no trobat al cache.`
-          );
-          return new Response("Contingut no disponible offline.", {
-            status: 404,
-            statusText: "Not Found Offline",
-          });
-        });
-      })
+
+        // Retorna la resposta del cache si existeix, si no, espera la resposta de la xarxa.
+        return cachedResponse || fetchPromise;
+      });
+    })
   );
 });
 
