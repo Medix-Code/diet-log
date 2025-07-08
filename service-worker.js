@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Aquesta variable serà actualitzada automàticament pel teu workflow de GitHub Actions.
-const VERSION = "20250708222349"; // Un valor inicial per a desenvolupament local
+const VERSION = "20250708223458"; // Un valor inicial per a desenvolupament local
 
 const APP_SHELL_CACHE_NAME = `misdietas-app-shell-${VERSION}`;
 const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
@@ -17,20 +17,6 @@ const APP_SHELL_FILES = [
   "./src/app.js",
   "./src/init.js",
   "./src/ui/saveIndicator.js",
-  "./src/ui/theme.js",
-  "./src/ui/tabs.js",
-  "./src/services/formService.js",
-  "./src/services/dietService.js",
-  "./src/services/servicesPanelManager.js",
-  "./assets/images/icons-512.png",
-  "./assets/images/icons-192.png",
-  "./assets/icons/moon.svg",
-  "./assets/icons/sun.svg",
-  "./assets/icons/gear.svg",
-  "./assets/icons/info.svg",
-  "./assets/icons/donation.svg",
-  "./assets/icons/download_blue.svg",
-  "./assets/icons/save_green.svg",
 ];
 
 // --- INSTALL (AMB DEPURACIÓ DETALLADA) ---
