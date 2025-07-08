@@ -26,6 +26,10 @@ const APP_SHELL_FILES = [
   "./assets/icons/moon.svg",
   "./assets/icons/sun.svg",
   "./assets/icons/gear.svg",
+  "./assets/icons/info.svg",
+  "./assets/icons/donation.svg",
+  "./assets/icons/download_blue.svg",
+  "./assets/icons/save_green.svg",
 ];
 
 // --- INSTALL ---
