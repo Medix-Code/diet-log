@@ -219,18 +219,17 @@ function _createDietListItem(diet) {
   dateSpan.className = CSS_CLASSES.DIET_DATE;
 
   // ====================================================================
-  // >>> AQUÍ ESTÀ L'ÚNIC CANVI <<<
-  // Construïm el text pas a pas per al nou format
+  // >>> BLOC MODIFICAT per al nou format <<<
   // ====================================================================
   let displayText = ddmmaa; // Comença amb la data, p.ex: "08/07/25"
 
   if (creationTime) {
-    // Si hi ha hora, l'afegim
-    displayText += ` ${creationTime}h`; // Resultat: "08/07/25 23:23h"
+    // Si hi ha hora, l'afegim entre claudàtors
+    displayText += ` [${creationTime}h]`; // Resultat: "08/07/25 [23:23h]"
   }
 
   // Afegim sempre el tipus de dieta al final
-  displayText += ` - ${capitalizeFirstLetter(franjaText)}`; // Resultat final: "08/07/25 23:23h - Cena"
+  displayText += ` - ${capitalizeFirstLetter(franjaText)}`; // Resultat final: "08/07/25 [23:23h] - Cena"
 
   // Assignem el text construït a l'element
   dateSpan.textContent = displayText;
