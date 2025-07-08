@@ -7,7 +7,7 @@
 // Importacions de mòduls interns
 import { getCurrentTab } from "../ui/tabs.js";
 import { showToast } from "../ui/toast.js";
-import { handleSaveDietWithPossibleOverwrite } from "./dietService.js";
+
 import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 // Importacions del servei PWA
@@ -146,38 +146,28 @@ function formatDateForPdf(dateString) {
 }
 
 function getPdfTemplateUrl(generalData) {
-  const empresa = generalData?.empresa;
-  if (empresa === "empresa2" && PDF_SETTINGS.TEMPLATE_URLS.EMPRESA_2) {
-    return PDF_SETTINGS.TEMPLATE_URLS.EMPRESA_2;
-  }
+  // Aquesta funció es manté per a futura compatibilitat, tot i que ara no canvia la plantilla.
   return PDF_SETTINGS.TEMPLATE_URLS.DEFAULT;
 }
 
 function handleValidationUIErrors(isDadesValid, isServeisValid) {
   const dadesTabElement = document.getElementById(DOM_IDS.DADES_TAB);
   const serveisTabElement = document.getElementById(DOM_IDS.SERVEIS_TAB);
-
   dadesTabElement?.classList.remove(CSS_CLASSES.ERROR_TAB);
   serveisTabElement?.classList.remove(CSS_CLASSES.ERROR_TAB);
-
   let toastMessage = "";
-
   if (!isDadesValid && !isServeisValid) {
-    toastMessage =
-      "Completa els camps obligatoris a les pestanyes Datos i Servicios.";
+    toastMessage = "Completa los campos obligatorios en Datos y Servicios.";
     dadesTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
     serveisTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else if (!isDadesValid) {
-    toastMessage = "Completa els camps obligatoris a la pestanya Datos.";
+    toastMessage = "Completa los campos obligatorios en la pestaña Datos.";
     dadesTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else if (!isServeisValid) {
-    toastMessage = "Completa els camps obligatoris a la pestanya Servicios.";
+    toastMessage = "Completa los campos obligatorios en la pestaña Servicios.";
     serveisTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
   }
-
-  if (toastMessage) {
-    showToast(toastMessage, "error");
-  }
+  if (toastMessage) showToast(toastMessage, "error");
 }
 
 // --- Funcions Principals ---
@@ -186,171 +176,133 @@ export async function fillPdf(data, servicesData) {
   if (!data || !Array.isArray(servicesData)) {
     throw new Error("Dades invàlides proporcionades a fillPdf.");
   }
-
-  if (!window.PDFLib || !window.PDFLib.PDFDocument) {
-    console.error(
-      "PDFLib no està disponible a window.PDFLib. Assegura't que s'ha carregat correctament."
-    );
+  if (!window.PDFLib) {
     throw new Error("La llibreria PDFLib no està carregada.");
   }
+
   const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
 
   try {
     const pdfTemplateUrl = getPdfTemplateUrl(data);
-    const pdfBytes = await fetch(pdfTemplateUrl).then((res) => {
-      if (!res.ok)
-        throw new Error(
-          `No s'ha pogut carregar la plantilla PDF: ${res.statusText}`
-        );
-      return res.arrayBuffer();
-    });
-
+    const pdfBytes = await fetch(pdfTemplateUrl).then((res) =>
+      res.arrayBuffer()
+    );
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const page = pdfDoc.getPages()[0];
-
-    const defaultTextColorRgbFn = (hexColor) => {
-      const c = hexToRgb(hexColor);
+    const defaultTextColorRgbFn = (hex) => {
+      const c = hexToRgb(hex);
       return rgb(c.r / 255, c.g / 255, c.b / 255);
     };
-    const serviceNumberColorRgb = defaultTextColorRgbFn(
-      PDF_SETTINGS.SERVICE_NUMBER_COLOR
-    );
 
     // 1) Camps Generals
     Object.entries(generalFieldCoordinates).forEach(([field, coords]) => {
       let value = data[field] || "";
-      if (field === "date" && value) value = formatDateForPdf(value);
-
-      if (field === "vehicleNumber" && typeof value === "string") {
-        value = value.toUpperCase();
-      }
-
-      // Aplicar TitleCase i després truncament per a person1 i person2
+      if (field === "date") value = formatDateForPdf(value);
+      if (field === "vehicleNumber") value = value.toUpperCase();
       if (
         (field === "person1" || field === "person2") &&
-        typeof value === "string"
+        value.length > PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH
       ) {
-        // Primer, convertim a Title Case
+        value =
+          toTitleCase(value).substring(
+            0,
+            PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH - 3
+          ) + "...";
+      } else if (field === "person1" || field === "person2") {
         value = toTitleCase(value);
-
-        // Després, trunquem si excedeix el límit
-        if (value.length > PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH) {
-          value =
-            value.substring(0, PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH - 3) + // <<< LÒGICA DE TRUNCAMENT RESTAURADA
-            "...";
-        }
       }
-
       page.drawText(value, {
-        x: coords.x,
-        y: coords.y,
-        size: coords.size,
+        ...coords,
         font: helveticaFont,
         color: defaultTextColorRgbFn(coords.color),
       });
     });
 
+    // 2) Serveis
     servicesData.forEach((service, index) => {
       const yOffset = index * PDF_SETTINGS.SERVICE_Y_OFFSET;
       const serviceMode = service.mode || "3.6";
 
-      // Iterem sobre les claus de baseServiceFieldCoordinates per assegurar l'ordre correcte
-      // i gestionar endTime de manera especial.
-      const fieldKeys = Object.keys(baseServiceFieldCoordinates);
+      // Dibuixa camps sempre presents
+      page.drawText(service.serviceNumber || "", {
+        ...baseServiceFieldCoordinates.serviceNumber,
+        y: baseServiceFieldCoordinates.serviceNumber.y - yOffset,
+        font: helveticaFont,
+        color: defaultTextColorRgbFn(PDF_SETTINGS.SERVICE_NUMBER_COLOR),
+      });
+      page.drawText(service.origin || "", {
+        ...baseServiceFieldCoordinates.origin,
+        y: baseServiceFieldCoordinates.origin.y - yOffset,
+        font: helveticaFont,
+        color: defaultTextColorRgbFn(baseServiceFieldCoordinates.origin.color),
+      });
+      page.drawText(service.originTime || "", {
+        ...baseServiceFieldCoordinates.originTime,
+        y: baseServiceFieldCoordinates.originTime.y - yOffset,
+        font: helveticaFont,
+        color: defaultTextColorRgbFn(
+          baseServiceFieldCoordinates.originTime.color
+        ),
+      });
 
-      for (const field of fieldKeys) {
-        // Ignorem les coordenades especials del prefix/hora amb prefix en aquest bucle principal.
-        // Les utilitzarem específicament quan processem 'endTimeNormal'.
-        if (
-          field === "endTimeModeText" ||
-          field === "endTimeValueWhenPrefixed"
-        ) {
-          continue;
-        }
-
-        const coords = baseServiceFieldCoordinates[field];
-        let value = service[field] || ""; // Per defecte, agafem el valor del camp corresponent
-        let currentTextColorRgb = defaultTextColorRgbFn(coords.color);
-
-        if (serviceMode !== "3.6") {
-          if (field === "destination" || field === "destinationTime") {
-            if (!value.trim()) {
-              value = PDF_SETTINGS.EMPTY_FIELD_PLACEHOLDER;
-            }
-          }
-        }
-
-        if (field === "serviceNumber") {
-          currentTextColorRgb = serviceNumberColorRgb;
-        }
-
-        // Gestió especial per a l'hora final
-        if (field === "endTimeNormal") {
-          // Hem canviat el nom del camp original a 'endTimeNormal'
-          const endTimeValueFromService = (service.endTime || "").trim(); // L'hora real del servei
-
-          if (serviceMode !== "3.6" && endTimeValueFromService) {
-            // Mode restringit i hi ha hora: dibuixem el prefix i l'hora per separat
-
-            // 1. Dibuixa el text del mode (ex: "3.11")
-            const modeTextCoords = baseServiceFieldCoordinates.endTimeModeText;
-            page.drawText(serviceMode, {
-              // Dibuixa el text del mode ("3.11", "3.22")
-              x: modeTextCoords.x,
-              y: modeTextCoords.y - yOffset,
-              size: modeTextCoords.size,
-              font: helveticaFont,
-              color: defaultTextColorRgbFn(modeTextCoords.color), // Color vermell fosc
-            });
-
-            // 2. Dibuixa l'hora (ex: "19:00")
-            const timeValCoords =
-              baseServiceFieldCoordinates.endTimeValueWhenPrefixed;
-            page.drawText(endTimeValueFromService, {
-              // Dibuixa només l'hora
-              x: timeValCoords.x,
-              y: timeValCoords.y - yOffset,
-              size: timeValCoords.size,
-              font: helveticaFont,
-              color: defaultTextColorRgbFn(timeValCoords.color), // Color negre per defecte
-            });
-            // Com que ja hem dibuixat les dues parts, podem saltar la crida genèrica per a 'endTimeNormal'
-            continue; // Passa al següent camp del bucle
-          } else {
-            // Mode 3.6, o mode restringit però no hi ha hora final:
-            // Prepara el valor per a la crida genèrica (serà l'hora o buit).
-            if (!endTimeValueFromService && serviceMode !== "3.6") {
-              value = PDF_SETTINGS.EMPTY_FIELD_PLACEHOLDER;
-            } else {
-              value = endTimeValueFromService; // Utilitza l'hora (o buit si era buit originalment)
-            }
-            // La crida genèrica page.drawText de sota s'encarregarà de dibuixar 'value'
-            // a les coordenades de 'endTimeNormal'.
-          }
-        }
-
-        // Dibuix genèric per a la resta de camps, o per 'endTimeNormal' en els casos no coberts a dalt
-        page.drawText(value, {
-          x: coords.x,
-          y: coords.y - yOffset,
-          size: coords.size,
+      // >>> LÒGICA CONDICIONAL PER A CAMPS DE DESTÍ <<<
+      if (serviceMode === "3.6") {
+        page.drawText(service.destination || "", {
+          ...baseServiceFieldCoordinates.destination,
+          y: baseServiceFieldCoordinates.destination.y - yOffset,
           font: helveticaFont,
-          color: currentTextColorRgb,
+          color: defaultTextColorRgbFn(
+            baseServiceFieldCoordinates.destination.color
+          ),
+        });
+        page.drawText(service.destinationTime || "", {
+          ...baseServiceFieldCoordinates.destinationTime,
+          y: baseServiceFieldCoordinates.destinationTime.y - yOffset,
+          font: helveticaFont,
+          color: defaultTextColorRgbFn(
+            baseServiceFieldCoordinates.destinationTime.color
+          ),
+        });
+      }
+
+      // Lògica per a l'hora final (amb o sense prefix de mode)
+      const endTimeValue = (service.endTime || "").trim();
+      if (serviceMode !== "3.6" && endTimeValue) {
+        page.drawText(serviceMode, {
+          ...baseServiceFieldCoordinates.endTimeModeText,
+          y: baseServiceFieldCoordinates.endTimeModeText.y - yOffset,
+          font: helveticaFont,
+          color: defaultTextColorRgbFn(
+            baseServiceFieldCoordinates.endTimeModeText.color
+          ),
+        });
+        page.drawText(endTimeValue, {
+          ...baseServiceFieldCoordinates.endTimeValueWhenPrefixed,
+          y: baseServiceFieldCoordinates.endTimeValueWhenPrefixed.y - yOffset,
+          font: helveticaFont,
+          color: defaultTextColorRgbFn(
+            baseServiceFieldCoordinates.endTimeValueWhenPrefixed.color
+          ),
+        });
+      } else {
+        page.drawText(endTimeValue, {
+          ...baseServiceFieldCoordinates.endTimeNormal,
+          y: baseServiceFieldCoordinates.endTimeNormal.y - yOffset,
+          font: helveticaFont,
+          color: defaultTextColorRgbFn(
+            baseServiceFieldCoordinates.endTimeNormal.color
+          ),
         });
       }
     });
 
+    // 3) Firmes i Marca d'Aigua
     const embedAndDrawSignature = async (signatureData, coords) => {
       if (signatureData) {
         try {
           const pngImage = await pdfDoc.embedPng(signatureData);
-          page.drawImage(pngImage, {
-            x: coords.x,
-            y: coords.y,
-            width: PDF_SETTINGS.SIGNATURE_WIDTH,
-            height: PDF_SETTINGS.SIGNATURE_HEIGHT,
-          });
+          page.drawImage(pngImage, { ...coords });
         } catch (sigError) {
           console.warn("Error en incrustar la signatura:", sigError);
         }
@@ -368,9 +320,7 @@ export async function fillPdf(data, servicesData) {
     const text = PDF_SETTINGS.WATERMARK_TEXT;
     const textSize = fixedTextCoordinates.website.size;
     const textWidth = helveticaFont.widthOfTextAtSize(text, textSize);
-    const pageWidth = page.getWidth();
-    const xCentered = (pageWidth - textWidth) / 2;
-
+    const xCentered = (page.getWidth() - textWidth) / 2;
     page.drawText(text, {
       x: xCentered,
       y: fixedTextCoordinates.website.y,
@@ -389,20 +339,15 @@ export async function fillPdf(data, servicesData) {
 export function buildPdfFileName(dateValue, dietType) {
   const datePart = formatDateForPdf(dateValue).replace(/\//g, "_");
   if (!datePart) return PDF_SETTINGS.DEFAULT_FILENAME;
-
   let typePart = "dieta";
   if (dietType === "lunch") typePart = "dieta_comida";
   else if (dietType === "dinner") typePart = "dieta_cena";
-
   return `${typePart}_${datePart}.pdf`;
 }
 
 export async function generateAndDownloadPdf() {
-  const isDadesValid = validateDadesTab();
-  const isServeisValid = validateServeisTab();
-
-  if (!isDadesValid || !isServeisValid) {
-    handleValidationUIErrors(isDadesValid, isServeisValid);
+  if (!validateDadesTab() || !validateServeisTab()) {
+    handleValidationUIErrors(validateDadesTab(), validateServeisTab());
     return;
   }
 
@@ -414,20 +359,14 @@ export async function generateAndDownloadPdf() {
     ?.classList.remove(CSS_CLASSES.ERROR_TAB);
 
   try {
-    // >>> CANVI 1: Millorem el missatge inicial <<<
-    console.info("Iniciant generació de PDF...");
-    showToast("Generando PDF...", "info"); // Aquest missatge està bé per indicar que comença el procés
+    showToast("Generando PDF...", "info");
 
-    // 2. Recollida de dades (es manté igual)
     const { generalData, servicesData } = gatherAllData();
     if (!generalData || !servicesData) {
       throw new Error("No se han podido recoger los datos del formulario.");
     }
 
-    // 3. Generació dels bytes del PDF (es manté igual)
     const pdfBytes = await fillPdf(generalData, servicesData);
-
-    // 4. Preparació i inici de la descàrrega
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
@@ -436,49 +375,21 @@ export async function generateAndDownloadPdf() {
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
-    link.click(); // S'inicia el procés de descàrrega del navegador
+    link.click();
     document.body.removeChild(link);
 
     setTimeout(() => URL.revokeObjectURL(url), 500);
     showToast("PDF generado correctamente.", "success");
-    console.info(`Se ha iniciado el proceso de descarga para "${fileName}".`);
 
-    // 5. Desat de la dieta
-    try {
-      await handleSaveDietWithPossibleOverwrite();
-    } catch (saveError) {
-      console.error(
-        "Error en desar la dieta després de generar el PDF:",
-        saveError
-      );
-      showToast(
-        "PDF generado, pero hubo un error al guardar la dieta.",
-        "warning"
-      );
-    }
-
+    // Notificació PWA
     if (typeof requestInstallPromptAfterAction === "function") {
       requestInstallPromptAfterAction();
-      console.info(
-        "Notificació enviada a pwaService per possible prompt d'instal·lació."
-      );
-    } else {
-      console.warn(
-        "La funció 'requestInstallPromptAfterAction' no està disponible a pwaService."
-      );
     }
-    // 6. Notificació PWA
   } catch (error) {
     console.error("Error durant generateAndDownloadPdf:", error);
     showToast(
       `Error al generar el PDF: ${error.message || "Error desconocido"}`,
       "error"
     );
-    document
-      .getElementById(DOM_IDS.DADES_TAB)
-      ?.classList.remove(CSS_CLASSES.ERROR_TAB);
-    document
-      .getElementById(DOM_IDS.SERVEIS_TAB)
-      ?.classList.remove(CSS_CLASSES.ERROR_TAB);
   }
 }

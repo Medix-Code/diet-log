@@ -8,6 +8,7 @@
 // Importacions de Serveis (funcions que executen els botons)
 import { generateAndDownloadPdf } from "../services/pdfService.js";
 import { onClickSaveDiet } from "../services/dietService.js";
+import { handleManualSave } from "../services/dietService.js";
 // Importacions de UI (funcions que obren modals)
 import { openDietModal } from "./modals.js"; // Assumint que modals.js exporta openDietModal
 
@@ -40,9 +41,9 @@ export function setupMainButtons() {
   // Botó Guardar Dieta
   const saveDietButton = document.getElementById(
     BUTTON_SELECTORS.SAVE_DIET.substring(1)
-  ); // Treu # per getElementById
+  );
   if (saveDietButton) {
-    saveDietButton.addEventListener("click", onClickSaveDiet);
+    saveDietButton.addEventListener("click", handleManualSave); // <-- Crida a la nova funció
   } else {
     console.warn(
       `Main Buttons: Botó '${BUTTON_SELECTORS.SAVE_DIET}' no trobat.`

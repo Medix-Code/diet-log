@@ -1,3 +1,4 @@
+import { revalidateFormState } from "./formService.js";
 /**
  * @file servicesPanelManager.js
  * @description Gestor dels panells de servei (S1-S4) i de la barra de “chips”
@@ -183,41 +184,39 @@ function _updatePanelChipsUI(panel, activeMode) {
   });
 }
 
-/** Listeners pels chips dins de cada panell de servei */
-/** Listeners pels chips dins de cada panell de servei */
+/**
+ * Listeners pels chips dins de cada panell de servei
+ */
 function _attachPanelChipListeners() {
   servicePanels.forEach((panel, idx) => {
-    // 'panel' aquí és el panell de servei actual (S1, S2, etc.)
-    const chipGroup = panel.querySelector(".chip-group"); // Troba el .chip-group DINS del panell actual
-    const chipsInPanel = panel.querySelectorAll(SELECTORS.CHIP); // Troba tots els .chip DINS del panell actual
+    const chipGroup = panel.querySelector(".chip-group");
+    const chipsInPanel = panel.querySelectorAll(SELECTORS.CHIP);
 
     chipsInPanel.forEach((chipButton) => {
-      // 'chipButton' és cada un dels botons .chip (3.6, 3.22, 3.11)
       chipButton.addEventListener("click", () => {
         const mode = chipButton.dataset.mode;
         if (serviceModes[idx] === mode) return;
 
         serviceModes[idx] = mode;
 
-        // Actualitzem la UI DINS d’aquest 'panel' (el del forEach exterior)
         _updatePanelChipsUI(panel, mode);
         _applyModeToPanelUI(panel, mode);
 
-        // Aplica la classe de color al 'chipGroup' que hem trobat abans
         if (chipGroup) {
           CSS_CLASSES.SERVICE_COLORS.forEach((colorClass) =>
             chipGroup.classList.remove(colorClass)
           );
-          // Afegeix la classe de color que correspon a l'índex (idx) del panell actual
           chipGroup.classList.add(CSS_CLASSES.SERVICE_COLORS[idx]);
         }
 
-        // Com que has eliminat la part de la barra global, no cal la comprovació de currentServiceIndex aquí per a això.
-        // Però si la necessitessis per a una altra cosa, 'idx' i 'currentServiceIndex' són correctes.
+        // >>> AQUESTA ÉS LA LÍNIA CLAU AFEGIDA <<<
+        // Notifiquem a formService que hi ha hagut un canvi per activar l'autoguardat.
+        revalidateFormState();
       });
     });
   });
 }
+
 /* ────────────────────────────────────────────────────────────────────────── */
 /* HELPERS – BOTONS EXTERNS (clear / camera / options)                       */
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -430,5 +429,19 @@ export function updateServicePanelsForServiceType(serviceType) {
       const element = panel.querySelector(selector);
       element?.classList.toggle(CSS_CLASSES.SERVICE_HIDDEN, isTSNU);
     });
+  });
+}
+
+/**
+ * Treu les classes d'error dels camps d'un panell de servei específic.
+ * @param {HTMLElement} panel L'element del panell del servei.
+ * @export
+ */
+export function removeErrorClassesFromService(panel) {
+  if (!panel) return;
+  // Aquesta implementació és més robusta perquè busca qualsevol element
+  // que tingui la classe 'input-error' dins del panell i la treu.
+  panel.querySelectorAll(".input-error").forEach((el) => {
+    el.classList.remove("input-error");
   });
 }

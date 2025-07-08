@@ -1,4 +1,4 @@
-// init.js (dins src/init.js)
+// src/init.js
 
 // --- Importacions de Mòduls ---
 import { openDatabase } from "./db/indexedDbDietRepository.js";
@@ -20,7 +20,7 @@ import { setupModalGenerics } from "./ui/modals.js";
 import { setupDatePickers, setupTimePickers } from "./ui/pickers.js";
 import { setupServiceNumberRestrictions } from "./utils/restrictions.js";
 import { initSettingsPanel } from "./ui/settingsPanel.js";
-import * as formService from "./services/formService.js";
+import * as formService from "./services/formService.js"; // Importem tot el mòdul
 import { initPwaInstall } from "./services/pwaService.js";
 import { initCameraOcr } from "./services/cameraOcr.js";
 import { initDotacion } from "./services/dotacion.js";
@@ -86,33 +86,26 @@ export async function initializeApp() {
   // --- Configuració de Lògica de Formulari i Validacions ---
   setupServiceNumberRestrictions();
   formService.addInputListeners();
-  formService.addServiceTypeListener();
+  formService.addServiceTypeListener(); // Aquest listener ja està definit a la teva versió anterior
   formService.addDoneBehavior();
 
-  // =======================================================================
-  // >>> BLOC MODIFICAT: LÒGICA PER A LA PREFERÈNCIA DE TIPUS DE SERVEI <<<
-  // =======================================================================
+  // Lògica per a la preferència de tipus de servei
   const serviceTypeSelect = document.getElementById("service-type");
   if (serviceTypeSelect) {
-    // 1. Intenta llegir el valor guardat a localStorage
     const savedServiceType = localStorage.getItem(LS_SERVICE_TYPE_KEY);
-
-    // 2. Si existeix un valor guardat vàlid, l'aplica al selector
     if (savedServiceType === "TSU" || savedServiceType === "TSNU") {
       serviceTypeSelect.value = savedServiceType;
       console.log(
         `[LocalStorage] Carregat tipus de servei: ${savedServiceType}`
       );
     }
-
-    // 3. Actualitza la UI amb el valor que ha quedat (el guardat o el per defecte de l'HTML)
     updateServicePanelsForServiceType(serviceTypeSelect.value);
   }
-  // =======================================================================
 
+  // Captura l'estat inicial del formulari. Aquesta funció ara també
+  // s'encarregarà de desactivar el botó de desar inicialment.
   try {
-    // Captura l'estat inicial del formulari DESPRÉS d'haver ajustat la UI
-    formService.setInitialFormDataStr(formService.getAllFormDataAsString());
+    formService.captureInitialFormState();
   } catch (e) {
     console.warn("No s'ha pogut desar l'estat inicial del formulari:", e);
   }
