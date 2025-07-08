@@ -76,7 +76,6 @@ self.addEventListener("activate", (event) => {
 });
 
 // --- FETCH ---
-// --- FETCH ---
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
