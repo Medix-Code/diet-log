@@ -17,20 +17,6 @@ const APP_SHELL_FILES = [
   "./src/app.js",
   "./src/init.js",
   "./src/ui/saveIndicator.js",
-  "./src/ui/theme.js",
-  "./src/ui/tabs.js",
-  "./src/services/formService.js",
-  "./src/services/dietService.js",
-  "./src/services/servicesPanelManager.js",
-  "./assets/images/icons-512.png",
-  "./assets/images/icons-192.png",
-  "./assets/icons/moon.svg",
-  "./assets/icons/sun.svg",
-  "./assets/icons/gear.svg",
-  "./assets/icons/info.svg",
-  "./assets/icons/donation.svg",
-  "./assets/icons/download_blue.svg",
-  "./assets/icons/save_green.svg",
 ];
 
 // --- INSTALL (AMB DEPURACIÓ DETALLADA) ---
