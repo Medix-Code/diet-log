@@ -34,7 +34,7 @@ export class Diet {
     signatureConductor = "",
     signatureAjudant = "",
     services = [], // Assegura que és un array per defecte
-    empresa = "",
+    serviceType = "TSU", // <-- AFEGIM AQUEST
     timeStampDiet = new Date().toISOString(),
   } = {}) {
     // Afegeix valor per defecte per a l'objecte options
@@ -65,8 +65,8 @@ export class Diet {
     /** @property {Array<object>} services - Array d'objectes de servei. */
     this.services = Array.isArray(services) ? services : []; // Assegura que és array
 
-    /** @property {string} empresa - Nom de l'empresa. */
-    this.empresa = String(empresa);
+    /** @property {string} serviceType - Nom del servei. */
+    this.serviceType = String(serviceType);
 
     /** @property {string} timeStampDiet - Timestamp ISO. */
     this.timeStampDiet = String(timeStampDiet);

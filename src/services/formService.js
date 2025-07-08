@@ -10,7 +10,7 @@ import {
   getSignatureAjudant,
 } from "./signatureService.js";
 import { getCurrentDietType } from "../utils/utils.js";
-
+import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
 // ---------------------------------------------------------------------------
 // CONSTANTS
 // ---------------------------------------------------------------------------
@@ -23,9 +23,12 @@ const IDS = {
   VEHICLE: "vehicle-number",
   P1: "person1",
   P2: "person2",
-  EMPRESA: "empresa",
+  SERVICE_TYPE: "service-type",
   SAVE_BTN: "save-diet",
 };
+
+// Constant per a la clau del localStorage <<<
+const LS_SERVICE_TYPE_KEY = "userSelectedServiceType";
 
 const SERVICE_FIELD_SELECTORS = {
   serviceNumber: ".service-number",
@@ -74,7 +77,8 @@ function getFormDataObject() {
       vehicleNumber: document.getElementById(IDS.VEHICLE)?.value.trim() || "",
       person1: document.getElementById(IDS.P1)?.value.trim() || "",
       person2: document.getElementById(IDS.P2)?.value.trim() || "",
-      empresa: document.getElementById(IDS.EMPRESA)?.value.trim() || "",
+      serviceType:
+        document.getElementById(IDS.SERVICE_TYPE)?.value.trim() || "TSU",
       signatureConductor: getSignatureConductor(),
       signatureAjudant: getSignatureAjudant(),
     };
@@ -174,4 +178,25 @@ export function setInitialFormDataStr(str) {
 }
 export function getAllFormDataAsString() {
   return JSON.stringify(getFormDataObject() || {});
+}
+
+/** Afegeix el listener al selector de tipus de servei per actualitzar la UI. */
+export function addServiceTypeListener() {
+  const serviceTypeSelect = document.getElementById(IDS.SERVICE_TYPE);
+  if (!serviceTypeSelect) return;
+
+  serviceTypeSelect.addEventListener("change", (event) => {
+    const selectedType = event.target.value;
+
+    // 1. Actualitza la UI com abans
+    updateServicePanelsForServiceType(selectedType);
+
+    // 2: Guarda la selecció al localStorage <<<
+    try {
+      localStorage.setItem(LS_SERVICE_TYPE_KEY, selectedType);
+      console.log(`[LocalStorage] Tipus de servei desat: ${selectedType}`);
+    } catch (error) {
+      console.error("Error desant el tipus de servei a localStorage:", error);
+    }
+  });
 }

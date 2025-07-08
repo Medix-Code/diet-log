@@ -7,7 +7,10 @@ import {
   easterEgg,
   setDefaultDietSelect,
 } from "./utils/utils.js";
-import { initServices } from "./services/servicesPanelManager.js";
+import {
+  initServices,
+  updateServicePanelsForServiceType,
+} from "./services/servicesPanelManager.js";
 import { initSignature } from "./services/signatureService.js";
 import { setupTabs } from "./ui/tabs.js";
 import { initThemeSwitcher } from "./ui/theme.js";
@@ -21,11 +24,11 @@ import * as formService from "./services/formService.js";
 import { initPwaInstall } from "./services/pwaService.js";
 import { initCameraOcr } from "./services/cameraOcr.js";
 import { initDotacion } from "./services/dotacion.js";
-// >>> NOU IMPORT: Per a l'ID anònim de donació <<<
 import { getAnonymousUserId } from "./services/userService.js";
 
 // --- Constants Específiques d'Inicialització ---
 const DONATION_LINK_ID = "openDonation";
+const LS_SERVICE_TYPE_KEY = "userSelectedServiceType"; // Clau per a localStorage
 
 // --- Funcions Privades d'Inicialització ---
 
@@ -78,13 +81,37 @@ export async function initializeApp() {
   setupTimePickers();
   initSettingsPanel();
   initThemeSwitcher();
-  setupDonationLink(); // >>> CRIDA A LA NOVA FUNCIÓ <<<
+  setupDonationLink();
 
   // --- Configuració de Lògica de Formulari i Validacions ---
   setupServiceNumberRestrictions();
   formService.addInputListeners();
+  formService.addServiceTypeListener();
   formService.addDoneBehavior();
+
+  // =======================================================================
+  // >>> BLOC MODIFICAT: LÒGICA PER A LA PREFERÈNCIA DE TIPUS DE SERVEI <<<
+  // =======================================================================
+  const serviceTypeSelect = document.getElementById("service-type");
+  if (serviceTypeSelect) {
+    // 1. Intenta llegir el valor guardat a localStorage
+    const savedServiceType = localStorage.getItem(LS_SERVICE_TYPE_KEY);
+
+    // 2. Si existeix un valor guardat vàlid, l'aplica al selector
+    if (savedServiceType === "TSU" || savedServiceType === "TSNU") {
+      serviceTypeSelect.value = savedServiceType;
+      console.log(
+        `[LocalStorage] Carregat tipus de servei: ${savedServiceType}`
+      );
+    }
+
+    // 3. Actualitza la UI amb el valor que ha quedat (el guardat o el per defecte de l'HTML)
+    updateServicePanelsForServiceType(serviceTypeSelect.value);
+  }
+  // =======================================================================
+
   try {
+    // Captura l'estat inicial del formulari DESPRÉS d'haver ajustat la UI
     formService.setInitialFormDataStr(formService.getAllFormDataAsString());
   } catch (e) {
     console.warn("No s'ha pogut desar l'estat inicial del formulari:", e);
