@@ -234,9 +234,8 @@ function populateFormWithDietData(diet) {
 async function performSave(isManual) {
   // Validació prèvia
   if (!validateServeisTab()) {
-    if (isManual) showToast("Faltan datos en Servicios (p.ej., S1).", "error");
-    hideSavingIndicator(); // Aturem qualsevol indicador si la validació falla
-    return;
+    hideSavingIndicator();
+    return; // S'atura l'execució
   }
 
   // >>> PAS 1: MOSTRA L'INDICADOR "GUARDANT" <<<
@@ -244,10 +243,6 @@ async function performSave(isManual) {
   showSavingIndicator();
 
   try {
-    // Simulem un petit retard per assegurar que l'animació sigui visible
-    // Fins i tot si la DB és molt ràpida. Pots eliminar aquesta línia en producció.
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Retard de 0.5 segons
-
     const formData = gatherAllData();
     const { generalData, servicesData } = formData;
     const dietId = servicesData[0]?.serviceNumber?.slice(0, 9);
@@ -259,24 +254,18 @@ async function performSave(isManual) {
 
     if (existingDiet) {
       await updateDiet(dietToSave);
-      console.log(`[Save] Dieta ${dietId} actualizada.`);
     } else {
       await addDiet(dietToSave);
-      console.log(`[Save] Dieta ${dietId} creada.`);
     }
 
     if (isManual) {
       showToast("Dieta guardada correctamente.", "success");
     }
 
-    // >>> PAS 2: DESPRÉS DE GUARDAR, S'ACTUALITZA L'ESTAT INICIAL <<<
-    // Aquesta funció cridarà a `hideSavingIndicator` internament.
     captureInitialFormState();
   } catch (error) {
     console.error("Error durante el guardado:", error);
     if (isManual) showToast(`Error al guardar: ${error.message}`, "error");
-
-    // >>> PAS 3: SI HI HA UN ERROR, ATURA L'INDICADOR <<<
     hideSavingIndicator();
   }
 }

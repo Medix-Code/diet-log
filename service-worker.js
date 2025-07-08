@@ -20,6 +20,7 @@ const APP_SHELL_FILES = [
   "./src/ui/theme.js",
   "./src/ui/tabs.js",
   "./src/services/formService.js",
+  "./src/services/dietServices.js",
   "./src/services/servicesPanelManager.js",
   "./assets/images/icons-512.png",
   "./assets/images/icons-192.png",
