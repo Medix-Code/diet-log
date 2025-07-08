@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Aquesta variable serà actualitzada automàticament pel teu workflow de GitHub Actions.
-const VERSION = "20250708215627"; // Un valor inicial per a desenvolupament local
+const VERSION = "20250708220350"; // Un valor inicial per a desenvolupament local
 
 const APP_SHELL_CACHE_NAME = `misdietas-app-shell-${VERSION}`;
 const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
@@ -20,6 +20,7 @@ const APP_SHELL_FILES = [
   "./src/ui/theme.js",
   "./src/ui/tabs.js",
   "./src/services/formService.js",
+  "./src/services/dietServices.js",
   "./src/services/servicesPanelManager.js",
   "./assets/images/icons-512.png",
   "./assets/images/icons-192.png",
