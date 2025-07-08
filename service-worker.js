@@ -33,23 +33,50 @@ const APP_SHELL_FILES = [
   "./assets/icons/save_green.svg",
 ];
 
-// --- INSTALL ---
+// --- INSTALL (AMB DEPURACIÓ DETALLADA) ---
 self.addEventListener("install", (event) => {
-  console.log(`[ServiceWorker] Instal·lant versió: ${VERSION}`);
+  console.log(
+    `[ServiceWorker-DEBUG] Iniciant instal·lació de la versió: ${VERSION}`
+  );
   event.waitUntil(
-    caches
-      .open(APP_SHELL_CACHE_NAME)
-      .then((cache) => {
-        console.log("[ServiceWorker] Fent precaching de la App Shell...");
-        return cache.addAll(APP_SHELL_FILES);
-      })
-      .then(() => self.skipWaiting())
-      .catch((error) => {
-        console.error(
-          "[ServiceWorker] La instal·lació de l'App Shell ha fallat:",
-          error
+    caches.open(APP_SHELL_CACHE_NAME).then(async (cache) => {
+      console.log(
+        "[ServiceWorker-DEBUG] Verificant fitxers de l'App Shell un per un..."
+      );
+      let allOk = true;
+
+      for (const url of APP_SHELL_FILES) {
+        try {
+          // Intentem afegir cada fitxer individualment
+          await cache.add(url);
+        } catch (error) {
+          // Si un fitxer falla, ho registrem a la consola de manera molt visible
+          console.error(
+            `===========================================================`
+          );
+          console.error(
+            `[ServiceWorker-DEBUG] ERROR FATAL AL CACHEJAR EL FITXER:`
+          );
+          console.error(`>>> ${url} <<<`);
+          console.error(
+            `===========================================================`
+          );
+          allOk = false;
+        }
+      }
+
+      if (!allOk) {
+        // Fem que la instal·lació falli explícitament per poder-ho veure a la pestanya "Application"
+        throw new Error(
+          "La instal·lació ha fallat. Revisa la consola per veure quin fitxer té un nom o camí incorrecte."
         );
-      })
+      }
+
+      console.log(
+        "[ServiceWorker-DEBUG] Tots els fitxers de l'App Shell s'han cachejat correctament."
+      );
+      return self.skipWaiting();
+    })
   );
 });
 
