@@ -5,16 +5,12 @@
  */
 
 // Importacions de mòduls interns
-import { getCurrentTab } from "../ui/tabs.js";
 import { showToast } from "../ui/toast.js";
 
 import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 // Importacions del servei PWA
-import {
-  isAppInstalled,
-  requestInstallPromptAfterAction,
-} from "./pwaService.js";
+import { requestInstallPromptAfterAction } from "./pwaService.js";
 
 // --- Constants ---
 
