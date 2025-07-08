@@ -75,6 +75,7 @@ self.addEventListener("activate", (event) => {
 });
 
 // --- FETCH ---
+// --- FETCH ---
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -84,17 +85,20 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // >>> AQUESTA ÉS LA LÒGICA CORREGIDA I SIMPLIFICADA <<<
   // Construeix un camí relatiu a partir del pathname de la URL.
-  // Exemple: de '/css/main.css' a './css/main.css'
   const requestPath = "." + url.pathname;
   const isAppShellFile = APP_SHELL_FILES.includes(requestPath);
 
-  // 2. Estratègia "Cache First" per a l'App Shell
+  // 2. Estratègia "Cache First, then Network" per a l'App Shell
   if (isAppShellFile) {
-    // Busca només al cache de l'App Shell
     event.respondWith(
-      caches.match(request, { cacheName: APP_SHELL_CACHE_NAME })
+      caches
+        .match(request, { cacheName: APP_SHELL_CACHE_NAME })
+        .then((response) => {
+          // Si trobem el fitxer al cache, el retornem.
+          // Si NO el trobem (response és null/undefined), intentem anar a la xarxa.
+          return response || fetch(request);
+        })
     );
     return;
   }
