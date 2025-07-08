@@ -236,6 +236,23 @@ main {
   bottom: 50%;
   transform: translateY(50%) rotate(-45deg);
 }
+.ajustes-btn.has-changes {
+  background-color: #ffc107; /* Fons groc fort */
+  border-radius: 50%; /* Per fer-lo circular */
+}
+.ajustes-btn.has-changes .hamburger span {
+  background: var(--text-color); /* Barres fosques sobre fons groc */
+}
+.ajustes-btn.saving {
+  background-color: #007bff; /* Fons blau per indicar activitat */
+  border-radius: 50%; /* Per fer-lo circular */
+}
+.ajustes-btn.saving .hamburger {
+  animation: spin-hamburger 1s linear infinite;
+}
+.ajustes-btn.saving .hamburger span {
+  background: var(--title-color); /* Barres blanques sobre fons blau */
+}
 
 .hamburger {
   width: 30px;
@@ -243,6 +260,8 @@ main {
   position: relative;
   cursor: pointer;
   pointer-events: none;
+  transform: rotate(0deg);
+  transition: transform 0.2s ease;
 }
 .hamburger span {
   background: var(--title-color);
@@ -264,6 +283,14 @@ main {
   bottom: 0;
 }
 
+@keyframes spin-hamburger {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 .ajustes-panel {
   position: fixed;
   top: calc(var(--top-bar-height));
@@ -1341,30 +1368,6 @@ button .fa {
     transform: rotate(360deg);
   }
 }
-/* Afegeix això al final de src/css/main.css */
-/* -------------------------------------- */
-/* Feedback d'Autoguardat a la TopBar     */
-/* -------------------------------------- */
-/* Animació de gir per a la icona d'ajustos (hamburguesa) */
-@keyframes spin-settings {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-/* Classe que aplicarem amb JS per activar l'animació */
-.ajustes-btn.saving {
-  animation: spin-settings 1.2s linear infinite;
-}
-
-/* (Opcional) Estil per a "canvis pendents" */
-.ajustes-btn.has-changes .hamburger span {
-  /* Podem fer que les línies de l'hamburguesa canviïn de color */
-  background: #ffc107; /* Un color ambre d'avís */
-}
-
 .signature-group .input-with-icon {
   display: flex;
   align-items: stretch;

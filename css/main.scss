@@ -283,6 +283,32 @@ main {
       }
     }
   }
+  // >>> INICI DELS CANVIS CLAU PER AL FEEDBACK VISUAL <<<
+
+  // Estat: HI HA CANVIS PENDENTS (icona groga de fons)
+  &.has-changes {
+    background-color: #ffc107; /* Fons groc fort */
+    border-radius: 50%; /* Per fer-lo circular */
+    .hamburger span {
+      background: var(--text-color); /* Barres fosques sobre fons groc */
+    }
+  }
+
+  // Estat: GUARDANT (icona girant)
+  &.saving {
+    background-color: #007bff; /* Fons blau per indicar activitat */
+    border-radius: 50%; /* Per fer-lo circular */
+    // IMPORTANT: L'animació de gir ara l'aplicarem al .hamburger
+    // per assegurar que giri la forma de l'hamburguesa, no el botó sencer
+    .hamburger {
+      animation: spin-hamburger 1s linear infinite; // Apliquem l'animació al .hamburger
+    }
+    .hamburger span {
+      background: var(--title-color); /* Barres blanques sobre fons blau */
+    }
+  }
+
+  // >>> FI DELS CANVIS CLAU <<<
 }
 
 .hamburger {
@@ -291,6 +317,8 @@ main {
   position: relative;
   cursor: pointer;
   pointer-events: none;
+  transform: rotate(0deg); // Assegurem un estat inicial de rotació
+  transition: transform 0.2s ease; // Afegim transició per a rotació
 
   span {
     background: var(--title-color);
@@ -311,6 +339,15 @@ main {
   }
   span:nth-child(3) {
     bottom: 0;
+  }
+}
+// Keyframes per a l'animació de gir de l'HAMBURGUESA
+@keyframes spin-hamburger {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 
@@ -1478,33 +1515,6 @@ button .fa {
   100% {
     transform: rotate(360deg);
   }
-}
-
-/* Afegeix això al final de src/css/main.css */
-
-/* -------------------------------------- */
-/* Feedback d'Autoguardat a la TopBar     */
-/* -------------------------------------- */
-
-/* Animació de gir per a la icona d'ajustos (hamburguesa) */
-@keyframes spin-settings {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Classe que aplicarem amb JS per activar l'animació */
-.ajustes-btn.saving {
-  animation: spin-settings 1.2s linear infinite;
-}
-
-/* (Opcional) Estil per a "canvis pendents" */
-.ajustes-btn.has-changes .hamburger span {
-  /* Podem fer que les línies de l'hamburguesa canviïn de color */
-  background: #ffc107; /* Un color ambre d'avís */
 }
 
 // ===========================================================================
