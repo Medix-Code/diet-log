@@ -185,15 +185,40 @@ function _closeGenericModal() {
   // Si currentConfirmResolve existeix, el focus es gestionarà quan es tanqui el modal original
 }
 
+/**
+ * Formata un timestamp ISO a una cadena d'hora HH:MM.
+ * @param {string} isoTimestamp - El timestamp en format ISO string.
+ * @returns {string} L'hora formatada (p.ex., "14:35") o una cadena buida si l'entrada no és vàlida.
+ */
+function _formatTimeFromISO(isoTimestamp) {
+  if (!isoTimestamp) return "";
+  try {
+    const date = new Date(isoTimestamp);
+    // Assegurem que la data és vàlida
+    if (isNaN(date.getTime())) return "";
+
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  } catch (error) {
+    console.warn("No s'ha pogut formatar el timestamp:", isoTimestamp, error);
+    return "";
+  }
+}
+
 /** Crea un element de llista (DOM) per a una dieta. */
 function _createDietListItem(diet) {
   const { ddmmaa, franjaText } = getDietDisplayInfo(diet.date, diet.dietType);
+  const creationTime = _formatTimeFromISO(diet.timeStampDiet);
+
   const dietItem = document.createElement("div");
   dietItem.className = CSS_CLASSES.DIET_ITEM;
 
   const dateSpan = document.createElement("span");
   dateSpan.className = CSS_CLASSES.DIET_DATE;
-  dateSpan.textContent = `${ddmmaa} - ${capitalizeFirstLetter(franjaText)}`;
+  dateSpan.textContent = creationTime
+    ? `${ddmmaa} - ${capitalizeFirstLetter(franjaText)} (${creationTime})`
+    : `${ddmmaa} - ${capitalizeFirstLetter(franjaText)}`;
 
   const iconsContainer = document.createElement("div");
   iconsContainer.className = CSS_CLASSES.DIET_ICONS;
