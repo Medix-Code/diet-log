@@ -16,7 +16,7 @@ import {
   deleteDietById,
   updateDiet,
 } from "../db/indexedDbDietRepository.js";
-
+import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
 // Importacions de UI (Notificacions, Modals, Pestanyes)
 import { showToast } from "../ui/toast.js";
 import {
@@ -51,7 +51,7 @@ const DOM_IDS = {
   VEHICLE_INPUT: "vehicle-number",
   PERSON1_INPUT: "person1",
   PERSON2_INPUT: "person2",
-  EMPRESA_SELECT: "empresa",
+  SERVICE_TYPE_SELECT: "service-type",
 };
 const SERVICE_CONTAINER_SELECTOR = ".service"; // Classe per a cada contenidor de servei
 const SERVICE_FIELD_SELECTORS = {
@@ -90,7 +90,7 @@ function buildDietObject(generalData, servicesData, dietId) {
     vehicleNumber: generalData.vehicleNumber || "",
     person1: generalData.person1 || "",
     person2: generalData.person2 || "",
-    empresa: generalData.empresa || "",
+    serviceType: generalData.serviceType || "TSU",
     signatureConductor: generalData.signatureConductor || "", // Ja ve de signatureService
     signatureAjudant: generalData.signatureAjudant || "", // Ja ve de signatureService
     services: servicesData.map((s) => ({
@@ -167,8 +167,14 @@ function populateFormWithDietData(diet) {
     diet.vehicleNumber || "";
   document.getElementById(DOM_IDS.PERSON1_INPUT).value = diet.person1 || "";
   document.getElementById(DOM_IDS.PERSON2_INPUT).value = diet.person2 || "";
-  document.getElementById(DOM_IDS.EMPRESA_SELECT).value = diet.empresa || "";
-
+  const serviceTypeSelect = document.getElementById(
+    DOM_IDS.SERVICE_TYPE_SELECT
+  );
+  if (serviceTypeSelect) {
+    serviceTypeSelect.value = diet.serviceType || "TSU";
+    // CRIDA CLAU: Actualitzem la UI DESPRÉS de carregar el valor
+    updateServicePanelsForServiceType(serviceTypeSelect.value);
+  }
   // Firmes (usant el servei corresponent)
   setSignatureConductor(diet.signatureConductor || "");
   setSignatureAjudant(diet.signatureAjudant || "");

@@ -33,6 +33,13 @@ const CSS_CLASSES = {
   CHIP_ACTIVE: "chip-active",
 };
 
+const TSNU_HIDDEN_ELEMENT_SELECTORS = [
+  ".chip-group-title", // Títol "Resultado del servicio"
+  ".chip-group", // Contenidor dels chips (3.6, 3.22, 3.11)
+  ".btn-ocr-inline", // Botó "Escanear"
+  ".section-divider", // Botó "Escanear"
+];
+
 // Selectors for inputs within form-groups that s’oculten en modes “bàsics” (3.22 / 3.11)
 const DESTINATION_FIELD_SELECTORS = [
   ".destination", // input destí
@@ -402,4 +409,26 @@ export function setModeForService(index, mode) {
   //if (index === currentServiceIndex) {
   // _updateGlobalChipBarUI(mode);
   // }
+}
+
+/**
+ * Mostra o amaga elements dels panells de servei segons el tipus de servei (TSU/TSNU).
+ * @param {'TSU' | 'TSNU'} serviceType - El tipus de servei seleccionat.
+ * @export
+ */
+export function updateServicePanelsForServiceType(serviceType) {
+  const isTSNU = serviceType === "TSNU";
+  console.log(
+    `[UI Update] Actualitzant UI per a tipus de servei: ${serviceType}. Amagant elements: ${isTSNU}`
+  );
+
+  // Trobem TOTS els panells de servei per aplicar els canvis a tots ells
+  const allServicePanels = document.querySelectorAll(SELECTORS.SERVICE_PANEL);
+
+  allServicePanels.forEach((panel) => {
+    TSNU_HIDDEN_ELEMENT_SELECTORS.forEach((selector) => {
+      const element = panel.querySelector(selector);
+      element?.classList.toggle(CSS_CLASSES.SERVICE_HIDDEN, isTSNU);
+    });
+  });
 }
