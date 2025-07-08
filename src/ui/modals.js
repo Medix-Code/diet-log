@@ -208,6 +208,7 @@ function _formatTimeFromISO(isoTimestamp) {
 
 /** Crea un element de llista (DOM) per a una dieta. */
 function _createDietListItem(diet) {
+  // Aquesta part es queda igual
   const { ddmmaa, franjaText } = getDietDisplayInfo(diet.date, diet.dietType);
   const creationTime = _formatTimeFromISO(diet.timeStampDiet);
 
@@ -216,17 +217,34 @@ function _createDietListItem(diet) {
 
   const dateSpan = document.createElement("span");
   dateSpan.className = CSS_CLASSES.DIET_DATE;
-  dateSpan.textContent = creationTime
-    ? `${ddmmaa} - ${capitalizeFirstLetter(franjaText)} (${creationTime})`
-    : `${ddmmaa} - ${capitalizeFirstLetter(franjaText)}`;
 
+  // ====================================================================
+  // >>> AQUÍ ESTÀ L'ÚNIC CANVI <<<
+  // Construïm el text pas a pas per al nou format
+  // ====================================================================
+  let displayText = ddmmaa; // Comença amb la data, p.ex: "08/07/25"
+
+  if (creationTime) {
+    // Si hi ha hora, l'afegim
+    displayText += ` ${creationTime}h`; // Resultat: "08/07/25 23:23h"
+  }
+
+  // Afegim sempre el tipus de dieta al final
+  displayText += ` - ${capitalizeFirstLetter(franjaText)}`; // Resultat final: "08/07/25 23:23h - Cena"
+
+  // Assignem el text construït a l'element
+  dateSpan.textContent = displayText;
+  // ====================================================================
+  // >>> FI DEL CANVI <<<
+  // ====================================================================
+
+  // Tota la part de creació de botons es queda exactament igual que la tenies
   const iconsContainer = document.createElement("div");
   iconsContainer.className = CSS_CLASSES.DIET_ICONS;
 
   const deleteBtn = document.createElement("button");
   deleteBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} ${CSS_CLASSES.LIST_ITEM_BTN_DELETE} ${CSS_CLASSES.DIET_DELETE_BTN}`;
   deleteBtn.setAttribute("aria-label", `Eliminar dieta ${ddmmaa}`);
-  // Afegim text ocult per accessibilitat, la icona va per CSS si s'usa :before/:after o directament com img
   deleteBtn.innerHTML = `<img src="assets/icons/delete.svg" alt="" class="icon"><span class="btn-text visually-hidden">Eliminar</span>`;
   deleteBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, diet.id);
   deleteBtn.setAttribute(DATA_ATTRIBUTES.DIET_DATE, diet.date);
