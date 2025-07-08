@@ -919,31 +919,32 @@
       async
     ></script>
 
-    <!-- Registre del service worker -->
+    <!-- Registre del service worker (Versió Final i Robusta) -->
     <script>
       if ("serviceWorker" in navigator) {
-        // Registrem el Service Worker
+        // Registrem el Service Worker amb l'opció 'updateViaCache'
         navigator.serviceWorker
-          .register("./service-worker.js")
+          .register("./service-worker.js", {
+            // Aquesta opció li diu al navegador que sempre, en cada càrrega,
+            // vagi a la xarxa per comprovar si el fitxer service-worker.js ha canviat,
+            // ignorant el cache HTTP del navegador per a aquest fitxer en concret.
+            updateViaCache: "none",
+          })
           .then((registration) => {
             console.log("Service Worker registrat amb èxit.");
 
-            // Aquesta funció s'executarà cada vegada que un nou SW s'instal·li i estigui esperant
+            // La lògica de recàrrega automàtica es manté igual
             registration.onupdatefound = () => {
               const installingWorker = registration.installing;
               if (installingWorker) {
                 installingWorker.onstatechange = () => {
-                  // Si el nou SW s'ha instal·lat i hi ha un SW antic controlant la pàgina,
-                  // vol dir que tenim una actualització llesta.
                   if (
                     installingWorker.state === "installed" &&
                     navigator.serviceWorker.controller
                   ) {
                     console.log(
-                      "Nova versió disponible. Recarregant pàgina per activar-la."
+                      "Nova versió disponible detectada. Recarregant pàgina..."
                     );
-                    // Forcem una recàrrega de la pàgina per activar el nou SW immediatament.
-                    // Això garanteix que l'usuari sempre tingui l'última versió.
                     window.location.reload();
                   }
                 };
