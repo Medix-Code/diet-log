@@ -225,7 +225,7 @@ function _createDietListItem(diet) {
 
   if (creationTime) {
     // Si hi ha hora, l'afegim entre claudàtors
-    displayText += ` [${creationTime}h]`; // Resultat: "08/07/25 [23:23h]"
+    displayText += ` [${creationTime}]`; // Resultat: "08/07/25 [23:23]"
   }
 
   // Afegim sempre el tipus de dieta al final
