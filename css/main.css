@@ -1790,26 +1790,31 @@ button .fa {
   opacity: 0.8;
 }
 .footer .footer-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   background: transparent;
   border: none;
+  border-radius: 50%;
   cursor: pointer;
-  transition: transform var(--transition-speed) ease;
-  padding: 8px; /* Afegim una mica de padding per a millor àrea de contacte */
-  border-radius: 50%; /* Els fem circulars per a un look més de "botó" */
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
-.footer .footer-btn:hover,
-.footer .footer-btn:focus {
-  transform: scale(1.1);
+.footer .footer-btn:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 .footer .footer-btn:active {
-  transform: scale(1.2);
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(0.92);
 }
-.footer .icon {
+.footer .footer-btn .icon {
   width: var(--icon-size);
   height: var(--icon-size);
   object-fit: contain;
-  transition: transform var(--transition-speed) ease;
 }
 
 .hidden {

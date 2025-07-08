@@ -1982,30 +1982,53 @@ button .fa {
     opacity: 0.8;
   }
 
+  // >>> INICI DELS CANVIS <<<
+
   .footer-btn {
+    // 1. Definim una mida quadrada per al botó per assegurar un cercle perfecte
+    width: 44px;
+    height: 44px;
+
+    // 2. Usem flexbox per centrar la icona perfectament a dins
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // 3. Resetejem padding i estils base
+    padding: 0;
     background: transparent;
     border: none;
+    border-radius: 50%; // Ara crearà un cercle perfecte
     cursor: pointer;
-    transition: transform var(--transition-speed) ease;
-    padding: 8px; /* Afegim una mica de padding per a millor àrea de contacte */
-    border-radius: 50%; /* Els fem circulars per a un look més de "botó" */
+
+    // 4. Afegim transició per als efectes
+    transition: background-color 0.2s ease, transform 0.15s ease;
+
+    // 5. Per a iOS, evitem el ressaltat blau en tocar
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
   }
 
-  .footer-btn:hover,
-  .footer-btn:focus {
-    transform: scale(1.1);
+  // Efecte subtil quan el cursor està a sobre
+  .footer-btn:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
 
+  // No necessitem un :focus separat que mantingui el fons.
+  // El navegador ja sol posar un anell de focus per defecte per accessibilitat.
+
+  // Efecte de "pressió" NOMÉS mentre es clica
   .footer-btn:active {
-    transform: scale(1.2);
+    background-color: rgba(255, 255, 255, 0.2); // Una mica més visible
+    transform: scale(0.92); // Un petit efecte de "s'enfonsa"
   }
 
-  .icon {
-    width: var(--icon-size);
+  // La icona dins del botó
+  .footer-btn .icon {
+    width: var(--icon-size); // La teva variable, p.ex., 24px
     height: var(--icon-size);
     object-fit: contain;
-    transition: transform var(--transition-speed) ease;
+    // La icona no necessita la seva pròpia transició de transformació
   }
 }
 
