@@ -1341,6 +1341,18 @@ button .fa {
     transform: rotate(360deg);
   }
 }
+/* Afegeix això al final de src/css/main.css */
+/* Estil per al botó de desar quan està deshabilitat */
+.big-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: transparent !important;
+}
+
+.big-btn:disabled:hover {
+  transform: none;
+}
+
 .signature-group .input-with-icon {
   display: flex;
   align-items: stretch;

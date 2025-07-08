@@ -17,7 +17,7 @@ import {
 import {
   setModeForService,
   updateServicePanelsForServiceType,
-  removeErrorClassesFromService, // <-- AFEGIM AQUÍ la funció que faltava
+  removeErrorClassesFromService,
 } from "./servicesPanelManager.js";
 // Importacions de UI (Notificacions, Modals, Pestanyes)
 import { showToast } from "../ui/toast.js";
@@ -32,7 +32,6 @@ import {
   hideSavingIndicator,
 } from "../ui/saveIndicator.js";
 // Importacions de Serveis (Formulari, Signatures)
-// I DEIXA-LA AIXÍ:
 import {
   gatherAllData,
   captureInitialFormState,

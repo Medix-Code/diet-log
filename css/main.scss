@@ -1479,6 +1479,24 @@ button .fa {
     transform: rotate(360deg);
   }
 }
+
+// ===========================================================================
+// guardar automaticament
+// ===========================================================================
+
+/* Afegeix això al final de src/css/main.css */
+
+/* Estil per al botó de desar quan està deshabilitat */
+.big-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: transparent !important;
+}
+
+.big-btn:disabled:hover {
+  transform: none;
+}
+
 // ===========================================================================
 // SIGNATURE (CAMPO DE FIRMA)
 // ===========================================================================
