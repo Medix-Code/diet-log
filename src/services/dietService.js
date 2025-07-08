@@ -7,8 +7,6 @@
 
 // Importacions del Repositori (Base de Dades)
 
-import { setModeForService } from "./servicesPanelManager.js";
-
 import {
   addDiet,
   getAllDiets,
@@ -16,7 +14,11 @@ import {
   deleteDietById,
   updateDiet,
 } from "../db/indexedDbDietRepository.js";
-import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
+import {
+  setModeForService,
+  updateServicePanelsForServiceType,
+  removeErrorClassesFromService, // <-- AFEGIM AQUÍ la funció que faltava
+} from "./servicesPanelManager.js";
 // Importacions de UI (Notificacions, Modals, Pestanyes)
 import { showToast } from "../ui/toast.js";
 import {
@@ -25,12 +27,16 @@ import {
   displayDietOptions,
 } from "../ui/modals.js";
 import { getCurrentTab } from "../ui/tabs.js";
-
+import {
+  showSavingIndicator,
+  hideSavingIndicator,
+} from "../ui/saveIndicator.js";
 // Importacions de Serveis (Formulari, Signatures)
+// I DEIXA-LA AIXÍ:
 import {
   gatherAllData,
-  captureInitialFormState, // Canviat nom per claredat
-  removeErrorClassesFromService, // <-- NOM CORREGIT DE L'IMPORT
+  captureInitialFormState,
+  cancelPendingAutoSave,
 } from "./formService.js";
 import {
   setSignatureConductor,
@@ -219,6 +225,77 @@ function populateFormWithDietData(diet) {
   console.log(
     "Finalització de populateFormWithDietData, cap crida posterior hauria de canviar els modes."
   );
+}
+
+/**
+ * Lògica central de guardat. És cridada per les funcions manual i automàtica.
+ * @param {boolean} isManual - True si ve del botó, per mostrar toast.
+ */
+async function performSave(isManual) {
+  // Validació prèvia
+  if (!validateServeisTab()) {
+    if (isManual) showToast("Faltan datos en Servicios (p.ej., S1).", "error");
+    hideSavingIndicator(); // Aturem qualsevol indicador si la validació falla
+    return;
+  }
+
+  // >>> PAS 1: MOSTRA L'INDICADOR "GUARDANT" <<<
+  // Aquesta és la crida clau que activa l'animació de gir.
+  showSavingIndicator();
+
+  try {
+    // Simulem un petit retard per assegurar que l'animació sigui visible
+    // Fins i tot si la DB és molt ràpida. Pots eliminar aquesta línia en producció.
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Retard de 0.5 segons
+
+    const formData = gatherAllData();
+    const { generalData, servicesData } = formData;
+    const dietId = servicesData[0]?.serviceNumber?.slice(0, 9);
+
+    if (!dietId) throw new Error("ID de dieta no válido para guardar.");
+
+    const dietToSave = buildDietObject(generalData, servicesData, dietId);
+    const existingDiet = await getDiet(dietId);
+
+    if (existingDiet) {
+      await updateDiet(dietToSave);
+      console.log(`[Save] Dieta ${dietId} actualizada.`);
+    } else {
+      await addDiet(dietToSave);
+      console.log(`[Save] Dieta ${dietId} creada.`);
+    }
+
+    if (isManual) {
+      showToast("Dieta guardada correctamente.", "success");
+    }
+
+    // >>> PAS 2: DESPRÉS DE GUARDAR, S'ACTUALITZA L'ESTAT INICIAL <<<
+    // Aquesta funció cridarà a `hideSavingIndicator` internament.
+    captureInitialFormState();
+  } catch (error) {
+    console.error("Error durante el guardado:", error);
+    if (isManual) showToast(`Error al guardar: ${error.message}`, "error");
+
+    // >>> PAS 3: SI HI HA UN ERROR, ATURA L'INDICADOR <<<
+    hideSavingIndicator();
+  }
+}
+
+/**
+ * Funció per al botó "Guardar".
+ */
+export async function handleManualSave() {
+  console.log("Guardado manual iniciado...");
+  cancelPendingAutoSave();
+  await performSave(true);
+}
+
+/**
+ * Funció per a l'autoguardat.
+ */
+export async function autoSaveDiet() {
+  console.log("Autoguardado iniciado...");
+  await performSave(false);
 }
 
 // --- Funcions Públiques / Exportades ---
