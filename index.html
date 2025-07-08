@@ -922,10 +922,40 @@
     <!-- Registre del service worker -->
     <script>
       if ("serviceWorker" in navigator) {
+        // Registrem el Service Worker
         navigator.serviceWorker
           .register("./service-worker.js")
-          .then(() => console.log("Service Worker registrat correctament!"))
-          .catch((err) => console.warn("Error en registrar SW:", err));
+          .then((registration) => {
+            console.log("Service Worker registrat amb èxit.");
+
+            // Aquesta funció s'executarà cada vegada que un nou SW s'instal·li i estigui esperant
+            registration.onupdatefound = () => {
+              const installingWorker = registration.installing;
+              if (installingWorker) {
+                installingWorker.onstatechange = () => {
+                  // Si el nou SW s'ha instal·lat i hi ha un SW antic controlant la pàgina,
+                  // vol dir que tenim una actualització llesta.
+                  if (
+                    installingWorker.state === "installed" &&
+                    navigator.serviceWorker.controller
+                  ) {
+                    console.log(
+                      "Nova versió disponible. Recarregant pàgina per activar-la."
+                    );
+                    // Forcem una recàrrega de la pàgina per activar el nou SW immediatament.
+                    // Això garanteix que l'usuari sempre tingui l'última versió.
+                    window.location.reload();
+                  }
+                };
+              }
+            };
+          })
+          .catch((error) => {
+            console.error(
+              "Error durant el registre del Service Worker:",
+              error
+            );
+          });
       }
     </script>
 
