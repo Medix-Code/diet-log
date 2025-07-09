@@ -1,8 +1,6 @@
-// src/ui/saveIndicator.js
 // ────────────────────────────────────────────────────────────
-// Controla la “pastilla” flotant que indica l’estat de guardat
+//  Pastilla flotant que indica l’estat de guardat
 // ────────────────────────────────────────────────────────────
-
 const PILL_ID = "save-pill";
 const TEXT_SEL = ".pill-text";
 
@@ -15,8 +13,9 @@ const CSS = {
 };
 
 let pillEl, textEl, hideTimer;
+let isDirty = false; // <── nou flag “hi ha canvis”
 
-/* Helpers */
+/* Helpers ──────────────────────────────────────────────── */
 function getEls() {
   if (!pillEl) {
     pillEl = document.getElementById(PILL_ID);
@@ -24,31 +23,38 @@ function getEls() {
   }
 }
 
-function setState(message, cssClass) {
+function setState(msg, cssClass) {
   getEls();
-  if (!pillEl || !textEl) return; // ← ara sí
-  clearTimeout(hideTimer);
+  if (!pillEl || !textEl) return;
 
+  clearTimeout(hideTimer);
   pillEl.className = `save-pill ${cssClass} ${CSS.VISIBLE}`;
-  textEl.textContent = message;
+  textEl.textContent = msg;
 }
 
-/* API pública */
+/* API pública ──────────────────────────────────────────── */
 export function indicateUnsaved() {
+  isDirty = true;
   setState("Cambios sin guardar", CSS.HAS_CHANGES);
 }
+
 export function indicateSaving() {
   setState("Guardando…", CSS.SAVING);
 }
+
 export function indicateSaved() {
+  isDirty = false;
   setState("Guardado", CSS.HAS_SAVED);
   hideTimer = setTimeout(hideIndicator, 2000);
 }
+
 export function indicateSaveError(msg = "No se pudo guardar") {
   setState(msg, CSS.ERROR);
   hideTimer = setTimeout(hideIndicator, 4000);
 }
+
 export function hideIndicator() {
   getEls();
+  if (isDirty) return; // Encara hi ha canvis → no l’amaguem
   pillEl?.classList.remove(CSS.VISIBLE);
 }
