@@ -445,12 +445,17 @@ main {
 /* ───────────────────────────────────────────────────────────
    SAVE-PILL  ·  indicador de guardat flotant
    ───────────────────────────────────────────────────────────*/
-
+:root {
+  --kb-offset: 0px; /* serà sobre-escrit via JS */
+}
 /* 💊 Pastilla base (amagada per defecte) */
 .save-pill {
   /* posició */
   position: fixed;
-  bottom: calc(20px + var(--kb-offset, 0px) + env(keyboard-inset-bottom, 0px));
+  bottom: calc(
+    20px /* marge estàndard */ + var(--kb-offset, 0px) /* Android/altres  */ +
+      env(keyboard-inset-bottom, 0) /* iOS 15+         */
+  );
   right: calc(env(safe-area-inset-right, 0px) + 16px);
   z-index: 1200;
 
