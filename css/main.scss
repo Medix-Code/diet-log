@@ -439,6 +439,12 @@ main {
   }
 }
 
+/* boto guardar menu hamurguesa*/
+.big-btn:disabled {
+  opacity: 0.45; /* aparença esmorteïda */
+  cursor: default; /* cursor estàndard */
+  pointer-events: none; /* bloqueja el clic */
+}
 // ===========================================================================
 // PESTANYES (TABS)
 // ===========================================================================

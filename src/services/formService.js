@@ -129,10 +129,10 @@ export function captureInitialFormState() {
  * @param {boolean} enabled - True per activar, false per desactivar.
  */
 export function setSaveButtonState(enabled) {
-  const saveBtn = document.getElementById("save-diet");
-  if (saveBtn) {
-    saveBtn.disabled = !enabled;
-  }
+  const btn = document.getElementById("save-diet");
+  if (!btn) return;
+  btn.disabled = !enabled;
+  btn.setAttribute("aria-disabled", !enabled);
 }
 
 /**
