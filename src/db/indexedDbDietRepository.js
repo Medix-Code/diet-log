@@ -161,6 +161,14 @@ export async function openDatabase() {
   return _connectDB();
 }
 
+function _waitTx(tx) {
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve(); // èxit
+    tx.onerror = () => reject(tx.error); // fallada lògica
+    tx.onabort = () => reject(tx.error); // abort programàtic
+  });
+}
+
 /**
  * Afegeix una nova Dieta a la base de dades.
  * @param {Diet} diet - L'objecte Dieta a afegir.
@@ -169,9 +177,9 @@ export async function openDatabase() {
  */
 export async function addDiet(diet) {
   const tx = await _getTransaction("readwrite");
-  const store = tx.objectStore(STORE_NAME);
-  const request = store.add(diet);
-  return _requestToPromise(request, "Error en afegir la dieta");
+  tx.objectStore(STORE_NAME).add(diet); // llança si clau duplicada
+  await _waitTx(tx); // <– ara sí, transacció feta
+  return diet.id; // opcional, però útil
 }
 
 /**
@@ -182,9 +190,9 @@ export async function addDiet(diet) {
  */
 export async function updateDiet(diet) {
   const tx = await _getTransaction("readwrite");
-  const store = tx.objectStore(STORE_NAME);
-  const request = store.put(diet); // put actualitza o insereix si no existeix
-  return _requestToPromise(request, "Error en actualitzar la dieta");
+  tx.objectStore(STORE_NAME).put(diet);
+  await _waitTx(tx); // espera que la ‘put’ es tanqui
+  return diet.id;
 }
 
 /**
