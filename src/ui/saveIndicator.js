@@ -59,20 +59,17 @@ export function hideIndicator() {
   pillEl?.classList.remove(CSS.VISIBLE);
 }
 
-// ── Detectar alçada del teclat (Chrome/Android, etc.) ──
+/* JS – ajusta la variable cada cop que canvia l’alçada visible */
 if (window.visualViewport) {
-  const updateKbOffset = () => {
-    // Quanta part de la pàgina està tapada pel teclat?
-    const keyboardPx = window.innerHeight - window.visualViewport.height;
-    // Escriu el valor en una CSS var global
-    document.documentElement.style.setProperty(
-      "--kb-offset",
-      `${Math.max(keyboardPx, 0)}px`
-    );
+  const vv = window.visualViewport;
+
+  const updateOffset = () => {
+    // quants píxels tapa el teclat?
+    const kb = Math.max(window.innerHeight - (vv.height + vv.offsetTop), 0);
+    document.documentElement.style.setProperty("--kb-offset", `${kb}px`);
   };
 
-  // S’actualitza quan el teclat s’obre/tanca o gira la pantalla
-  visualViewport.addEventListener("resize", updateKbOffset);
-  visualViewport.addEventListener("scroll", updateKbOffset);
-  updateKbOffset(); // primera trucada
+  vv.addEventListener("resize", updateOffset);
+  vv.addEventListener("scroll", updateOffset); // per girs de pantalla, etc.
+  updateOffset(); // 1a execució
 }
