@@ -5,7 +5,9 @@
  * @module formService
  */
 
-// --- Imports ---
+// ────────────────────────────────────────────────────────────
+// IMPORTS
+// ────────────────────────────────────────────────────────────
 import {
   getSignatureConductor,
   getSignatureAjudant,
@@ -15,9 +17,9 @@ import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
 import { autoSaveDiet } from "./dietService.js";
 import { indicateUnsaved, hideIndicator } from "../ui/saveIndicator.js";
 
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 // CONSTANTS
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 const SERVICE_CONTAINER_SELECTOR = ".service";
 const FORM_CONTAINER_ID = "main-content";
 
@@ -43,48 +45,45 @@ const SERVICE_FIELD_SELECTORS = {
 };
 
 const CHIP_ACTIVE_CLASS = "chip-active";
-const INPUT_CHANGE_DEBOUNCE_MS = 300; // Debounce per a la detecció de canvis
-const AUTOSAVE_DELAY_MS = 3000; // 3 segons d'espera per a l'autoguardat
+const INPUT_CHANGE_DEBOUNCE_MS = 300; // delay per a la detecció de canvis
+const AUTOSAVE_DELAY_MS = 3000; // 3 s d’espera per a l’autoguardat
 
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 // ESTAT INTERN
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 let initialFormDataStr = "";
 
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 // HELPERS
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 
-/** Debounce amb mètode de cancel·lació */
+/** Debounce amb mètode de cancel·lació. */
 const debounce = (fn, wait) => {
   let t;
   const debounced = (...args) => {
     clearTimeout(t);
     t = setTimeout(() => fn.apply(null, args), wait);
   };
-  debounced.cancel = () => {
-    clearTimeout(t);
-  };
+  debounced.cancel = () => clearTimeout(t);
   return debounced;
 };
 
 // Funció d'autoguardat amb debounce
 const debouncedAutoSave = debounce(autoSaveDiet, AUTOSAVE_DELAY_MS);
 
-/** Comprova si el formulari mínim ja està llest per guardar */
+/** Comprova si el formulari mínim ja està llest per guardar. */
 function isFormReadyForSave() {
-  const dateOk = !!document.getElementById("date")?.value;
-  const typeOk = !!document.getElementById("diet-type")?.value;
+  const dateOk = !!document.getElementById(IDS.DATE)?.value;
+  const typeOk = !!document.getElementById(IDS.DIET_TYPE)?.value;
   const svcNumOk =
     document.getElementById("service-number-1")?.value.trim().length === 9;
   return dateOk && typeOk && svcNumOk;
 }
 
-/**
- * Funció central: recull totes les dades del formulari.
- */
+/** Retorna totes les dades del formulari en un objecte estructurat. */
 function getFormDataObject() {
   try {
+    // ─ Dades generals
     const g = {
       date: document.getElementById(IDS.DATE)?.value.trim() || "",
       dietType:
@@ -99,6 +98,7 @@ function getFormDataObject() {
       signatureAjudant: getSignatureAjudant(),
     };
 
+    // ─ Serveis
     const serviceEls = document.querySelectorAll(SERVICE_CONTAINER_SELECTOR);
     const services = Array.from(serviceEls).map((panel) => {
       const s = {};
@@ -117,39 +117,30 @@ function getFormDataObject() {
   }
 }
 
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 // FUNCIONS PÚBLIQUES
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────
 
-/**
- * Funció per capturar l'estat inicial del formulari. Aquesta és la funció
- * que "reseteja" l'estat a "guardat".
- */
+/** Captura l'estat inicial del formulari (punt de “sense canvis”). */
 export function captureInitialFormState() {
   initialFormDataStr = JSON.stringify(getFormDataObject() || {});
-  // En capturar un nou estat, forcem una re-avaluació.
-  // Com que currentState i initialFormDataStr seran iguals,
-  // handleFormChange desactivarà el botó i l'indicador.
+  // Forcem una re-avaluació perquè el botó / indicador es posin al seu lloc.
   handleFormChange();
 }
 
-/**
- * Funció per actualitzar l'estat del botó "Guardar" del menú.
- * @param {boolean} enabled - True per activar, false per desactivar.
- */
+/** Activa o desactiva el botó “Guardar” del menú contextual. */
 export function setSaveButtonState(enabled) {
-  const btn = document.getElementById("save-diet");
+  const btn = document.getElementById(IDS.SAVE_BTN);
   if (!btn) return;
 
   btn.disabled = !enabled;
   btn.setAttribute("aria-disabled", !enabled);
-  btn.classList.toggle("is-disabled", !enabled); // afegeix / treu classe
+  btn.classList.toggle("is-disabled", !enabled);
 }
 
-/**
- * Funció que gestiona els canvis al formulari.
- */
+/** Callback principal per a qualsevol canvi de formulari. */
 function handleFormChange() {
+  // Aturem qualsevol autoguardat pendent
   debouncedAutoSave.cancel();
 
   const currentState = JSON.stringify(getFormDataObject() || {});
@@ -161,39 +152,32 @@ function handleFormChange() {
     return;
   }
 
-  // hi ha canvis
+  // Hi ha canvis
   indicateUnsaved();
 
-  // ✅ NOMÉS activem el botó si els obligatoris ja hi són
+  // Només mostrem el botó i programem l'autoguardat si el formulari és vàlid
   const enable = isFormReadyForSave();
   setSaveButtonState(enable);
 
-  // només llança autoguardat si està tot a punt
-  if (enable) {
-    debouncedAutoSave();
-  }
+  if (enable) debouncedAutoSave();
 }
 
-/**
- * Força una re-avaluació de l'estat del formulari.
- */
+/** Força una re-avaluació manual de l'estat del formulari. */
 export function revalidateFormState() {
   handleFormChange();
 }
 
-/**
- * Afegeix listeners (delegació) per detectar canvis al formulari.
- */
+/** Afegeix listeners “input/change” amb delegació al contenidor principal. */
 export function addInputListeners() {
   const container = document.getElementById(FORM_CONTAINER_ID);
   if (!container) return;
 
-  // Usem un debounce per no saturar la funció handleFormChange
   const debouncedHandler = debounce(handleFormChange, INPUT_CHANGE_DEBOUNCE_MS);
 
   container.addEventListener("input", debouncedHandler);
   container.addEventListener("change", debouncedHandler);
 
+  // Evitem que el date-picker quedi obert després d'escollir data (UX mòbil)
   const dateInput = document.getElementById(IDS.DATE);
   dateInput?.addEventListener("change", () => {
     dateInput.blur();
@@ -201,39 +185,37 @@ export function addInputListeners() {
   });
 }
 
-/**
- * Afegeix el listener al selector de tipus de servei.
- */
+/** Listener de canvi de selector de tipus de servei (TSU, TAP, …). */
 export function addServiceTypeListener() {
-  const serviceTypeSelect = document.getElementById(IDS.SERVICE_TYPE);
-  if (!serviceTypeSelect) return;
+  const select = document.getElementById(IDS.SERVICE_TYPE);
+  if (!select) return;
 
-  serviceTypeSelect.addEventListener("change", (event) => {
-    const selectedType = event.target.value;
-    updateServicePanelsForServiceType(selectedType);
+  select.addEventListener("change", (e) => {
+    const selected = e.target.value;
+    updateServicePanelsForServiceType(selected);
     try {
-      localStorage.setItem(LS_SERVICE_TYPE_KEY, selectedType);
-      console.log(`[LocalStorage] Tipus de servei desat: ${selectedType}`);
-    } catch (error) {
-      console.error("Error desant el tipus de servei a localStorage:", error);
+      localStorage.setItem(LS_SERVICE_TYPE_KEY, selected);
+      console.log(`[LocalStorage] Tipus de servei desat: ${selected}`);
+    } catch (err) {
+      console.error(
+        "No s’ha pogut desar el tipus de servei a localStorage",
+        err
+      );
     }
   });
 }
 
-/**
- * Funció per cancel·lar l'autoguardat pendent.
- */
+/** Cancel·la qualsevol autoguardat pendent (p. ex. abans d’un guardat manual). */
 export function cancelPendingAutoSave() {
   debouncedAutoSave.cancel();
 }
 
-/**
- * Tanca el teclat en prémer Enter als inputs amb enterkeyhint="done".
- */
+/** Tanca el teclat mòbil en prémer Enter als inputs amb enterkeyhint="done". */
 export function addDoneBehavior() {
-  const c = document.getElementById(FORM_CONTAINER_ID);
-  if (!c) return;
-  c.addEventListener("keydown", (e) => {
+  const container = document.getElementById(FORM_CONTAINER_ID);
+  if (!container) return;
+
+  container.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && e.target.matches('input[enterkeyhint="done"]')) {
       e.preventDefault();
       e.target.blur();
@@ -241,12 +223,8 @@ export function addDoneBehavior() {
   });
 }
 
-/**
- * Retorna totes les dades del formulari en format objecte.
- */
+/** Retorna totes les dades actuals del formulari. */
 export const gatherAllData = () => getFormDataObject();
 
-/**
- * (Helper) Retorna l'estat inicial del formulari en format string.
- */
+/** Helper per a tests: retorna l’instant “sense canvis” serialitzat. */
 export const getInitialFormDataStr = () => initialFormDataStr;

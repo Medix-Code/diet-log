@@ -375,6 +375,21 @@ main {
   pointer-events: none;
   cursor: not-allowed;
 }
+.ajustes-panel .big-btn .last-saved {
+  margin-left: auto; /* (opcional) empeny cap a la dreta */
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--txtcolor-tab-noactive);
+  white-space: nowrap;
+}
+
+.last-saved-info {
+  margin-left: 6px;
+  font-size: 0.8rem;
+  font-style: italic;
+  opacity: 0.7;
+  white-space: nowrap;
+}
 
 /* ───────────────────────────────────────────────────────────
    SAVE-PILL  ·  indicador de guardat flotant
