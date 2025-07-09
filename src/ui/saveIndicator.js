@@ -26,11 +26,10 @@ function getEls() {
 
 function setState(message, cssClass) {
   getEls();
-  if (!pillEl || !textEl) return; // seguretat
-
-  clearTimeout(hideTimer); // netegem temporitzador anterior
-  pillEl.className = `save-pill ${cssClass} ${CSS.VISIBLE}`;
-  textEl.textContent = message;
+  if (!pill || !text) return;
+  clearTimeout(hideTimer);
+  pill.className = `save-pill ${cssClass} visible`;
+  text.textContent = message;
 }
 
 /* ───── API pública (nous noms) ───── */
