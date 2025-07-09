@@ -28,9 +28,9 @@ import {
 } from "../ui/modals.js";
 import { getCurrentTab } from "../ui/tabs.js";
 import {
-  showSavingIndicator,
-  showSavedSuccess,
-  showHasChanges,
+  indicateSaving,
+  indicateSaved,
+  indicateSaveError,
 } from "../ui/saveIndicator.js";
 // Importacions de Serveis (Formulari, Signatures)
 import {
@@ -235,7 +235,7 @@ function populateFormWithDietData(diet) {
 
 async function performSave(isManual) {
   // 1. Estat inicial: punt blau + botó desactivat
-  showSavingIndicator();
+  indicateSaving();
   console.log("[Save] INICI");
   setSaveButtonState(false);
 
@@ -265,12 +265,15 @@ async function performSave(isManual) {
     // 6. Feedback positiu
     if (isManual) showToast("Dieta guardada correctament.", "success");
     captureInitialFormState(); // marca l’estat com a «sense canvis»
-    showSavedSuccess(); // punt verd 2 s
+    indicateSaved(); // punt verd 2 s
+
     console.log("[Save] FI OK");
   } catch (err) {
-    // 7. Qualsevol errada: punt groc + botó reactivat
+    // 7. Qualsevol errada
     console.error("[Save] ERROR:", err);
-    showHasChanges();
+
+    indicateSaveError(err.message || "No se pudo guardar");
+
     if (isManual) showToast(`Error al guardar: ${err.message}`, "error");
     setSaveButtonState(true);
   }

@@ -57,15 +57,6 @@
       </div>
 
       <div class="button-group">
-        <div
-          id="save-status-indicator"
-          class="save-status-indicator"
-          aria-live="polite"
-        >
-          <div class="status-dot"></div>
-          <span id="save-status-indicator-text"></span>
-        </div>
-
         <!-- Botó "Ajustes" -->
         <button id="settings" class="ajustes-btn" aria-label="Ajustes">
           <div class="hamburger">
@@ -74,6 +65,12 @@
             <span></span>
           </div>
         </button>
+
+        <!-- Píndola d’estat -->
+        <div id="save-pill" class="save-pill" role="status" aria-live="polite">
+          <span class="pill-dot"></span>
+          <span class="pill-text"></span>
+        </div>
 
         <!-- Panell d'Ajustes -->
         <div
@@ -914,14 +911,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Input ocult per fer la foto o seleccionar imatge -->
-    <input
-      type="file"
-      accept="image/*"
-      id="camera-input"
-      style="display: none"
-    />
 
     <!-- PDF-lib (CDN) -->
     <script
