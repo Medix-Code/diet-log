@@ -374,65 +374,53 @@ main {
 /* ───────────────────────────────────────────────────────────
    SAVE-PILL  ·  indicador de guardat flotant
    ───────────────────────────────────────────────────────────*/
-:root {
-  --kb-offset: 0px; /* serà sobre-escrit via JS */
-}
-
-/* 💊 Pastilla base (amagada per defecte) */
+/* 💊 Pastilla fixa dins el flux (sota les pestanyes) */
 .save-pill {
-  /* posició */
-  position: fixed;
-  bottom: calc(20px + var(--kb-offset, 0px) + env(keyboard-inset-bottom, 0));
-  right: calc(env(safe-area-inset-right, 0px) + 16px);
-  z-index: 1200;
-  /* layout */
+  margin-top: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 6px 12px;
+  background: #fff;
+  color: #333;
   border-radius: 999px;
   font-size: 0.88rem;
   font-weight: 500;
-  /* estètica neutra */
-  background: #fff;
-  color: #333;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  /* animació d’entrada */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(4px);
   transition: opacity 0.25s, transform 0.25s;
 }
 
-/* Quan el JS afegeix .visible ⇒ fade & slide-in */
+/* Quan és visible */
 .save-pill.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Punt indicador */
 .pill-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6c757d; /* gris neutre per defecte */
+  background: #6c757d; /* gris per defecte */
 }
 
-/* ─── Estats de color ───────────────────────────── */
+/* Estats (ja ho tens) */
 .save-pill.has-changes .pill-dot {
   background: #ffc107;
-} /* groc */
+}
+
 .save-pill.saving .pill-dot {
   background: #0d6efd;
-} /* blau */
+  animation: spin 1s linear infinite;
+}
+
 .save-pill.has-saved .pill-dot {
   background: #28a745;
-} /* verd */
+}
+
 .save-pill.error .pill-dot {
   background: #dc3545;
-} /* vermell */
-/* ─── Spinner quan estem guardant ──────────────── */
-.save-pill.saving .pill-dot {
-  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
