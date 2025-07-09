@@ -29,15 +29,15 @@ function _updateState(text, cssClass) {
 }
 
 export function showHasChanges() {
-  _updateState("Canvis pendents", CSS_CLASSES.HAS_CHANGES);
+  _updateState("Cambios pendientes", CSS_CLASSES.HAS_CHANGES);
 }
 
 export function showSavingIndicator() {
-  _updateState("Guardant...", CSS_CLASSES.SAVING);
+  _updateState("Guardando...", CSS_CLASSES.SAVING);
 }
 
 export function showSavedSuccess() {
-  _updateState("Guardat", CSS_CLASSES.HAS_SAVED);
+  _updateState("Guardado", CSS_CLASSES.HAS_SAVED);
   successTimer = setTimeout(hideIndicator, 2000);
 }
 
