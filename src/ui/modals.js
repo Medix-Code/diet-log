@@ -526,6 +526,7 @@ export async function displayDietOptions() {
     console.error("Elements DOM per a opcions de dietes no disponibles.");
     return;
   }
+
   dietOptionsListElement.innerHTML = "";
   try {
     const savedDiets = await getAllDiets();
@@ -536,8 +537,20 @@ export async function displayDietOptions() {
     } else {
       dietOptionsListElement.classList.remove(CSS_CLASSES.HIDDEN);
       noDietsTextElement.classList.add(CSS_CLASSES.HIDDEN);
-      // Ordenar
-      savedDiets.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // ====================================================================
+      // >>> AQUÍ ESTÀ LA NOVA LÒGICA D'ORDENACIÓ <<<
+      // ====================================================================
+      savedDiets.sort((a, b) => {
+        // Si una de les dietes no té timestamp (dada antiga), la posem al final.
+        if (!a.timeStampDiet) return 1;
+        if (!b.timeStampDiet) return -1;
+
+        // Comparam les dates per ordenar de més recent a més antic.
+        return new Date(b.timeStampDiet) - new Date(a.timeStampDiet);
+      });
+      // ====================================================================
+
       savedDiets.forEach((diet) => {
         const listItem = _createDietListItem(diet);
         dietOptionsListElement.appendChild(listItem);
