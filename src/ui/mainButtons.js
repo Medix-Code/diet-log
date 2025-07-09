@@ -7,7 +7,7 @@
 
 // Importacions de Serveis (funcions que executen els botons)
 import { generateAndDownloadPdf } from "../services/pdfService.js";
-import { onClickSaveDiet } from "../services/dietService.js";
+
 import { handleManualSave } from "../services/dietService.js";
 // Importacions de UI (funcions que obren modals)
 import { openDietModal } from "./modals.js"; // Assumint que modals.js exporta openDietModal

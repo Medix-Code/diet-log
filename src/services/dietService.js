@@ -29,7 +29,8 @@ import {
 import { getCurrentTab } from "../ui/tabs.js";
 import {
   showSavingIndicator,
-  hideSavingIndicator,
+  showSavedSuccess,
+  showHasChanges,
 } from "../ui/saveIndicator.js";
 // Importacions de Serveis (Formulari, Signatures)
 import {
@@ -227,26 +228,29 @@ function populateFormWithDietData(diet) {
 }
 
 /**
- * Lògica central de guardat. És cridada per les funcions manual i automàtica.
- * @param {boolean} isManual - True si ve del botó, per mostrar toast.
+ * Lògica central de guardat.
  */
+// A dietService.js
+
 async function performSave(isManual) {
-  // Validació prèvia
+  // 1. Mostra l'indicador de "Guardant..."
+  showSavingIndicator();
+  setSaveButtonState(false); // Desactivem el botó del menú mentre es desa
+
+  // 2. Validació
   if (!validateServeisTab()) {
-    hideSavingIndicator();
-    return; // S'atura l'execució
+    showHasChanges(); // Si falla, torna a "Canvis pendents" (groc)
+    setSaveButtonState(true); // El botó ha de ser clicable per a un altre intent
+    return;
   }
 
-  // >>> PAS 1: MOSTRA L'INDICADOR "GUARDANT" <<<
-  // Aquesta és la crida clau que activa l'animació de gir.
-  showSavingIndicator();
-
   try {
-    const formData = gatherAllData();
-    const { generalData, servicesData } = formData;
-    const dietId = servicesData[0]?.serviceNumber?.slice(0, 9);
+    // Retard artificial per assegurar que l'animació és visible
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    if (!dietId) throw new Error("ID de dieta no válido para guardar.");
+    const { generalData, servicesData } = gatherAllData();
+    const dietId = servicesData[0]?.serviceNumber?.slice(0, 9);
+    if (!dietId) throw new Error("ID de dieta no vàlid per desar.");
 
     const dietToSave = buildDietObject(generalData, servicesData, dietId);
     const existingDiet = await getDiet(dietId);
@@ -257,15 +261,25 @@ async function performSave(isManual) {
       await addDiet(dietToSave);
     }
 
+    // 3. ÈXIT:
     if (isManual) {
-      showToast("Dieta guardada correctamente.", "success");
+      showToast("Dieta guardada correctament.", "success");
     }
 
+    // >> AQUEST ÉS EL FLUX CORRECTE <<
+    // Primer, resetejem l'estat intern. Això desactivarà el botó
+    // "Guardar" i netejarà l'indicador groc.
     captureInitialFormState();
+
+    // Després, mostrem el feedback d'èxit (verd) que desapareixerà sol.
+    showSavedSuccess();
   } catch (error) {
-    console.error("Error durante el guardado:", error);
+    console.error("Error durant el guardat:", error);
     if (isManual) showToast(`Error al guardar: ${error.message}`, "error");
-    hideSavingIndicator();
+
+    // 4. ERROR: Tornem a l'estat "canvis pendents"
+    showHasChanges();
+    setSaveButtonState(true); // Permetem a l'usuari reintentar
   }
 }
 
@@ -287,98 +301,6 @@ export async function autoSaveDiet() {
 }
 
 // --- Funcions Públiques / Exportades ---
-
-/**
- * Gestiona el clic en el botó "Guardar Dieta".
- * Valida, comprova si existeix, demana confirmació si cal, i desa/actualitza.
- * @export
- */
-export async function onClickSaveDiet() {
-  if (!validateFormTabs()) {
-    return; // Atura si la validació falla
-  }
-
-  try {
-    const result = await handleSaveDietWithPossibleOverwrite();
-
-    // Actualitza l'estat inicial només si s'ha desat o sobreescrit
-    if (result === "saved" || result === "overwritten") {
-      captureInitialFormState(); // Captura el nou estat com a inicial
-      showToast("Dieta guardada correctamente.", "success");
-    } else if (result === "unchanged") {
-      showToast("No hay cambios para guardar.", "info");
-    } else {
-      console.log("Operació de desat cancel·lada per l'usuari o error.");
-      // No mostrem toast si l'usuari cancel·la la sobreescriptura
-    }
-  } catch (error) {
-    console.error("Error durant onClickSaveDiet:", error);
-    showToast(`Error al guardar la dieta: ${error.message}`, "error");
-  }
-}
-
-/**
- * Lògica principal per desar o actualitzar una dieta, gestionant sobreescriptures.
- * @returns {Promise<'saved'|'overwritten'|'unchanged'|null>} Estat de l'operació o null si es cancel·la.
- * @throws {Error} Si hi ha un error durant l'accés a BD o la construcció de l'objecte.
- * @export
- */
-export async function handleSaveDietWithPossibleOverwrite() {
-  const formData = gatherAllData();
-  if (!formData)
-    throw new Error("No s'han pogut recollir les dades del formulari.");
-  const { generalData, servicesData } = formData;
-
-  // Calcula l'ID (assegura't que hi hagi almenys un servei amb número)
-  const firstServiceNumber = servicesData[0]?.serviceNumber?.trim();
-  if (!firstServiceNumber || firstServiceNumber.length < 9) {
-    // Considera com gestionar aquest cas: error, ID per defecte, etc.
-    showToast(
-      "El número del primer servicio es necesario para identificar la dieta.",
-      "warning"
-    );
-    throw new Error(
-      "ID de dieta no vàlid (requereix número del primer servei)."
-    );
-  }
-  const dietId = firstServiceNumber.slice(0, 9);
-
-  const dietToSave = buildDietObject(generalData, servicesData, dietId);
-
-  // Comprova si ja existeix
-  const existingDiet = await getDiet(dietId); // Més eficient que getAllDiets()
-
-  if (existingDiet) {
-    // Compara les dades (excloent el timestamp)
-    const cleanExisting = { ...existingDiet };
-    delete cleanExisting.timeStampDiet;
-    const cleanToSave = { ...dietToSave };
-    delete cleanToSave.timeStampDiet;
-
-    if (JSON.stringify(cleanExisting) === JSON.stringify(cleanToSave)) {
-      console.log("Les dades de la dieta no han canviat.");
-      return "unchanged"; // No hi ha canvis reals
-    } else {
-      // Demana confirmació per sobreescriure
-      const confirmTitle = "Sobrescribir dieta";
-      const confirmMessage = `Ya existe una dieta con el número de servicio ${dietId}. ¿Quieres sobrescribirla con los datos actuales?`;
-      const confirmed = await showConfirmModal(confirmMessage, confirmTitle);
-
-      if (confirmed) {
-        await updateDiet(dietToSave); // Actualitza a la BD
-        console.log(`Dieta ${dietId} sobreescrita.`);
-        return "overwritten";
-      } else {
-        return null; // L'usuari ha cancel·lat
-      }
-    }
-  } else {
-    // No existeix, afegeix-la com a nova
-    await addDiet(dietToSave);
-    console.log(`Dieta ${dietId} desada com a nova.`);
-    return "saved";
-  }
-}
 
 /**
  * Carrega les dades d'una dieta específica al formulari.
