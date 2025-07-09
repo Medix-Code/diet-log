@@ -371,70 +371,69 @@ main {
   transition: color 0.3s ease;
 }
 
-/* --- SAVE-PILL (indicador flotant) ----------------------- */
-/* Posicionament i estil “pastilla” base */
+/* ───────────────────────────────────────────────────────────
+   SAVE-PILL  ·  indicador de guardat flotant
+   ───────────────────────────────────────────────────────────*/
+/* 💊 Pastilla base (amagada per defecte) */
 .save-pill {
+  /* posició */
   position: fixed;
-  bottom: 20px; /* marge inferior */
-  right: 20px; /* marge dret     */
+  bottom: calc(env(safe-area-inset-bottom) + 16px); /* no tapa barres del mòbil */
+  right: calc(env(safe-area-inset-right) + 16px);
+  z-index: 1200;
+  /* layout */
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  background: var(--bg-tab-active); /* o #fff */
-  color: var(--text-color);
-  border-radius: 9999px; /* pastilla rodona */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
   font-size: 0.88rem;
   font-weight: 500;
+  /* estètica neutra */
+  background: #fff;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  /* animació d’entrada */
   opacity: 0;
-  transform: translateY(10px); /* petit slide-in */
+  transform: translateY(12px);
   transition: opacity 0.25s, transform 0.25s;
-  z-index: 1200; /* per sobre de quasi tot */
 }
 
-/* Quan el JS afegeix .visible ⇒ fade-in */
+/* Quan el JS afegeix .visible ⇒ fade & slide-in */
 .save-pill.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Punt de l’estat (8 px) */
+/* Punt indicador */
 .pill-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6c757d; /* gris per defecte */
+  background: #6c757d; /* gris neutre per defecte */
 }
 
-/* ─── Estats de color ──────────────────────────────────── */
+/* ─── Estats de color ───────────────────────────── */
 .save-pill.has-changes .pill-dot {
   background: #ffc107;
-} /* groc  */
+} /* groc */
 .save-pill.saving .pill-dot {
-  /* blau amb spinner */
   background: #0d6efd;
-  animation: spin 1s linear infinite; /* anima el punt */
-}
-
+} /* blau */
 .save-pill.has-saved .pill-dot {
   background: #28a745;
-} /* verd  */
+} /* verd */
 .save-pill.error .pill-dot {
   background: #dc3545;
-} /* vermell, si vols */
-/* Spinner molt senzill (gira el punt sobre el seu centre) */
+} /* vermell */
+/* ─── Spinner quan estem guardant ──────────────── */
+.save-pill.saving .pill-dot {
+  animation: spin 1s linear infinite;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-/* Opcional: amaga l’indicador en pantalles molt petites */
-@media (max-width: 480px) {
-  .save-pill {
-    right: 12px;
-    bottom: 12px;
-    font-size: 0.75rem;
   }
 }
 .tabs-container {
@@ -2304,4 +2303,13 @@ button .icon {
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* Opcional: amaga l’indicador en pantalles molt petites */
+@media (max-width: 480px) {
+  .save-pill {
+    right: 12px;
+    bottom: 12px;
+    font-size: 0.75rem;
+  }
 }
