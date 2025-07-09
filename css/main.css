@@ -370,6 +370,11 @@ main {
   pointer-events: none;
   transition: color 0.3s ease;
 }
+.ajustes-panel .big-btn.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+}
 
 /* ───────────────────────────────────────────────────────────
    SAVE-PILL  ·  indicador de guardat flotant
