@@ -207,58 +207,10 @@ main {
 .button-group {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  gap: 10px;
   padding-right: 20px;
 }
 
-.save-status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: white;
-  font-size: 13px;
-  font-style: italic;
-  opacity: 0;
-  transform: translateY(3px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
-}
-
-.save-status-indicator.visible {
-  opacity: 0.9;
-  transform: translateY(0);
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: transparent;
-  transition: background-color 0.2s ease;
-}
-
-.save-status-indicator.has-changes .status-dot {
-  background-color: #ffc107;
-}
-
-.save-status-indicator.saving .status-dot {
-  background-color: #87ceeb;
-  animation: pulse-dot 1.5s infinite ease-in-out;
-}
-
-.save-status-indicator.has-saved .status-dot {
-  background-color: #28a745;
-}
-
-@keyframes pulse-dot {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-}
 .ajustes-btn {
   background: transparent;
   border: none;
@@ -268,9 +220,53 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s ease;
+  transition: background-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+}
+.ajustes-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: transparent;
+  transform: scale(0);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  z-index: -1;
+}
+.ajustes-btn.has-changes::before {
+  background-color: #ffc107;
+  transform: scale(1);
+}
+.ajustes-btn.has-changes .hamburger {
+  animation: none;
+  transform: rotate(0deg);
+}
+.ajustes-btn.has-changes .hamburger span {
+  background: var(--title-color);
+}
+.ajustes-btn.saving::before {
+  background-color: var(--primary-color);
+  transform: scale(1);
+}
+.ajustes-btn.saving .hamburger {
+  animation: spin-hamburger 1s linear infinite;
+}
+.ajustes-btn.saving .hamburger span {
+  background: var(--title-color);
+}
+.ajustes-btn.open::before {
+  background-color: transparent;
+}
+.ajustes-btn.open .hamburger {
+  animation: none;
+}
+.ajustes-btn.open .hamburger span {
+  background: var(--title-color);
 }
 .ajustes-btn.open .hamburger span:nth-child(1) {
   top: 50%;
@@ -375,13 +371,72 @@ main {
   transition: color 0.3s ease;
 }
 
-/* boto guardar menu hamurguesa*/
-.big-btn:disabled {
-  opacity: 0.45; /* aparença esmorteïda */
-  cursor: default; /* cursor estàndard */
-  pointer-events: none; /* bloqueja el clic */
+/* --- SAVE-PILL (indicador flotant) ----------------------- */
+/* Posicionament i estil “pastilla” base */
+.save-pill {
+  position: fixed;
+  bottom: 20px; /* marge inferior */
+  right: 20px; /* marge dret     */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-tab-active); /* o #fff */
+  color: var(--text-color);
+  border-radius: 9999px; /* pastilla rodona */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  font-size: 0.88rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(10px); /* petit slide-in */
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 1200; /* per sobre de quasi tot */
 }
 
+/* Quan el JS afegeix .visible ⇒ fade-in */
+.save-pill.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Punt de l’estat (8 px) */
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6c757d; /* gris per defecte */
+}
+
+/* ─── Estats de color ──────────────────────────────────── */
+.save-pill.has-changes .pill-dot {
+  background: #ffc107;
+} /* groc  */
+.save-pill.saving .pill-dot {
+  /* blau amb spinner */
+  background: #0d6efd;
+  animation: spin 1s linear infinite; /* anima el punt */
+}
+
+.save-pill.has-saved .pill-dot {
+  background: #28a745;
+} /* verd  */
+.save-pill.error .pill-dot {
+  background: #dc3545;
+} /* vermell, si vols */
+/* Spinner molt senzill (gira el punt sobre el seu centre) */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Opcional: amaga l’indicador en pantalles molt petites */
+@media (max-width: 480px) {
+  .save-pill {
+    right: 12px;
+    bottom: 12px;
+    font-size: 0.75rem;
+  }
+}
 .tabs-container {
   position: fixed;
   top: var(--tab-height);

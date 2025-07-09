@@ -250,67 +250,12 @@ main {
 .button-group {
   position: relative;
   display: flex;
-  align-items: center; // Alinea verticalment l'indicador i el botó
-  gap: 16px; // Espai entre l'indicador de text i el botó
+  gap: 10px;
   padding-right: 20px;
 }
 
-// ===========================================================================
-// INDICADOR DE GUARDAT (Punt + Text)
-// ===========================================================================
-.save-status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px; // Espai entre el punt i el text
-
-  color: white;
-  font-size: 13px;
-  font-style: italic;
-
-  opacity: 0;
-  transform: translateY(3px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
-}
-
-.save-status-indicator.visible {
-  opacity: 0.9;
-  transform: translateY(0);
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: transparent; // Color per defecte
-  transition: background-color 0.2s ease;
-}
-
-// Estats de color per al punt
-.save-status-indicator.has-changes .status-dot {
-  background-color: #ffc107; // Groc
-}
-.save-status-indicator.saving .status-dot {
-  background-color: #87ceeb; // Blau cel
-  // Opcional: animació de pols per a "guardan"
-  animation: pulse-dot 1.5s infinite ease-in-out;
-}
-.save-status-indicator.has-saved .status-dot {
-  background-color: #28a745; // Verd
-}
-
-@keyframes pulse-dot {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-}
-
 .ajustes-btn {
-  background: transparent;
+  background: transparent; // El botó base sempre és transparent
   border: none;
   outline: none;
   width: 42px;
@@ -318,26 +263,84 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s ease;
+  transition: background-color 0.2s ease; // Transició només pel fons si s'aplica aquí
 
-  // La lògica per obrir/tancar el panell (la X) es manté intacta
-  &.open .hamburger {
-    span {
-      &:nth-child(1) {
-        top: 50%;
-        transform: translateY(-50%) rotate(45deg);
-      }
-      &:nth-child(2) {
-        opacity: 0;
-      }
-      &:nth-child(3) {
-        bottom: 50%;
-        transform: translateY(50%) rotate(-45deg);
+  // Efecte "ripple" general per a estats de feedback
+  position: relative; // Per posicionar el cercle de color a dins
+  overflow: hidden; // Per assegurar que el cercle no es surti del botó
+  border-radius: 50%; // Assegurem que el botó és rodó si té fons de color
+
+  // El cercle de color que apareix i desapareix.
+  // Es basa en el color de fons del botó (.ajustes-btn) o del tema.
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: transparent; // Per defecte, transparent
+    transform: scale(0); // Per defecte, amagat
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    z-index: -1; // Perquè estigui darrere de l'hamburguesa
+  }
+
+  // Estat: Canvis pendents (el cercle es fa groc i apareix)
+  &.has-changes {
+    &::before {
+      background-color: #ffc107; // Fons groc fort
+      transform: scale(1); // El cercle apareix
+    }
+    // L'hamburguesa no gira
+    .hamburger {
+      animation: none;
+      transform: rotate(0deg);
+      span {
+        background: var(--title-color);
+      } // Barres blanques
+    }
+  }
+
+  // Estat: Guardant (el cercle es fa blau i l'hamburguesa gira)
+  &.saving {
+    &::before {
+      background-color: var(--primary-color); // Fons blau (color principal)
+      transform: scale(1); // El cercle apareix
+    }
+    .hamburger {
+      animation: spin-hamburger 1s linear infinite; // L'hamburguesa gira
+      span {
+        background: var(--title-color);
+      } // Barres blanques
+    }
+  }
+
+  // Quan el panell està obert (la X)
+  &.open {
+    &::before {
+      background-color: transparent; // El cercle de color desapareix quan la X és activa
+    }
+    .hamburger {
+      animation: none; // Atura el gir si obrim el menú
+      span {
+        background: var(--title-color);
+        &:nth-child(1) {
+          top: 50%;
+          transform: translateY(-50%) rotate(45deg);
+        }
+        &:nth-child(2) {
+          opacity: 0;
+        }
+        &:nth-child(3) {
+          bottom: 50%;
+          transform: translateY(50%) rotate(-45deg);
+        }
       }
     }
   }
+
+  // >>> FI DELS CANVIS CLAU <<<
 }
 
 .hamburger {
@@ -439,12 +442,78 @@ main {
   }
 }
 
-/* boto guardar menu hamurguesa*/
-.big-btn:disabled {
-  opacity: 0.45; /* aparença esmorteïda */
-  cursor: default; /* cursor estàndard */
-  pointer-events: none; /* bloqueja el clic */
+/* --- SAVE-PILL (indicador flotant) ----------------------- */
+
+/* Posicionament i estil “pastilla” base */
+.save-pill {
+  position: fixed;
+  bottom: 20px; /* marge inferior */
+  right: 20px; /* marge dret     */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 14px;
+  background: var(--bg-tab-active); /* o #fff */
+  color: var(--text-color);
+  border-radius: 9999px; /* pastilla rodona */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+  font-size: 0.88rem;
+  font-weight: 500;
+
+  opacity: 0;
+  transform: translateY(10px); /* petit slide-in */
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 1200; /* per sobre de quasi tot */
 }
+
+/* Quan el JS afegeix .visible ⇒ fade-in */
+.save-pill.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Punt de l’estat (8 px) */
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6c757d; /* gris per defecte */
+}
+
+/* ─── Estats de color ──────────────────────────────────── */
+.save-pill.has-changes .pill-dot {
+  background: #ffc107;
+} /* groc  */
+.save-pill.saving .pill-dot {
+  /* blau amb spinner */
+  background: #0d6efd;
+  animation: spin 1s linear infinite; /* anima el punt */
+}
+.save-pill.has-saved .pill-dot {
+  background: #28a745;
+} /* verd  */
+.save-pill.error .pill-dot {
+  background: #dc3545;
+} /* vermell, si vols */
+
+/* Spinner molt senzill (gira el punt sobre el seu centre) */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Opcional: amaga l’indicador en pantalles molt petites */
+@media (max-width: 480px) {
+  .save-pill {
+    right: 12px;
+    bottom: 12px;
+    font-size: 0.75rem;
+  }
+}
+
 // ===========================================================================
 // PESTANYES (TABS)
 // ===========================================================================

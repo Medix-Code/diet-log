@@ -1,47 +1,58 @@
-// A src/ui/saveIndicator.js
+// src/ui/saveIndicator.js
+// ────────────────────────────────────────────────────────────
+// Controla la “pastilla” flotant que indica l’estat de guardat
+// ────────────────────────────────────────────────────────────
 
-const INDICATOR_ID = "save-status-indicator";
-const TEXT_ID = "save-status-indicator-text";
+const PILL_ID = "save-pill";
+const TEXT_SEL = ".pill-text";
 
-const CSS_VISIBLE = "visible";
-const CSS_CLASSES = {
+const CSS = {
+  VISIBLE: "visible",
   HAS_CHANGES: "has-changes",
   SAVING: "saving",
   HAS_SAVED: "has-saved",
+  ERROR: "error", // (opcional) si vols estat d’error
 };
 
-let indicatorEl, textEl, successTimer;
+let pillEl, textEl, hideTimer;
 
-function _getElements() {
-  if (!indicatorEl) {
-    indicatorEl = document.getElementById(INDICATOR_ID);
-    textEl = document.getElementById(TEXT_ID);
+/* Helpers ──────────────────────────────────────────────── */
+function getEls() {
+  if (!pillEl) {
+    pillEl = document.getElementById(PILL_ID);
+    textEl = pillEl?.querySelector(TEXT_SEL);
   }
 }
 
-function _updateState(text, cssClass) {
-  _getElements();
-  if (!indicatorEl || !textEl) return;
+function setState(message, cssClass) {
+  getEls();
+  if (!pillEl || !textEl) return; // seguretat
 
-  clearTimeout(successTimer);
-  indicatorEl.className = `save-status-indicator ${cssClass} ${CSS_VISIBLE}`;
-  textEl.textContent = text;
+  clearTimeout(hideTimer); // netegem temporitzador anterior
+  pillEl.className = `save-pill ${cssClass} ${CSS.VISIBLE}`;
+  textEl.textContent = message;
 }
 
-export function showHasChanges() {
-  _updateState("Cambios pendientes", CSS_CLASSES.HAS_CHANGES);
+/* ───── API pública (nous noms) ───── */
+export function indicateUnsaved() {
+  setState("Cambios sin guardar", CSS.HAS_CHANGES);
 }
 
-export function showSavingIndicator() {
-  _updateState("Guardando...", CSS_CLASSES.SAVING);
+export function indicateSaving() {
+  setState("Guardando…", CSS.SAVING);
 }
 
-export function showSavedSuccess() {
-  _updateState("Guardado", CSS_CLASSES.HAS_SAVED);
-  successTimer = setTimeout(hideIndicator, 2000);
+export function indicateSaved() {
+  setState("Guardado", CSS.HAS_SAVED);
+  hideTimer = setTimeout(hideIndicator, 2000);
+}
+
+export function indicateSaveError(msg = "No se pudo guardar") {
+  setState(msg, CSS.ERROR);
+  hideTimer = setTimeout(hideIndicator, 4000);
 }
 
 export function hideIndicator() {
-  _getElements();
-  indicatorEl?.classList.remove(CSS_VISIBLE);
+  getEls();
+  pillEl?.classList.remove(CSS.VISIBLE);
 }

@@ -13,7 +13,7 @@ import {
 import { getCurrentDietType } from "../utils/utils.js";
 import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
 import { autoSaveDiet } from "./dietService.js";
-import { showHasChanges, hideIndicator } from "../ui/saveIndicator.js";
+import { indicateUnsaved, hideIndicator } from "../ui/saveIndicator.js";
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -144,7 +144,7 @@ function handleFormChange() {
 
   if (currentState !== initialFormDataStr) {
     setSaveButtonState(true);
-    showHasChanges();
+    indicateUnsaved();
     const service1Input = document.getElementById("service-number-1");
     if (service1Input && service1Input.value.trim().length === 9) {
       debouncedAutoSave();
