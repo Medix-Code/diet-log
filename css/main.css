@@ -1934,6 +1934,20 @@ button .fa {
   object-fit: contain;
 }
 
+/* 1 ▸ Només mostrem l’efecte hover en dispositius amb ratolí */
+@media (hover: hover) {
+  .footer-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+/* 2 ▸ Fem que el botó torni al fons transparent quan queda enfocat
+       (i deixem un outline perquè segueixi accessible amb teclat) */
+.footer-btn:focus-visible {
+  background-color: transparent; /* elimines “l’ombra” enganxada */
+  outline: 2px solid currentColor; /* contorn fi i visible */
+  outline-offset: 3px; /* separat del botó */
+}
+
 .hidden {
   display: none !important;
 }
