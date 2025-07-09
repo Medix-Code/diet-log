@@ -440,6 +440,11 @@ main {
       transition: color 0.3s ease;
     }
   }
+  .big-btn.is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────

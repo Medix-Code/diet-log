@@ -71,6 +71,15 @@ const debounce = (fn, wait) => {
 // Funció d'autoguardat amb debounce
 const debouncedAutoSave = debounce(autoSaveDiet, AUTOSAVE_DELAY_MS);
 
+/** Comprova si el formulari mínim ja està llest per guardar */
+function isFormReadyForSave() {
+  const dateOk = !!document.getElementById("date")?.value;
+  const typeOk = !!document.getElementById("diet-type")?.value;
+  const svcNumOk =
+    document.getElementById("service-number-1")?.value.trim().length === 9;
+  return dateOk && typeOk && svcNumOk;
+}
+
 /**
  * Funció central: recull totes les dades del formulari.
  */
@@ -131,8 +140,10 @@ export function captureInitialFormState() {
 export function setSaveButtonState(enabled) {
   const btn = document.getElementById("save-diet");
   if (!btn) return;
+
   btn.disabled = !enabled;
   btn.setAttribute("aria-disabled", !enabled);
+  btn.classList.toggle("is-disabled", !enabled); // afegeix / treu classe
 }
 
 /**
@@ -140,19 +151,26 @@ export function setSaveButtonState(enabled) {
  */
 function handleFormChange() {
   debouncedAutoSave.cancel();
-  const currentState = JSON.stringify(getFormDataObject() || {});
 
-  if (currentState !== initialFormDataStr) {
-    setSaveButtonState(true);
-    indicateUnsaved();
-    const service1Input = document.getElementById("service-number-1");
-    if (service1Input && service1Input.value.trim().length === 9) {
-      debouncedAutoSave();
-    }
-  } else {
-    // Si no hi ha canvis, ens assegurem que tot estigui desactivat.
+  const currentState = JSON.stringify(getFormDataObject() || {});
+  const hasChanges = currentState !== initialFormDataStr;
+
+  if (!hasChanges) {
     setSaveButtonState(false);
     hideIndicator();
+    return;
+  }
+
+  // hi ha canvis
+  indicateUnsaved();
+
+  // ✅ NOMÉS activem el botó si els obligatoris ja hi són
+  const enable = isFormReadyForSave();
+  setSaveButtonState(enable);
+
+  // només llança autoguardat si està tot a punt
+  if (enable) {
+    debouncedAutoSave();
   }
 }
 
