@@ -404,7 +404,7 @@ main {
 }
 
 .pill-text {
-  line-height: 1; /* evita que s’estiri verticalment */
+  line-height: 1; /* eevita que s’estiri verticalment */
 }
 
 /* Punt d’estat (groc/blau/verd/vermell) */
