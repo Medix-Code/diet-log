@@ -37,6 +37,7 @@ import {
   gatherAllData,
   captureInitialFormState,
   cancelPendingAutoSave,
+  setSaveButtonState,
 } from "./formService.js";
 import {
   setSignatureConductor,
@@ -233,53 +234,45 @@ function populateFormWithDietData(diet) {
 // A dietService.js
 
 async function performSave(isManual) {
-  // 1. Mostra l'indicador de "Guardant..."
+  // 1. Estat inicial: punt blau + botó desactivat
   showSavingIndicator();
-  setSaveButtonState(false); // Desactivem el botó del menú mentre es desa
-
-  // 2. Validació
-  if (!validateServeisTab()) {
-    showHasChanges(); // Si falla, torna a "Canvis pendents" (groc)
-    setSaveButtonState(true); // El botó ha de ser clicable per a un altre intent
-    return;
-  }
+  console.log("[Save] INICI");
+  setSaveButtonState(false);
 
   try {
-    // Retard artificial per assegurar que l'animació és visible
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // 2. Retard UX (opcional)
+    await new Promise((r) => setTimeout(r, 500));
 
+    // 3. Validació
+    if (!validateFormTabs()) {
+      throw new Error("Validació de la pestanya Serveis fallida");
+    }
+
+    // 4. Recollida de dades
     const { generalData, servicesData } = gatherAllData();
     const dietId = servicesData[0]?.serviceNumber?.slice(0, 9);
-    if (!dietId) throw new Error("ID de dieta no vàlid per desar.");
+    if (!dietId) throw new Error("ID de dieta no vàlid");
 
     const dietToSave = buildDietObject(generalData, servicesData, dietId);
-    const existingDiet = await getDiet(dietId);
 
-    if (existingDiet) {
-      await updateDiet(dietToSave);
-    } else {
-      await addDiet(dietToSave);
-    }
+    // 5. Persistència (add o update en una sola línia)
+    console.log("[Save] Abans de persistir");
+    (await await getDiet(dietId))
+      ? updateDiet(dietToSave) // await aquí dins
+      : addDiet(dietToSave); // i aquí
+    console.log("[Save] Després de persistir");
 
-    // 3. ÈXIT:
-    if (isManual) {
-      showToast("Dieta guardada correctament.", "success");
-    }
-
-    // >> AQUEST ÉS EL FLUX CORRECTE <<
-    // Primer, resetejem l'estat intern. Això desactivarà el botó
-    // "Guardar" i netejarà l'indicador groc.
-    captureInitialFormState();
-
-    // Després, mostrem el feedback d'èxit (verd) que desapareixerà sol.
-    showSavedSuccess();
-  } catch (error) {
-    console.error("Error durant el guardat:", error);
-    if (isManual) showToast(`Error al guardar: ${error.message}`, "error");
-
-    // 4. ERROR: Tornem a l'estat "canvis pendents"
+    // 6. Feedback positiu
+    if (isManual) showToast("Dieta guardada correctament.", "success");
+    captureInitialFormState(); // marca l’estat com a «sense canvis»
+    showSavedSuccess(); // punt verd 2 s
+    console.log("[Save] FI OK");
+  } catch (err) {
+    // 7. Qualsevol errada: punt groc + botó reactivat
+    console.error("[Save] ERROR:", err);
     showHasChanges();
-    setSaveButtonState(true); // Permetem a l'usuari reintentar
+    if (isManual) showToast(`Error al guardar: ${err.message}`, "error");
+    setSaveButtonState(true);
   }
 }
 
