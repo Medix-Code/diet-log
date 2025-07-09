@@ -33,28 +33,44 @@ function setState(msg, cssClass) {
 }
 
 /* API pública ──────────────────────────────────────────── */
+
+// ─ Estat del text dins del botó ─
+function setLastSavedText(txt) {
+  const el = document.getElementById("last-saved");
+  if (el) el.textContent = txt;
+}
+
+// Indiquem canvis pendents
 export function indicateUnsaved() {
   isDirty = true;
   setState("Cambios sin guardar", CSS.HAS_CHANGES);
+  setLastSavedText("sin guardar");
 }
 
+// Està guardant
 export function indicateSaving() {
   setState("Guardando…", CSS.SAVING);
+  setLastSavedText("guardando…");
 }
 
+// S’ha guardat OK
 export function indicateSaved() {
   isDirty = false;
   setState("Guardado", CSS.HAS_SAVED);
   hideTimer = setTimeout(hideIndicator, 2000);
 }
 
+// Error
 export function indicateSaveError(msg = "No se pudo guardar") {
   setState(msg, CSS.ERROR);
+  setLastSavedText("error");
   hideTimer = setTimeout(hideIndicator, 4000);
 }
 
 export function hideIndicator() {
   getEls();
-  if (isDirty) return; // Encara hi ha canvis → no l’amaguem
+  clearTimeout(hideTimer); // <- mata qualsevol timeout pendent
+  if (isDirty) return; // encara hi ha canvis → no l’amaguem
   pillEl?.classList.remove(CSS.VISIBLE);
+  hideTimer = null;
 }

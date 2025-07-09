@@ -1,3 +1,7 @@
+// ---------------------------------------------------------------------------
+// dietService.js – lògica de persistència i flux de treball de la dieta
+// ---------------------------------------------------------------------------
+
 /**
  * @file dietService.js
  * @description Lògica de negoci per a la gestió de dietes: desar, carregar,
@@ -5,8 +9,10 @@
  * @module dietService
  */
 
-// Importacions del Repositori (Base de Dades)
-
+// ────────────────────────────────────────────────────────────
+// Imports
+// ────────────────────────────────────────────────────────────
+import { timeAgo } from "../utils/relativeTime.js";
 import {
   addDiet,
   getAllDiets,
@@ -19,7 +25,6 @@ import {
   updateServicePanelsForServiceType,
   removeErrorClassesFromService,
 } from "./servicesPanelManager.js";
-// Importacions de UI (Notificacions, Modals, Pestanyes)
 import { showToast } from "../ui/toast.js";
 import {
   showConfirmModal,
@@ -32,7 +37,6 @@ import {
   indicateSaved,
   indicateSaveError,
 } from "../ui/saveIndicator.js";
-// Importacions de Serveis (Formulari, Signatures)
 import {
   gatherAllData,
   captureInitialFormState,
@@ -42,14 +46,13 @@ import {
 import {
   setSignatureConductor,
   setSignatureAjudant,
-  updateSignatureIcons,
 } from "./signatureService.js";
-
-// Importacions d'Utilitats (Validació, Format)
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { getDietDisplayInfo } from "../utils/utils.js";
 
-// --- Constants ---
+// ────────────────────────────────────────────────────────────
+// Constants i selectors DOM
+// ────────────────────────────────────────────────────────────
 const DOM_IDS = {
   DADES_TAB: "tab-dades",
   SERVEIS_TAB: "tab-serveis",
@@ -60,9 +63,9 @@ const DOM_IDS = {
   PERSON2_INPUT: "person2",
   SERVICE_TYPE_SELECT: "service-type",
 };
-const SERVICE_CONTAINER_SELECTOR = ".service"; // Classe per a cada contenidor de servei
+
+const SERVICE_CONTAINER_SELECTOR = ".service";
 const SERVICE_FIELD_SELECTORS = {
-  // Reutilitzem la definició de formService si és possible o la definim aquí
   serviceNumber: ".service-number",
   origin: ".origin",
   originTime: ".origin-time",
@@ -75,33 +78,25 @@ const CSS_CLASSES = {
   ERROR_TAB: "error-tab",
 };
 
-// --- Funcions Privades ---
-
-/**
- * Construeix l'objecte Dieta normalitzat per a l'emmagatzematge.
- * @param {object} generalData - Dades generals del formulari.
- * @param {object[]} servicesData - Array de dades dels serveis.
- * @param {string} dietId - L'ID calculat per a la dieta.
- * @returns {object} Objecte Dieta llest per a IndexedDB.
- */
+// ────────────────────────────────────────────────────────────
+// Helper – construcció d'una dieta normalitzada
+// ────────────────────────────────────────────────────────────
 function buildDietObject(generalData, servicesData, dietId) {
-  // Validació bàsica d'entrada
   if (!generalData || !Array.isArray(servicesData) || !dietId) {
     throw new Error("Dades incompletes per construir Dieta.");
   }
 
   return {
-    id: dietId, // ID calculat (ex: primers 9 dígits servei 1)
+    id: dietId,
     date: generalData.date || "",
     dietType: generalData.dietType || "",
     vehicleNumber: generalData.vehicleNumber || "",
     person1: generalData.person1 || "",
     person2: generalData.person2 || "",
     serviceType: generalData.serviceType || "TSU",
-    signatureConductor: generalData.signatureConductor || "", // Ja ve de signatureService
-    signatureAjudant: generalData.signatureAjudant || "", // Ja ve de signatureService
+    signatureConductor: generalData.signatureConductor || "",
+    signatureAjudant: generalData.signatureAjudant || "",
     services: servicesData.map((s) => ({
-      // Assegura que tots els camps existeixen
       serviceNumber: s.serviceNumber || "",
       origin: s.origin || "",
       originTime: s.originTime || "",
@@ -110,33 +105,26 @@ function buildDietObject(generalData, servicesData, dietId) {
       endTime: s.endTime || "",
       mode: s.mode || "3.6",
     })),
-    timeStampDiet: new Date().toISOString(), // Timestamp de l'operació
+    timeStampDiet: new Date().toISOString(),
   };
 }
 
-/**
- * Valida les pestanyes del formulari i mostra feedback a l'usuari si hi ha errors.
- * @returns {boolean} True si totes les validacions passen, False altrament.
- */
+// ────────────────────────────────────────────────────────────
+// Validació de pestanyes
+// ────────────────────────────────────────────────────────────
 function validateFormTabs() {
   const dadesTabElement = document.getElementById(DOM_IDS.DADES_TAB);
   const serveisTabElement = document.getElementById(DOM_IDS.SERVEIS_TAB);
 
-  // Neteja errors previs
   dadesTabElement?.classList.remove(CSS_CLASSES.ERROR_TAB);
   serveisTabElement?.classList.remove(CSS_CLASSES.ERROR_TAB);
 
   const isDadesValid = validateDadesTab();
   const isServeisValid = validateServeisTab();
 
-  if (isDadesValid && isServeisValid) {
-    return true; // Tot correcte
-  }
+  if (isDadesValid && isServeisValid) return true;
 
-  // Gestiona la UI d'errors
-  const currentTab = getCurrentTab();
-  let errorMessage = "";
-
+  let errorMessage;
   if (!isDadesValid && !isServeisValid) {
     errorMessage = "Completa los campos obligatorios en Datos y Servicios.";
     dadesTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
@@ -145,236 +133,172 @@ function validateFormTabs() {
     errorMessage = "Completa los campos obligatorios en la pestaña Datos.";
     dadesTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else {
-    // Només !isServeisValid
     errorMessage = "Completa los campos obligatorios en la pestaña Servicios.";
     serveisTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
   }
 
   showToast(errorMessage, "error");
-
-  // Opcional: Navegar a la primera pestanya amb error?
-  // if (!isDadesValid && currentTab !== 'dades') {
-  //     navigateToTab('dades'); // Necessitaria una funció per canviar de tab
-  // } else if (!isServeisValid && currentTab !== 'serveis') {
-  //     navigateToTab('serveis');
-  // }
-
-  return false; // Hi ha errors
+  return false;
 }
 
-/**
- * Omple els camps del formulari amb les dades d'una dieta carregada.
- * @param {object} diet - L'objecte Dieta recuperat d'IndexedDB.
- */
+// ────────────────────────────────────────────────────────────
+// Populate del formulari amb dades de la dieta
+// ────────────────────────────────────────────────────────────
 function populateFormWithDietData(diet) {
-  // Camps generals
+  // Dades generals
   document.getElementById(DOM_IDS.DATE_INPUT).value = diet.date || "";
   document.getElementById(DOM_IDS.DIET_TYPE_SELECT).value = diet.dietType || "";
   document.getElementById(DOM_IDS.VEHICLE_INPUT).value =
     diet.vehicleNumber || "";
   document.getElementById(DOM_IDS.PERSON1_INPUT).value = diet.person1 || "";
   document.getElementById(DOM_IDS.PERSON2_INPUT).value = diet.person2 || "";
+
   const serviceTypeSelect = document.getElementById(
     DOM_IDS.SERVICE_TYPE_SELECT
   );
   if (serviceTypeSelect) {
     serviceTypeSelect.value = diet.serviceType || "TSU";
-    // CRIDA CLAU: Actualitzem la UI DESPRÉS de carregar el valor
     updateServicePanelsForServiceType(serviceTypeSelect.value);
   }
-  // Firmes (usant el servei corresponent)
+
   setSignatureConductor(diet.signatureConductor || "");
   setSignatureAjudant(diet.signatureAjudant || "");
-  // updateSignatureIcons(); // setSignature... ja ho fan internament ara
 
   // Serveis
   const serviceElements = document.querySelectorAll(SERVICE_CONTAINER_SELECTOR);
-  diet.services.forEach((serviceData, index) => {
-    const serviceElement = serviceElements[index];
-    if (serviceElement) {
-      // Omple cada camp del servei
-      for (const [fieldName, selector] of Object.entries(
-        SERVICE_FIELD_SELECTORS
-      )) {
-        const inputElement = serviceElement.querySelector(selector);
-        if (inputElement) {
-          inputElement.value = serviceData[fieldName] || "";
-        }
-      }
-      console.log(`Servei ${index} carregat amb mode:`, serviceData.mode);
-      // aplica el mode guardat (o 3.6)
-      setModeForService(index, serviceData.mode || "3.6");
+  diet.services.forEach((serviceData, idx) => {
+    const el = serviceElements[idx];
+    if (!el) return;
 
-      // Neteja possibles errors visuals previs d'aquest servei
-      removeErrorClassesFromService(serviceElement);
-    }
+    Object.entries(SERVICE_FIELD_SELECTORS).forEach(([field, sel]) => {
+      const input = el.querySelector(sel);
+      if (input) input.value = serviceData[field] || "";
+    });
+
+    setModeForService(idx, serviceData.mode || "3.6");
+    removeErrorClassesFromService(el);
   });
 
-  // Podria ser necessari netejar serveis extra si el formulari en té més que la dieta carregada
+  // Neteja possibles serveis restants
   for (let i = diet.services.length; i < serviceElements.length; i++) {
-    const serviceElement = serviceElements[i];
-    for (const selector of Object.values(SERVICE_FIELD_SELECTORS)) {
-      const inputElement = serviceElement.querySelector(selector);
-      if (inputElement) {
-        inputElement.value = ""; // Neteja el camp
-      }
-    }
-    removeErrorClassesFromService(serviceElement);
-    // Aquí també podríem voler eliminar visualment el servei si la UI ho permet
+    const el = serviceElements[i];
+    Object.values(SERVICE_FIELD_SELECTORS).forEach((sel) => {
+      const input = el.querySelector(sel);
+      if (input) input.value = "";
+    });
+    removeErrorClassesFromService(el);
   }
-  // Al final de populateFormWithDietData
-  console.log(
-    "Finalització de populateFormWithDietData, cap crida posterior hauria de canviar els modes."
-  );
 }
 
-/**
- * Lògica central de guardat.
- */
-// A dietService.js
-
+// ────────────────────────────────────────────────────────────
+// Gestió de guardat (manual i auto)
+// ────────────────────────────────────────────────────────────
 async function performSave(isManual) {
-  // 1. Estat inicial: punt blau + botó desactivat
   indicateSaving();
-  console.log("[Save] INICI");
   setSaveButtonState(false);
 
   try {
-    // 2. Retard UX (opcional)
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500)); // micro delay UX
 
-    // 3. Validació
-    if (!validateFormTabs()) {
+    if (!validateFormTabs())
       throw new Error("Validació de la pestanya Serveis fallida");
-    }
 
-    // 4. Recollida de dades
     const { generalData, servicesData } = gatherAllData();
     const dietId = servicesData[0]?.serviceNumber?.slice(0, 9);
     if (!dietId) throw new Error("ID de dieta no vàlid");
 
     const dietToSave = buildDietObject(generalData, servicesData, dietId);
 
-    // 5. Persistència (add o update en una sola línia)
-    console.log("[Save] Abans de persistir");
-    (await await getDiet(dietId))
-      ? updateDiet(dietToSave) // await aquí dins
-      : addDiet(dietToSave); // i aquí
-    console.log("[Save] Després de persistir");
+    (await getDiet(dietId))
+      ? await updateDiet(dietToSave)
+      : await addDiet(dietToSave);
 
-    // 6. Feedback positiu
     if (isManual) showToast("Dieta guardada correctament.", "success");
-    captureInitialFormState(); // marca l’estat com a «sense canvis»
-    indicateSaved(); // punt verd 2 s
 
-    console.log("[Save] FI OK");
+    lastSavedDate = new Date();
+    renderLastSaved();
+
+    captureInitialFormState();
+    indicateSaved();
   } catch (err) {
-    // 7. Qualsevol errada
     console.error("[Save] ERROR:", err);
-
     indicateSaveError(err.message || "No se pudo guardar");
-
     if (isManual) showToast(`Error al guardar: ${err.message}`, "error");
     setSaveButtonState(true);
   }
 }
 
-/**
- * Funció per al botó "Guardar".
- */
 export async function handleManualSave() {
-  console.log("Guardado manual iniciado...");
   cancelPendingAutoSave();
   await performSave(true);
 }
 
-/**
- * Funció per a l'autoguardat.
- */
 export async function autoSaveDiet() {
-  console.log("Autoguardado iniciado...");
   await performSave(false);
 }
 
-// --- Funcions Públiques / Exportades ---
-
-/**
- * Carrega les dades d'una dieta específica al formulari.
- * @param {string} dietId - L'ID de la dieta a carregar.
- * @export
- * @throws {Error} Si no es troba la dieta o hi ha un error durant la càrrega/populació.
- */
+// ────────────────────────────────────────────────────────────
+// Carregar, eliminar, helpers
+// ────────────────────────────────────────────────────────────
 export async function loadDietById(dietId) {
-  if (!dietId) {
-    console.warn("S'ha intentat carregar una dieta sense ID.");
-    throw new Error("ID de dieta no proporcionat."); // Llança error per indicar problema
+  if (!dietId) throw new Error("ID de dieta no proporcionat");
+
+  const diet = await getDiet(dietId);
+  if (!diet) {
+    showToast(`No se encontró la dieta con ID ${dietId}.`, "error");
+    throw new Error(`Dieta amb ID ${dietId} no trobada.`);
   }
-  try {
-    const diet = await getDiet(dietId); // Obté la dieta
-    if (!diet) {
-      showToast(`No se encontró la dieta con ID ${dietId}.`, "error");
-      throw new Error(`Dieta amb ID ${dietId} no trobada.`); // Llança error
-    }
 
-    populateFormWithDietData(diet); // Omple el formulari
+  populateFormWithDietData(diet);
+  captureInitialFormState();
 
-    captureInitialFormState(); // Captura com a estat inicial
-
-    showToast("Dieta cargada correctamente.", "success");
-    console.log("Intentant tancar el modal de dietes...");
-    // *** PUNT CLAU: Tanca el modal DESPRÉS que tot hagi anat bé ***
-    closeDietModal(); // Crida a la funció importada de modals.jsç
-    console.log("Crida a closeDietModal realitzada.");
-  } catch (error) {
-    console.error(`Error carregant la dieta ${dietId}:`, error);
-    showToast(
-      `Error al cargar la dieta: ${error.message || "Error desconegut"}`,
-      "error"
-    );
-    // Llança l'error perquè qui l'ha cridat (modals.js) sàpiga que ha fallat
-    throw error;
+  if (diet.timeStampDiet) {
+    lastSavedDate = new Date(diet.timeStampDiet);
+    renderLastSaved();
   }
+
+  showToast("Dieta cargada correctamente.", "success");
+  closeDietModal();
 }
 
-/**
- * Gestiona el procés d'eliminació d'una dieta, demanant confirmació prèvia.
- * @param {string} id - ID de la dieta a eliminar.
- * @param {string} dietDate - Data de la dieta (per al missatge).
- * @param {string} dietType - Tipus de la dieta (per al missatge).
- * @export
- */
 export async function deleteDietHandler(id, dietDate, dietType) {
   if (!id) return;
-
   const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
-  const confirmTitle = "Eliminar dieta";
-  const confirmMessage = `¿Confirmas que quieres eliminar permanentemente la dieta de la ${franjaText} del ${ddmmaa}?`;
+  const msg = `¿Confirmas que quieres eliminar permanentemente la dieta de la ${franjaText} del ${ddmmaa}?`;
+  const confirmed = await showConfirmModal(msg, "Eliminar dieta");
+  if (!confirmed) return;
 
-  const confirmed = await showConfirmModal(confirmMessage, confirmTitle);
+  try {
+    await deleteDietById(id);
+    showToast("Dieta eliminada correctamente.", "warning");
+    await displayDietOptions();
 
-  if (confirmed) {
-    try {
-      await deleteDietById(id);
-      showToast("Dieta eliminada correctamente.", "warning");
-      // Actualitza la llista de dietes al modal (si està obert)
-      await displayDietOptions(); // Recarrega les opcions
-
-      // Comprova si queden dietes després d'eliminar
-      const remainingDiets = await getAllDiets();
-      if (remainingDiets.length === 0) {
-        closeDietModal(); // Tanca el modal si ja no hi ha dietes per mostrar
-      }
-    } catch (error) {
-      console.error(`Error eliminant la dieta ${id}:`, error);
-      showToast(`Error al eliminar la dieta: ${error.message}`, "error");
-    }
+    const remaining = await getAllDiets();
+    if (remaining.length === 0) closeDietModal();
+  } catch (err) {
+    console.error("Error eliminant la dieta", err);
+    showToast(`Error al eliminar la dieta: ${err.message}`, "error");
   }
 }
 
-// Helper: amaga/mostra camps `destination` i `destinationTime` d’un servei
-function applyModeToServiceElement(svcEl, mode) {
+function applyModeToServiceElement(el, mode) {
   const hide = mode === "3.11" || mode === "3.22";
-  svcEl
-    .querySelectorAll(".destination-group, .destination-time-group")
-    .forEach((n) => n.classList.toggle("hidden", hide));
+  el.querySelectorAll(".destination-group, .destination-time-group").forEach(
+    (n) => n.classList.toggle("hidden", hide)
+  );
 }
+
+// ────────────────────────────────────────────────────────────
+// Bloc "Últim guardat"
+// ────────────────────────────────────────────────────────────
+let lastSavedDate = null;
+
+export function renderLastSaved() {
+  const el = document.getElementById("last-saved");
+  if (!el) return;
+  el.textContent = lastSavedDate ? timeAgo(lastSavedDate) : "";
+}
+
+setInterval(() => {
+  if (lastSavedDate) renderLastSaved();
+}, 60_000);

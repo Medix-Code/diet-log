@@ -328,6 +328,7 @@ function acceptSignature() {
 
   updateSignatureUI(targetButton, !isEmpty);
   closeSignatureModal();
+  import("./formService.js").then((m) => m.revalidateFormState());
 }
 
 /** Dibuixa una signatura desada (DataURL) al canvas. */
