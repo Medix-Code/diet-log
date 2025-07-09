@@ -440,6 +440,7 @@ main {
       transition: color 0.3s ease;
     }
   }
+
   .big-btn.is-disabled {
     opacity: 0.45;
     pointer-events: none;
@@ -2144,6 +2145,18 @@ button .fa {
     background-color: rgba(255, 255, 255, 0.1);
   }
 
+  .footer-btn:focus {
+    background-color: transparent; /* netegem la “taca” */
+    outline: none; /* o outline personalitzat, com vulguis */
+  }
+
+  /* opcional: mantén l’accessibilitat per a teclat/ratolí */
+  .footer-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    /* el background continua transparent */
+  }
+
   // No necessitem un :focus separat que mantingui el fons.
   // El navegador ja sol posar un anell de focus per defecte per accessibilitat.
 
@@ -2160,20 +2173,6 @@ button .fa {
     object-fit: contain;
     // La icona no necessita la seva pròpia transició de transformació
   }
-}
-/* 1 ▸ Només mostrem l’efecte hover en dispositius amb ratolí */
-@media (hover: hover) {
-  .footer-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-}
-
-/* 2 ▸ Fem que el botó torni al fons transparent quan queda enfocat
-       (i deixem un outline perquè segueixi accessible amb teclat) */
-.footer-btn:focus-visible {
-  background-color: transparent; /* elimines “l’ombra” enganxada */
-  outline: 2px solid currentColor; /* contorn fi i visible */
-  outline-offset: 3px; /* separat del botó */
 }
 
 .hidden {

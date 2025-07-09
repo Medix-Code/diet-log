@@ -1889,6 +1889,7 @@ button .fa {
   padding: 20px;
   text-align: center;
   font-family: sans-serif;
+  /* opcional: mantén l’accessibilitat per a teclat/ratolí */
 }
 .footer .footer__content {
   display: flex;
@@ -1924,6 +1925,15 @@ button .fa {
 .footer .footer-btn:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
+.footer .footer-btn:focus {
+  background-color: transparent; /* netegem la “taca” */
+  outline: none; /* o outline personalitzat, com vulguis */
+}
+.footer .footer-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  /* el background continua transparent */
+}
 .footer .footer-btn:active {
   background-color: rgba(255, 255, 255, 0.2);
   transform: scale(0.92);
@@ -1932,20 +1942,6 @@ button .fa {
   width: var(--icon-size);
   height: var(--icon-size);
   object-fit: contain;
-}
-
-/* 1 ▸ Només mostrem l’efecte hover en dispositius amb ratolí */
-@media (hover: hover) {
-  .footer-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-}
-/* 2 ▸ Fem que el botó torni al fons transparent quan queda enfocat
-       (i deixem un outline perquè segueixi accessible amb teclat) */
-.footer-btn:focus-visible {
-  background-color: transparent; /* elimines “l’ombra” enganxada */
-  outline: 2px solid currentColor; /* contorn fi i visible */
-  outline-offset: 3px; /* separat del botó */
 }
 
 .hidden {
