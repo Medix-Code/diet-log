@@ -383,10 +383,10 @@ main {
   /* ─ Layout / estètica ─ */
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 6px;
+  padding: 4px 10px;
   border-radius: 9999px;
-  font-size: 0.88rem;
+  font-size: 0.75rem;
   font-weight: 500;
   background: #fff;
   color: #333;
@@ -401,6 +401,10 @@ main {
 .save-pill.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.pill-text {
+  line-height: 1; /* evita que s’estiri verticalment */
 }
 
 /* Punt d’estat (groc/blau/verd/vermell) */
