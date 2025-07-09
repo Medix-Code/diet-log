@@ -13,7 +13,7 @@ import {
 import { getCurrentDietType } from "../utils/utils.js";
 import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
 import { autoSaveDiet } from "./dietService.js";
-import { showHasChanges, hideSavingIndicator } from "../ui/saveIndicator.js";
+import { showHasChanges, hideIndicator } from "../ui/saveIndicator.js";
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -113,27 +113,30 @@ function getFormDataObject() {
 // ---------------------------------------------------------------------------
 
 /**
- * Desa l’estat inicial del formulari, desactiva el botó "Guardar" i neteja l'indicador visual.
+ * Funció per capturar l'estat inicial del formulari. Aquesta és la funció
+ * que "reseteja" l'estat a "guardat".
  */
 export function captureInitialFormState() {
   initialFormDataStr = JSON.stringify(getFormDataObject() || {});
-  setSaveButtonState(false);
-  hideSavingIndicator();
+  // En capturar un nou estat, forcem una re-avaluació.
+  // Com que currentState i initialFormDataStr seran iguals,
+  // handleFormChange desactivarà el botó i l'indicador.
+  handleFormChange();
 }
 
 /**
- * Activa o desactiva el botó "Guardar" dins del menú.
+ * Funció per actualitzar l'estat del botó "Guardar" del menú.
  * @param {boolean} enabled - True per activar, false per desactivar.
  */
 export function setSaveButtonState(enabled) {
-  const saveBtn = document.getElementById(IDS.SAVE_BTN);
+  const saveBtn = document.getElementById("save-diet");
   if (saveBtn) {
     saveBtn.disabled = !enabled;
   }
 }
 
 /**
- * Funció que s'executa a cada canvi del formulari per gestionar l'estat.
+ * Funció que gestiona els canvis al formulari.
  */
 function handleFormChange() {
   debouncedAutoSave.cancel();
@@ -142,25 +145,19 @@ function handleFormChange() {
   if (currentState !== initialFormDataStr) {
     setSaveButtonState(true);
     showHasChanges();
-
-    // >>> CONDICIÓ CLAU PER A L'AUTOGUARDAT <<<
-    // Només programem un autoguardat si el número de S1 és vàlid.
     const service1Input = document.getElementById("service-number-1");
     if (service1Input && service1Input.value.trim().length === 9) {
       debouncedAutoSave();
-    } else {
-      console.log("[AutoSave] Pendent: esperant un N.º de servei vàlid a S1.");
     }
   } else {
+    // Si no hi ha canvis, ens assegurem que tot estigui desactivat.
     setSaveButtonState(false);
-    hideSavingIndicator();
+    hideIndicator();
   }
 }
-// >>> AFEGEIX AQUESTA NOVA FUNCIÓ EXPORTADA <<<
+
 /**
  * Força una re-avaluació de l'estat del formulari.
- * Útil per ser cridada des d'altres mòduls després de fer canvis programàticament.
- * @export
  */
 export function revalidateFormState() {
   handleFormChange();
@@ -206,7 +203,7 @@ export function addServiceTypeListener() {
 }
 
 /**
- * Funció per cancel·lar l'autoguardat pendent, cridada abans d'un guardat manual.
+ * Funció per cancel·lar l'autoguardat pendent.
  */
 export function cancelPendingAutoSave() {
   debouncedAutoSave.cancel();

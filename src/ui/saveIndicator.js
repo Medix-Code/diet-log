@@ -1,42 +1,47 @@
-// src/ui/saveIndicator.js
+// A src/ui/saveIndicator.js
 
-const SETTINGS_BTN_ID = "settings";
-const CSS_SAVING_CLASS = "saving";
-const CSS_HAS_CHANGES_CLASS = "has-changes"; // Opcional
+const INDICATOR_ID = "save-status-indicator";
+const TEXT_ID = "save-status-indicator-text";
 
-let settingsBtnEl = null;
+const CSS_VISIBLE = "visible";
+const CSS_CLASSES = {
+  HAS_CHANGES: "has-changes",
+  SAVING: "saving",
+  HAS_SAVED: "has-saved",
+};
+
+let indicatorEl, textEl, successTimer;
 
 function _getElements() {
-  if (!settingsBtnEl) {
-    settingsBtnEl = document.getElementById(SETTINGS_BTN_ID);
+  if (!indicatorEl) {
+    indicatorEl = document.getElementById(INDICATOR_ID);
+    textEl = document.getElementById(TEXT_ID);
   }
 }
 
-/**
- * Mostra que hi ha canvis pendents (opcional).
- */
+function _updateState(text, cssClass) {
+  _getElements();
+  if (!indicatorEl || !textEl) return;
+
+  clearTimeout(successTimer);
+  indicatorEl.className = `save-status-indicator ${cssClass} ${CSS_VISIBLE}`;
+  textEl.textContent = text;
+}
+
 export function showHasChanges() {
-  _getElements();
-  settingsBtnEl?.classList.remove(CSS_SAVING_CLASS);
-  settingsBtnEl?.classList.add(CSS_HAS_CHANGES_CLASS);
+  _updateState("Canvis pendents", CSS_CLASSES.HAS_CHANGES);
 }
 
-/**
- * Activa l'animació de "guardant" a la icona.
- */
 export function showSavingIndicator() {
-  _getElements();
-  settingsBtnEl?.classList.remove(CSS_HAS_CHANGES_CLASS);
-  settingsBtnEl?.classList.add(CSS_SAVING_CLASS);
+  _updateState("Guardant...", CSS_CLASSES.SAVING);
 }
 
-/**
- * Atura qualsevol animació de l'indicador.
- */
-export function hideSavingIndicator() {
+export function showSavedSuccess() {
+  _updateState("Guardat", CSS_CLASSES.HAS_SAVED);
+  successTimer = setTimeout(hideIndicator, 2000);
+}
+
+export function hideIndicator() {
   _getElements();
-  settingsBtnEl?.classList.remove(CSS_SAVING_CLASS);
-  settingsBtnEl?.classList.remove(CSS_HAS_CHANGES_CLASS);
-  // Tornem les barres al seu color original (si les hem canviat)
-  // Això es pot gestionar millor amb CSS si la classe s'elimina.
+  indicatorEl?.classList.remove(CSS_VISIBLE);
 }
