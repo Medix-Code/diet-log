@@ -450,9 +450,7 @@ main {
 .save-pill {
   /* posició */
   position: fixed;
-  bottom: calc(
-    env(safe-area-inset-bottom) + 16px
-  ); /* no tapa barres del mòbil */
+  bottom: calc(20px + env(keyboard-inset-bottom, 0px));
   right: calc(env(safe-area-inset-right) + 16px);
   z-index: 1200;
 
@@ -2605,13 +2603,4 @@ button .icon {
 *::before,
 *::after {
   box-sizing: border-box;
-}
-
-/* Opcional: amaga l’indicador en pantalles molt petites */
-@media (max-width: 480px) {
-  .save-pill {
-    right: 12px;
-    bottom: 12px;
-    font-size: 0.75rem;
-  }
 }
