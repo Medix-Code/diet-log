@@ -446,41 +446,45 @@ main {
    SAVE-PILL  ·  indicador de guardat flotant
    ───────────────────────────────────────────────────────────*/
 
-/* 💊 Pastilla fixa dins el flux (sota les pestanyes) */
+/* 💊 SAVE-PILL — enganxada sota la Top Bar + Tabs */
 .save-pill {
-  top: calc(var(--top-bar-height) + var(--tab-height) + 8px);
-  z-index: 950;
+  position: fixed; /* continua sent flotant */
+  top: calc(
+    var(--top-bar-height) + var(--tab-height) + 8px
+  ); /* sota pestanyes */
+  right: calc(env(safe-area-inset-right) + 16px); /* marge dreta */
+
+  /* mida i aparença igual que abans */
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  position: sticky;
-  background: #fff;
-  color: #333;
+  padding: 8px 14px;
   border-radius: 999px;
   font-size: 0.88rem;
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: 0;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+  /* animació d’entrada */
   opacity: 0;
-  transform: translateY(4px);
+  transform: translateY(12px);
   transition: opacity 0.25s, transform 0.25s;
 }
 
-/* Quan és visible */
+/* Quan el JS afegeix .visible */
 .save-pill.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
+/* Punt de color (sense canvis) */
 .pill-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6c757d; /* gris per defecte */
+  background: #6c757d;
 }
-
-/* Estats (ja ho tens) */
 .save-pill.has-changes .pill-dot {
   background: #ffc107;
 }
