@@ -58,18 +58,3 @@ export function hideIndicator() {
   if (isDirty) return; // Encara hi ha canvis → no l’amaguem
   pillEl?.classList.remove(CSS.VISIBLE);
 }
-
-/* JS – ajusta la variable cada cop que canvia l’alçada visible */
-if (window.visualViewport) {
-  const vv = window.visualViewport;
-
-  const updateOffset = () => {
-    // quants píxels tapa el teclat?
-    const kb = Math.max(window.innerHeight - (vv.height + vv.offsetTop), 0);
-    document.documentElement.style.setProperty("--kb-offset", `${kb}px`);
-  };
-
-  vv.addEventListener("resize", updateOffset);
-  vv.addEventListener("scroll", updateOffset); // per girs de pantalla, etc.
-  updateOffset(); // 1a execució
-}
