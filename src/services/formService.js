@@ -50,8 +50,8 @@ const SERVICE_FIELD_SELECTORS = {
 
 const CHIP_ACTIVE_CLASS = "chip-active";
 
-// ─ Temps i animacions (augmentat debounce per inputs a 800ms per evitar toasts prematurs)
-const INPUT_CHANGE_DEBOUNCE_MS = 800; // Canvi: Augmentat de 150ms per donar temps a escriure números llargs
+// ─ Temps i animacions
+const INPUT_CHANGE_DEBOUNCE_MS = 800; // Augmentat de 150ms a 800 per donar temps a escriure números llargs
 const AUTOSAVE_DELAY_MS = 1000;
 const MIN_SPINNER_VISIBLE_MS = 300;
 

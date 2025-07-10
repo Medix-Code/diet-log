@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a96e7",
-  "description": "Mis Dietas PWA",
+  "description": "Mis Dietas",
   "icons": [
     {
       "src": "assets/images/icons-192.png",
