@@ -1,6 +1,7 @@
-// ────────────────────────────────────────────────────────────
-//  Pastilla flotant que indica l’estat de guardat
-// ────────────────────────────────────────────────────────────
+// saveIndicator.js
+//-----------------------------------------------------------
+// Pastilla flotant d’estat de guardat
+//-----------------------------------------------------------
 const PILL_ID = "save-pill";
 const TEXT_SEL = ".pill-text";
 
@@ -12,10 +13,16 @@ const CSS = {
   ERROR: "error",
 };
 
-let pillEl, textEl, hideTimer;
-let isDirty = false; // <── nou flag “hi ha canvis”
+// Ajustos “Google-Docs style”
+const MIN_VISIBLE = 2000; // ✔︎ es manté com a mínim 2 s
+const DELAY_UNSAVED = 800; // esperem 0,8 s abans de dir "Cambios sin guardar"
 
-/* Helpers ──────────────────────────────────────────────── */
+let pillEl, textEl;
+let hideTimer, unsavedTimer;
+let lastSavedT = 0; // quan s’ha mostrat ✔︎
+let isDirty = false;
+
+// Helpers ──────────────────────────────────────────────────
 function getEls() {
   if (!pillEl) {
     pillEl = document.getElementById(PILL_ID);
@@ -23,54 +30,67 @@ function getEls() {
   }
 }
 
-function setState(msg, cssClass) {
+function showPill(txt, cssClass) {
   getEls();
   if (!pillEl || !textEl) return;
 
-  clearTimeout(hideTimer);
-  pillEl.className = `save-pill ${cssClass} ${CSS.VISIBLE}`;
-  textEl.textContent = msg;
+  pillEl.classList.add(CSS.VISIBLE);
+  pillEl.classList.remove(
+    CSS.HAS_CHANGES,
+    CSS.SAVING,
+    CSS.HAS_SAVED,
+    CSS.ERROR
+  );
+  if (cssClass) pillEl.classList.add(cssClass);
+  textEl.textContent = txt;
 }
 
-/* API pública ──────────────────────────────────────────── */
-
-// ─ Estat del text dins del botó ─
-function setLastSavedText(txt) {
-  const el = document.getElementById("last-saved");
-  if (el) el.textContent = txt;
+// API pública ──────────────────────────────────────────────
+export function indicateUnsaved(delay = DELAY_UNSAVED) {
+  clearTimeout(unsavedTimer);
+  unsavedTimer = setTimeout(() => {
+    isDirty = true;
+    showPill("Cambios sin guardar", CSS.HAS_CHANGES);
+  }, delay);
 }
 
-// Indiquem canvis pendents
-export function indicateUnsaved() {
-  isDirty = true;
-  setState("Cambios sin guardar", CSS.HAS_CHANGES);
-  setLastSavedText("sin guardar");
-}
-
-// Està guardant
 export function indicateSaving() {
-  setState("Guardando…", CSS.SAVING);
-  setLastSavedText("guardando…");
+  clearTimeout(unsavedTimer);
+  showPill("Guardando…", CSS.SAVING);
 }
 
-// S’ha guardat OK
 export function indicateSaved() {
+  clearTimeout(unsavedTimer);
   isDirty = false;
-  setState("Guardado", CSS.HAS_SAVED);
-  hideTimer = setTimeout(hideIndicator, 2000);
+  lastSavedT = Date.now();
+  showPill("Guardado", CSS.HAS_SAVED);
+
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(hideIndicator, MIN_VISIBLE);
 }
 
-// Error
 export function indicateSaveError(msg = "No se pudo guardar") {
-  setState(msg, CSS.ERROR);
-  setLastSavedText("error");
-  hideTimer = setTimeout(hideIndicator, 4000);
+  clearTimeout(unsavedTimer);
+  showPill(msg, CSS.ERROR);
+
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(hideIndicator, MIN_VISIBLE * 2);
 }
 
-export function hideIndicator() {
+export function hideIndicator(force = false) {
   getEls();
-  clearTimeout(hideTimer); // <- mata qualsevol timeout pendent
-  if (isDirty) return; // encara hi ha canvis → no l’amaguem
+  clearTimeout(hideTimer);
+  if (isDirty && !force) return; // <— canvi
   pillEl?.classList.remove(CSS.VISIBLE);
   hideTimer = null;
+}
+
+/**
+ * Restableix l’estat intern (isDirty = false) i amaga la píndola.
+ * Útil quan l’usuari desfà tots els canvis abans que hàgim tornat a guardar.
+ */
+export function resetDirty() {
+  isDirty = false; // ← netegem el flag intern
+  clearTimeout(unsavedTimer);
+  hideIndicator(true); // ← l’amaguem forçant-lo
 }

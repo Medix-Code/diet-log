@@ -403,15 +403,16 @@ main {
   }
 
   .big-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
     width: 100%;
     justify-content: flex-start;
     padding: 20px 20px;
     font-size: 16px;
     font-weight: 300;
     font-family: inherit;
-    display: flex;
-    align-items: center;
-    gap: 30px;
     background-color: var(--bg-btn-ajustes);
     border: none;
     cursor: pointer;
@@ -455,75 +456,80 @@ main {
   }
 }
 
+/* ——— Text “hace X” ——— */
 .last-saved-info {
-  margin-left: 6px;
-  font-size: 0.8rem;
+  margin-left: auto; /* empeny cap a la dreta del tot */
+  font-size: 0.75rem; /* discret */
   font-style: italic;
   opacity: 0.7;
-  white-space: nowrap;
+  white-space: nowrap; /* evita salts de línia indesitjats */
 }
+
 /* ───────────────────────────────────────────────────────────
    SAVE-PILL  ·  indicador de guardat flotant
    ───────────────────────────────────────────────────────────*/
+/* Contenidor flotant */
 .save-pill {
-  /* ─ Posicionament fix ─ */
   position: fixed;
-  bottom: calc(20px + env(keyboard-inset-bottom, 0px)); /* marge + safe-area */
+  bottom: calc(20px + env(keyboard-inset-bottom, 0px));
   right: calc(16px + env(safe-area-inset-right, 0px));
   z-index: 1200;
 
-  /* ─ Layout / estètica ─ */
   display: flex;
   align-items: center;
   gap: 6px;
+
   padding: 4px 10px;
   border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight: 500;
   background: #fff;
   color: #333;
-  letter-spacing: 0.2px;
+  font-size: 0.8rem;
+  font-weight: 500;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 
-  /* ─ Animació d’entrada ─ */
+  /* estat d’entrada – ja el tenies */
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 0.25s, transform 0.25s;
 }
-
-/* Quan el JS afegeix .visible ⇒ fade & slide-in */
 .save-pill.visible {
   opacity: 1;
   transform: translateY(0);
 }
-.pill-text {
-  line-height: 1; /* eevita que s’estiri verticalment */
-}
-/* Punt d’estat (groc/blau/verd/vermell) */
-.pill-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #6c757d;
-}
-.save-pill.has-changes .pill-dot {
-  background: #ffc107;
-}
-.save-pill.saving .pill-dot {
-  background: #0d6efd;
-  animation: spin 1s linear infinite;
-}
-.save-pill.has-saved .pill-dot {
-  background: #28a745;
-}
-.save-pill.error .pill-dot {
-  background: #dc3545;
+
+/* Icona comuna */
+.pill-icon {
+  inline-size: 18px;
+  block-size: 18px;
+  margin-right: 8px; /* separació icona–text */
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+/* Estat: canvis pendents */
+.save-pill.has-changes .pill-icon {
+  background-image: url("../assets/icons/save_yellow.svg");
+}
+
+/* Estat: guardant */
+.save-pill.saving .pill-icon {
+  background-image: url("../assets/icons/spinner.svg");
+  animation: spin 1s linear infinite; /* ja definit a l’últim CSS */
+}
+
+/* Estat: guardat correctament */
+.save-pill.has-saved .pill-icon {
+  background-image: url("../assets/icons/check_green.svg");
+}
+
+/* Estat: error */
+.save-pill.error .pill-icon {
+  background-image: url("../assets/icons/error_red.svg");
+}
+
+/* (Opcional) Amagar el punt antic si l’has deixat al DOM */
+.pill-dot {
+  display: none;
 }
 
 // ===========================================================================
