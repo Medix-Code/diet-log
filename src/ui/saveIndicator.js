@@ -144,7 +144,7 @@ export function resetDirty() {
 }
 
 // Neteja en unload per evitar leaks (escalabilitat)
-window.addEventListener("unload", () => {
+window.addEventListener("pagehide", () => {
   clearTimeout(hideTimer);
   clearTimeout(unsavedTimer);
 });
