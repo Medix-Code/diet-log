@@ -142,12 +142,6 @@
       </button>
     </nav>
 
-    <!-- Píndola d’estat -->
-    <div id="save-pill" class="save-pill" role="status" aria-live="polite">
-      <span class="pill-dot"></span>
-      <span class="pill-text"></span>
-    </div>
-
     <main id="main-content" class="tab-content-container">
       <!--<div class="tab-content-wrapper"> -->
       <!-- PESTANYA DADES -->
@@ -193,18 +187,18 @@
               type="button"
               class="group-btn btn-save"
               id="add-dotacio"
-              aria-label="Nova dotació"
+              aria-label="Nueva dotación"
             >
-              <img src="assets/icons/save_white.svg" alt="Nova dotació" />
+              <img src="assets/icons/save_white.svg" alt="Nueva dotación" />
             </button>
 
             <button
               type="button"
               class="group-btn btn-options"
               id="open-dotacio-modal"
-              aria-label="Opcions"
+              aria-label="Opciones"
             >
-              <img src="assets/icons/id_card.svg" alt="Opcions" />
+              <img src="assets/icons/id_card.svg" alt="Opciones" />
             </button>
           </div>
         </div>
@@ -981,10 +975,12 @@
       id="camera-input"
       style="display: none"
     />
+    <!-- Píndola d’estat -->
+    <div id="save-pill" class="save-pill" role="status" aria-live="polite">
+      <span class="pill-icon" aria-hidden="true"></span>
+      <!-- nova icona -->
+      <span class="pill-text"></span>
+      <!-- text existent -->
+    </div>
   </body>
-  <!-- Píndola d’estat -->
-  <div id="save-pill" class="save-pill" role="status" aria-live="polite">
-    <span class="pill-dot"></span>
-    <span class="pill-text"></span>
-  </div>
 </html>
