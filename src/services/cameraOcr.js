@@ -1,12 +1,9 @@
 /**
  * @file cameraOcr.js
- * @description Gestiona la funcionalidad de OCR a través de la cámara o galería,
- *              utilizando Tesseract.js, rellenando campos de formulario basados
- *              en patrones predefinidos, y adaptando el estilo del modal al servicio activo.
+ * @description Gestió OCR amb càmera/galeria.
  * @module cameraOcr
  */
 
-// Importaciones de módulos externos
 import { showToast } from "../ui/toast.js";
 import {
   getCurrentServiceIndex,
@@ -14,7 +11,7 @@ import {
 } from "../services/servicesPanelManager.js";
 import { setControlsDisabled } from "../ui/uiControls.js";
 
-// --- Constantes de Configuración OCR/Imagen ---
+// --- Constants ---
 const OCR_LANGUAGE = "spa";
 const TESSERACT_ENGINE_MODE = 1;
 const TESSERACT_CHAR_WHITELIST =
@@ -28,12 +25,11 @@ const OCR_SEARCH_WINDOW = 200;
 
 const TESSERACT_PARAMS = {
   tessedit_char_whitelist: TESSERACT_CHAR_WHITELIST,
-  tessedit_pageseg_mode: 6, // Assume a single uniform block of text
+  tessedit_pageseg_mode: 6,
   load_system_dawg: false,
   load_freq_dawg: false,
 };
 
-// --- IDs y Selectores del DOM ---
 const DOM_SELECTORS = {
   CAMERA_BTN: "camera-in-dropdown",
   CAMERA_MODAL: "camera-gallery-modal",
@@ -46,32 +42,10 @@ const DOM_SELECTORS = {
   OCR_SCAN_BTN: ".btn-ocr-inline",
 };
 
-// --- Clases CSS ---
 const CSS_CLASSES = {
   VISIBLE: "visible",
   HIDDEN: "hidden",
   SERVICE_COLORS: ["service-1", "service-2", "service-3", "service-4"],
-};
-
-// --- Configuración de Patrones OCR (SOLO PARA HORAS) ---
-
-/** Normaliza una cadena de tiempo a HH:MM. */
-const _normalizeTime = (timeStr) => {
-  if (!timeStr) return "";
-  let cleaned = timeStr.replace(/[^\d:-]/g, "");
-  cleaned = cleaned.replace(/-/g, ":");
-  const match = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-  if (match) {
-    const hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
-    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-        2,
-        "0"
-      )}`;
-    }
-  }
-  return "";
 };
 
 const OCR_PATTERNS = {
@@ -96,19 +70,35 @@ const OCR_PATTERNS = {
   },
 };
 
-// --- Variables / Cache DOM ---
-let cameraBtn = null;
+// --- Estat ---
 let cameraGalleryModal = null;
 let modalContentElement = null;
 let optionCameraBtn = null;
 let optionGalleryBtn = null;
 let cameraInput = null;
 
-// --- Variables de Estado ---
 let isProcessing = false;
 let isInitialized = false;
 
-// --- Funciones Privadas ---
+// --- Funcions ---
+
+function _normalizeTime(timeStr) {
+  if (!timeStr) return "";
+  let cleaned = timeStr.replace(/[^\d:-]/g, "");
+  cleaned = cleaned.replace(/-/g, ":");
+  const match = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (match) {
+    const hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+        2,
+        "0"
+      )}`;
+    }
+  }
+  return "";
+}
 
 function _openCameraModal() {
   if (!cameraGalleryModal || !modalContentElement) return;
@@ -119,7 +109,6 @@ function _openCameraModal() {
   modalContentElement.classList.remove(...CSS_CLASSES.SERVICE_COLORS);
   if (currentColorClass) modalContentElement.classList.add(currentColorClass);
   cameraGalleryModal.classList.remove(CSS_CLASSES.HIDDEN);
-  void cameraGalleryModal.offsetWidth;
   requestAnimationFrame(() =>
     cameraGalleryModal.classList.add(CSS_CLASSES.VISIBLE)
   );
@@ -130,7 +119,6 @@ function _closeCameraModal() {
   if (!cameraGalleryModal) return;
   document.body.classList.remove("modal-open");
   cameraGalleryModal.classList.remove(CSS_CLASSES.VISIBLE);
-  cameraBtn?.focus();
   setTimeout(
     () => cameraGalleryModal.classList.add(CSS_CLASSES.HIDDEN),
     MODAL_TRANSITION_DURATION
@@ -140,8 +128,7 @@ function _closeCameraModal() {
 function _handleOutsideClick(event) {
   if (
     cameraGalleryModal?.classList.contains(CSS_CLASSES.VISIBLE) &&
-    !modalContentElement?.contains(event.target) &&
-    !cameraBtn?.contains(event.target)
+    !modalContentElement?.contains(event.target)
   ) {
     _closeCameraModal();
   }
@@ -172,9 +159,8 @@ function _updateOcrProgress(percent, statusText) {
   );
   if (!progressContainer) return;
 
-  if (progressContainer.classList.contains(CSS_CLASSES.HIDDEN)) {
+  if (progressContainer.classList.contains(CSS_CLASSES.HIDDEN))
     progressContainer.classList.remove(CSS_CLASSES.HIDDEN);
-  }
 
   const progressText = progressContainer.querySelector(
     DOM_SELECTORS.OCR_PROGRESS_TEXT
@@ -189,9 +175,10 @@ function _hideOcrProgress() {
   );
   if (!progressContainer) return;
 
-  setTimeout(() => {
-    progressContainer.classList.add(CSS_CLASSES.HIDDEN);
-  }, PROGRESS_HIDE_DELAY);
+  setTimeout(
+    () => progressContainer.classList.add(CSS_CLASSES.HIDDEN),
+    PROGRESS_HIDE_DELAY
+  );
 }
 
 async function _resizeImage(file) {
@@ -200,14 +187,7 @@ async function _resizeImage(file) {
     const { width: originalWidth, height: originalHeight } = img;
     if (Math.max(originalWidth, originalHeight) <= IMAGE_MAX_DIMENSION) {
       img.close();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) =>
-          resolve(new Blob([e.target.result], { type: file.type }));
-        reader.onerror = (e) =>
-          reject(new Error("Error leyendo el archivo: " + e));
-        reader.readAsArrayBuffer(file);
-      });
+      return file;
     }
     const ratio = Math.min(
       IMAGE_MAX_DIMENSION / originalWidth,
@@ -219,21 +199,13 @@ async function _resizeImage(file) {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("No se pudo obtener el contexto 2D del canvas.");
+    if (!ctx) throw new Error("No contexto 2D.");
     ctx.drawImage(img, 0, 0, width, height);
     img.close();
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) =>
-          blob
-            ? resolve(blob)
-            : reject(new Error("La conversión de canvas a blob ha fallado.")),
-        IMAGE_TYPE,
-        IMAGE_QUALITY
-      );
-    });
+    return new Promise((resolve) =>
+      canvas.toBlob(resolve, IMAGE_TYPE, IMAGE_QUALITY)
+    );
   } catch (error) {
-    console.error("Error redimensionando la imagen:", error);
     showToast("Error al procesar la imagen.", "error");
     throw error;
   }
@@ -246,136 +218,30 @@ async function _preprocessImage(blob) {
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext("2d");
-    if (!ctx)
-      throw new Error("No se ha podido obtener el contexto 2D del canvas.");
+    if (!ctx) throw new Error("No contexto 2D.");
 
     ctx.filter = "grayscale(100%) contrast(180%) brightness(110%)";
     ctx.drawImage(img, 0, 0);
     img.close();
 
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (processedBlob) => {
-          if (processedBlob) {
-            resolve(processedBlob);
-          } else {
-            reject(
-              new Error(
-                "La conversión de canvas a blob para el preprocesamiento ha fallado."
-              )
-            );
-          }
-        },
-        IMAGE_TYPE,
-        1.0
-      );
-    });
+    return new Promise((resolve) => canvas.toBlob(resolve, IMAGE_TYPE, 1.0));
   } catch (error) {
-    console.error("Error durante el preprocesamiento de la imagen:", error);
-    showToast("Error al mejorar la imagen para el escaneo.", "error");
+    showToast("Error al mejorar la imagen.", "error");
     throw error;
   }
 }
 
 function _safeSetFieldValue(fieldId, value, fieldName) {
-  try {
-    const element = document.getElementById(fieldId);
-    if (element) {
-      element.value = value;
-      console.log(`[OCR Fill] ${fieldName} (${fieldId}) = "${value}"`);
-    }
-  } catch (error) {
-    console.error(
-      `[OCR Fill] Error rellenando el campo ${fieldName} (${fieldId}):`,
-      error
-    );
-  }
+  const element = document.getElementById(fieldId);
+  if (element) element.value = value;
 }
-
-/**
- * Gestiona la selecció d'un fitxer, inicia el procés OCR, fa scroll fins al final
- * i actualitza el formulari amb els resultats.
- */
-async function _handleFileChange(event) {
-  if (isProcessing) {
-    showToast("Proceso OCR ya en marcha.", "warning");
-    return;
-  }
-  const file = event.target.files?.[0];
-  if (!file) return;
-  if (!file.type.startsWith("image/")) {
-    showToast("Por favor, selecciona un archivo de imagen.", "error");
-    if (cameraInput) cameraInput.value = "";
-    return;
-  }
-
-  isProcessing = true;
-  setControlsDisabled(true);
-  _updateOcrProgress(0, "Preparando imagen...");
-
-  // >>> LÒGICA DE SCROLL MODIFICADA <<<
-  // Fa scroll fins al final de la pàgina mentre es processa la imatge.
-  console.log(`[UI] Iniciando scroll hacia el final de la página.`);
-  _scrollToBottom();
-
-  let worker = null;
-
-  try {
-    let imageBlob = await _resizeImage(file);
-    imageBlob = await _preprocessImage(imageBlob);
-
-    _updateOcrProgress(5, "Cargando motor OCR...");
-    worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
-      logger: (m) => {
-        if (m.status === "recognizing text") {
-          const percent = Math.max(10, Math.floor(m.progress * 100));
-          _updateOcrProgress(percent, `Reconociendo texto ${percent}%...`);
-        } else if (m.status === "loading language model") {
-          _updateOcrProgress(5, "Cargando modelo de idioma...");
-        }
-      },
-    });
-    await worker.setParameters(TESSERACT_PARAMS);
-
-    _updateOcrProgress(10, "Reconociendo texto 10%...");
-    const {
-      data: { text: ocrText },
-    } = await worker.recognize(imageBlob);
-    _updateOcrProgress(100, "Análisis completado.");
-
-    // Aquesta funció s'encarrega d'omplir els camps amb les dades trobades
-    _processAndFillForm(ocrText);
-  } catch (error) {
-    console.error("[cameraOcr] Error OCR:", error);
-    showToast(`Error de escaneo: ${error.message || "Desconocido"}`, "error");
-    _updateOcrProgress(0, "Error en el escaneo.");
-  } finally {
-    if (worker) {
-      await worker.terminate();
-      console.log("[cameraOcr] Worker de Tesseract finalizado.");
-    }
-    if (cameraInput) cameraInput.value = "";
-    _hideOcrProgress();
-    setControlsDisabled(false);
-    isProcessing = false;
-  }
-}
-
-// >>> 3. LA TEVA FUNCIÓ _processAndFillForm ES QUEDA EXACTAMENT COM ESTAVA <<<
-// Aquesta funció va dins del teu fitxer cameraOcr.js
-// Només has de substituir la funció _processAndFillForm existent per aquesta.
 
 function _processAndFillForm(ocrText) {
-  console.log("--- TEXTO COMPLETO RECONOCIDO POR TESSERACT ---");
-  console.log(`Valor de ocrText:`, ocrText);
-  console.log("-------------------------------------------");
-
   if (!ocrText || !ocrText.trim()) {
-    showToast("No se pudo reconocer texto en esta imagen.", "warning");
+    showToast("No se reconoció texto.", "warning");
     return;
   }
 
-  // Preparación de variables
   const currentServiceIndex = getCurrentServiceIndex();
   const currentMode = getModeForService(currentServiceIndex) || "3.6";
   const suffix = `-${currentServiceIndex + 1}`;
@@ -384,20 +250,12 @@ function _processAndFillForm(ocrText) {
   const lines = ocrText.split("\n");
   const processedText = ocrText.toLowerCase().replace(/ +/g, " ");
 
-  console.log(
-    `[OCR Proc] Procesando para el servicio ${
-      currentServiceIndex + 1
-    } en modo ${currentMode}`
-  );
-
-  // Bucle principal para extraer datos
   Object.values(OCR_PATTERNS).forEach((pattern) => {
     if (
       (currentMode === "3.11" || currentMode === "3.22") &&
       pattern.id === "destinationTime"
-    ) {
+    )
       return;
-    }
 
     let valueMatch = null;
 
@@ -430,15 +288,10 @@ function _processAndFillForm(ocrText) {
     }
   });
 
-  // Lógica de Fallback para Hora Final (con feedback visual y depuración)
   if (
     !filledFields.endTime &&
     (filledFields.originTime || filledFields.destinationTime)
   ) {
-    console.warn(
-      "[OCR Fallback] Hora Final no encontrada. Activando fallback."
-    );
-
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, "0");
     const mm = String(now.getMinutes()).padStart(2, "0");
@@ -447,83 +300,52 @@ function _processAndFillForm(ocrText) {
 
     _safeSetFieldValue(fieldId, currentTime, "Hora Final (Actual)");
 
-    // Aquí implementem la lògica de l'avís persistent.
     const endTimeElement = document.getElementById(fieldId);
     if (endTimeElement) {
-      console.log(`[DEBUG] Aplicant estil d'avís persistent a #${fieldId}`);
-
-      // 1. Afegeix la classe d'avís. Aquesta es quedarà posada.
       endTimeElement.classList.add("input-warning");
-
-      // 2. Afegim un listener que s'executarà NOMÉS UNA VEGADA.
-      //    Quan l'usuari faci focus (clic o tab) en el camp, eliminarem l'avís.
       endTimeElement.addEventListener(
         "focus",
-        () => {
-          console.log(
-            `[DEBUG] L'usuari ha interactuat amb #${fieldId}. Eliminant l'avís.`
-          );
-          endTimeElement.classList.remove("input-warning");
-        },
+        () => endTimeElement.classList.remove("input-warning"),
         { once: true }
-      ); // Aquesta opció fa que el listener s'elimini sol després d'executar-se.
+      );
     }
   }
 
-  // Feedback final al usuario
   const filledCount = Object.keys(filledFields).length;
   if (filledCount > 0) {
     const filledLabels = Object.values(filledFields).map(
       (pattern) => pattern.label
     );
-    let message = `Campos actualizados: ${filledLabels.join(", ")}.`;
-    showToast(message, "success");
+    showToast(`Campos actualizados: ${filledLabels.join(", ")}.`, "success");
   } else {
-    showToast("No se encontraron horas relevantes en la imagen.", "info");
+    showToast("No se encontraron horas relevantes.", "info");
   }
 }
 
-// >>> MODIFICA LA FUNCIÓ initCameraOcr <<<
 export function initCameraOcr() {
-  if (isInitialized) {
-    console.warn("[cameraOcr] Ja inicialitzat.");
-    return;
-  }
+  if (isInitialized) return;
 
-  // Cachejem els elements que són únics
-  cameraGalleryModal = document.getElementById("camera-gallery-modal");
+  cameraGalleryModal = document.getElementById(DOM_SELECTORS.CAMERA_MODAL);
   modalContentElement = cameraGalleryModal?.querySelector(
-    ".modal-bottom-content"
+    DOM_SELECTORS.MODAL_CONTENT
   );
-  optionCameraBtn = document.getElementById("option-camera");
-  optionGalleryBtn = document.getElementById("option-gallery");
-  cameraInput = document.getElementById("camera-input");
+  optionCameraBtn = document.getElementById(DOM_SELECTORS.OPTION_CAMERA);
+  optionGalleryBtn = document.getElementById(DOM_SELECTORS.OPTION_GALLERY);
+  cameraInput = document.getElementById(DOM_SELECTORS.CAMERA_INPUT);
 
   if (
     !cameraGalleryModal ||
     !optionCameraBtn ||
     !optionGalleryBtn ||
     !cameraInput
-  ) {
-    console.warn("[cameraOcr] Falten elements DOM del modal OCR.");
+  )
     return;
-  }
 
-  // >>> NOVA LÒGICA PER ALS BOTONS D'ESCANEIG <<<
-  // Trobem TOTS els botons per escanejar
   const scanButtons = document.querySelectorAll(DOM_SELECTORS.OCR_SCAN_BTN);
+  scanButtons.forEach((button) =>
+    button.addEventListener("click", _openCameraModal)
+  );
 
-  if (scanButtons.length === 0) {
-    console.warn("[cameraOcr] No s'han trobat botons '.btn-ocr-scan'.");
-    return;
-  }
-
-  // Afegim un listener a cadascun d'ells
-  scanButtons.forEach((button) => {
-    button.addEventListener("click", _openCameraModal);
-  });
-
-  // La resta de listeners per al funcionament del modal i l'input de fitxer
   optionCameraBtn.addEventListener("click", _triggerCameraCapture);
   optionGalleryBtn.addEventListener("click", _triggerGallerySelection);
   cameraInput.addEventListener("change", _handleFileChange);
@@ -532,21 +354,73 @@ export function initCameraOcr() {
     if (
       event.key === "Escape" &&
       cameraGalleryModal?.classList.contains(CSS_CLASSES.VISIBLE)
-    ) {
+    )
       _closeCameraModal();
-    }
   });
 
   isInitialized = true;
-  console.log(
-    "[cameraOcr] Funcionalitat OCR inicialitzada i lligada als botons de servei."
-  );
 }
 
 function _scrollToBottom() {
-  // window.scrollTo() és la funció nativa per fer scroll a la pàgina.
   window.scrollTo({
-    top: document.body.scrollHeight, // La posició vertical on volem anar: l'alçada total del document.
-    behavior: "smooth", // Animació suau.
+    top: document.body.scrollHeight,
+    behavior: "smooth",
   });
+}
+
+async function _handleFileChange(event) {
+  if (isProcessing) {
+    showToast("Proceso OCR ya en marcha.", "warning");
+    return;
+  }
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    showToast("Selecciona una imagen.", "error");
+    if (cameraInput) cameraInput.value = "";
+    return;
+  }
+
+  isProcessing = true;
+  setControlsDisabled(true);
+  _updateOcrProgress(0, "Preparando imagen...");
+
+  _scrollToBottom();
+
+  let worker = null;
+
+  try {
+    let imageBlob = await _resizeImage(file);
+    imageBlob = await _preprocessImage(imageBlob);
+
+    _updateOcrProgress(5, "Cargando motor OCR...");
+    worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
+      logger: (m) => {
+        if (m.status === "recognizing text") {
+          const percent = Math.max(10, Math.floor(m.progress * 100));
+          _updateOcrProgress(percent, `Reconociendo texto ${percent}%...`);
+        } else if (m.status === "loading language model") {
+          _updateOcrProgress(5, "Cargando modelo de idioma...");
+        }
+      },
+    });
+    await worker.setParameters(TESSERACT_PARAMS);
+
+    _updateOcrProgress(10, "Reconociendo texto 10%...");
+    const {
+      data: { text: ocrText },
+    } = await worker.recognize(imageBlob);
+    _updateOcrProgress(100, "Análisis completado.");
+
+    _processAndFillForm(ocrText);
+  } catch (error) {
+    showToast(`Error de escaneo: ${error.message || "Desconocido"}`, "error");
+    _updateOcrProgress(0, "Error en el escaneo.");
+  } finally {
+    if (worker) await worker.terminate();
+    if (cameraInput) cameraInput.value = "";
+    _hideOcrProgress();
+    setControlsDisabled(false);
+    isProcessing = false;
+  }
 }

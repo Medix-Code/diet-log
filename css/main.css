@@ -1,51 +1,39 @@
-@charset "UTF-8";
 :root {
-  /* Colors principals */
   --primary-color: #004aad;
   --secondary-color: #004aad;
   --secondary-color-hover: #0056b3;
   --text-color: #333333;
   --subtext-color: #444444;
-  /* TopBar */
   --border-bottom-topbar: #f21f1f1;
   --title-color: #f1f1f1;
-  /* Pestanyes (Tabs) */
   --bg-tab-active: #fefeff;
   --bg-tab-noactive: #f3f3f3;
   --txtcolor-tab-active: #333333;
   --txtcolor-tab-noactive: #4a4a4a;
   --bg-tab-hover: #dee2e6;
   --line-tab: #004aad;
-  /* TextField */
   --textfield: #fefeff;
   --textfield-error: #ec1710;
   --textfield-error-bg: #f5e9e9;
   --input-border: #ced4da;
   --border-textfield-focus: rgb(80, 80, 80);
-  --textfield-warning: #ff9f0a; /* Un taronja/ambre cridaner */
-  --textfield-warning-bg: #fff8e1; /* Un groc/crema molt pàl·lid per al fons */
-  /* Group Tab Datos */
+  --textfield-warning: #ff9f0a;
+  --textfield-warning-bg: #fff8e1;
   --btt-card-bg: #004aad;
-  /* Signature */
   --btt-signature: #f3f3f3;
   --bg-signature-hover: #c9c9c9;
-  /* Footer */
   --border-top-footer: #f1f1f1;
   --text-color-footer: #ffffff;
   --bg-footer: #004aad;
-  /* General */
   --bg-color: #fefeff;
   --grey-border: #ddddddea;
-  /* Botons d'ajustaments */
   --bgcolor-hover: #e0e0e0;
   --bgcolor-active: #d5d5d5;
   --bg-transp-ajustes: rgba(0, 0, 0, 0.15);
   --border-btn-ajustes: rgba(204, 204, 204, 0.3);
   --bg-btn-ajustes: #fefeff;
-  /* Modal MisDietes */
   --border-btt: #f50f0f;
   --bg-dietas: #f8f9fa;
-  /* Modal general / Botó confirmació */
   --bg-transp-modal: rgba(0, 0, 0, 0.6);
   --btt-confirm: #004aad;
   --bg-confirm: #2d71bb;
@@ -55,14 +43,11 @@
   --bg-btn-confirm-about: #004aad;
   --black: #000000;
   --light-grey: #f5f5f5;
-  /* PROMPT */
   --prompt_box_shadow: rgba(0, 0, 0, 0.3);
-  /* TOAST */
   --toast-success-bg: #28a745;
   --toast-error-bg: #dc3545;
   --toast-text-color: #ffffff;
   --toast-box-shadow: rgba(0, 0, 0, 0.15);
-  /* Serveis */
   --service-1-bg: #e9f7ef;
   --service-1-border: #8ddfd0;
   --service-2-bg: #e8f4fd;
@@ -72,7 +57,6 @@
   --service-4-bg: #f9e6ff;
   --service-4-border: #e1b6f4;
   --border-btn-service: #363333;
-  /* Mides i transicions */
   --top-bar-height: 60px;
   --tab-height: 60px;
   --font-size-base: 15px;
@@ -81,7 +65,6 @@
 }
 
 .theme-dark {
-  /* Sobre-escrivim les variables per al tema fosc */
   --primary-color: #343a40;
   --secondary-color: #1470c2;
   --secondary-color-hover: #0056b3;
@@ -100,8 +83,8 @@
   --textfield-error-bg: #f5e9e9;
   --input-border: #ced4da;
   --border-textfield-focus: rgb(80, 80, 80);
-  --textfield-warning: #ff9f0a; /* Un taronja/ambre cridaner */
-  --textfield-warning-bg: #fff8e1; /* Un groc/crema molt pàl·lid per al fons */
+  --textfield-warning: #ff9f0a;
+  --textfield-warning-bg: #fff8e1;
   --btt-signature: #f3f3f3;
   --bg-signature-hover: #c9c9c9;
   --border-top-footer: #f1f1f1;
@@ -158,7 +141,6 @@ body {
   margin: 0;
   padding: 0;
 }
-
 body.modal-open {
   overflow: hidden !important;
 }
@@ -242,13 +224,6 @@ main {
   background-color: #ffc107;
   transform: scale(1);
 }
-.ajustes-btn.has-changes .hamburger {
-  animation: none;
-  transform: rotate(0deg);
-}
-.ajustes-btn.has-changes .hamburger span {
-  background: var(--title-color);
-}
 .ajustes-btn.saving::before {
   background-color: var(--primary-color);
   transform: scale(1);
@@ -261,9 +236,6 @@ main {
 }
 .ajustes-btn.open::before {
   background-color: transparent;
-}
-.ajustes-btn.open .hamburger {
-  animation: none;
 }
 .ajustes-btn.open .hamburger span {
   background: var(--title-color);
@@ -376,26 +348,21 @@ main {
   cursor: not-allowed;
 }
 .ajustes-panel .big-btn .last-saved {
-  margin-left: auto; /* (opcional) empeny cap a la dreta */
+  margin-left: auto;
   font-size: 0.8rem;
   font-style: italic;
   color: var(--txtcolor-tab-noactive);
   white-space: nowrap;
 }
 
-/* ——— Text “hace X” ——— */
 .last-saved-info {
-  margin-left: auto; /* empeny cap a la dreta del tot */
-  font-size: 0.75rem; /* discret */
+  margin-left: auto;
+  font-size: 0.75rem;
   font-style: italic;
   opacity: 0.7;
-  white-space: nowrap; /* evita salts de línia indesitjats */
+  white-space: nowrap;
 }
 
-/* ───────────────────────────────────────────────────────────
-   SAVE-PILL  ·  indicador de guardat flotant
-   ───────────────────────────────────────────────────────────*/
-/* Contenidor flotant */
 .save-pill {
   position: fixed;
   bottom: calc(20px + env(keyboard-inset-bottom, 0px));
@@ -411,50 +378,38 @@ main {
   font-size: 0.8rem;
   font-weight: 500;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  /* estat d’entrada – ja el tenies */
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 0.25s, transform 0.25s;
 }
-
 .save-pill.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Icona comuna */
 .pill-icon {
   inline-size: 18px;
   block-size: 18px;
-  margin-right: 8px; /* separació icona–text */
+  margin-right: 8px;
   background-repeat: no-repeat;
   background-size: contain;
 }
 
-/* Estat: canvis pendents */
 .save-pill.has-changes .pill-icon {
   background-image: url("../assets/icons/save_yellow.svg");
 }
 
-/* Estat: guardant */
 .save-pill.saving .pill-icon {
   background-image: url("../assets/icons/spinner.svg");
-  animation: spin 1s linear infinite; /* ja definit a l’últim CSS */
+  animation: spin 1s linear infinite;
 }
 
-/* Estat: guardat correctament */
 .save-pill.has-saved .pill-icon {
   background-image: url("../assets/icons/check_green.svg");
 }
 
-/* Estat: error */
 .save-pill.error .pill-icon {
   background-image: url("../assets/icons/error_red.svg");
-}
-
-/* (Opcional) Amagar el punt antic si l’has deixat al DOM */
-.pill-dot {
-  display: none;
 }
 
 .tabs-container {
@@ -515,7 +470,6 @@ button .fa {
   display: block;
 }
 
-/* Pestanya amb error (parpelleig) */
 .tab.error-tab {
   animation: blinkErrorAnim 1s ease-in-out infinite alternate;
   font-weight: 600;
@@ -532,10 +486,6 @@ button .fa {
 }
 .form-group {
   margin-bottom: 25px;
-  /* Inputs DATE, TIME i DATETIME */
-  /* Focus per DATE, TIME, DATETIME i SELECT */
-  /* Estils específics per a iOS */
-  /* Focus per a inputs de text (excepte .txt-person1 i .txt-person2) */
 }
 .form-group label {
   display: block;
@@ -607,14 +557,13 @@ button .fa {
   transition: border-color 0.5s ease-out, background-color 0.5s ease-out;
 }
 
-/* si vols que l'input intern també quedi en vermell clar: */
 .input-with-icon.input-error input {
   background-color: var(--textfield-error-bg) !important;
 }
 
 .group-header {
   display: flex;
-  align-items: center; /* Mantenim la disposició horitzontal actual */
+  align-items: center;
   justify-content: space-between;
   width: 100%;
 }
@@ -633,7 +582,7 @@ button .fa {
   display: flex;
   gap: 10px;
   position: relative;
-  top: 15px; /* Ajusta aquest valor fins que la part superior dels botons s'alineï amb la part inferior del text */
+  top: 15px;
 }
 
 .group-btn {
@@ -660,7 +609,6 @@ button .fa {
   line-height: clamp(40px, 5vw, 50px);
 }
 
-/* 🔹 Color de fons per al botó "Guardar" */
 .btn-save {
   background-color: #28a745;
 }
@@ -668,7 +616,6 @@ button .fa {
   background-color: #218838;
 }
 
-/* 🔹 Color de fons per al botó "Opcions" */
 .btn-options {
   background-color: #007bff;
 }
@@ -679,33 +626,27 @@ button .fa {
 .dotacio-modal-content {
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Evita scroll global si s’excedeix l’alçada */
-  /* Títol */
-  /* Quan no hi ha dotacions */
-  /* Estilos generales para el ícono */
-  /* Llista de dotacions (fa scroll) */
+  overflow: hidden;
 }
 .dotacio-modal-content h3 {
   margin-bottom: 10px;
-  text-align: center; /* O left, segons et convingui */
+  text-align: center;
 }
 .dotacio-modal-content #no-dotacio-text {
   margin-top: 20px;
   display: flex;
-  align-items: center; /* Centra verticalmente ícono y texto */
-  justify-content: center; /* Centra horizontalmente */
-  gap: 8px; /* Espacio entre texto e ícono (ajusta a tu gusto) */
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .dotacio-modal-content .save-icon {
   width: 20px;
   height: 20px;
-  /* Elimina margenes innecesarios */
   margin: 0;
-  /* Asegura que el ícono no se distorsione */
   vertical-align: middle;
 }
 .dotacio-modal-content .dotacio-list {
-  flex: 1; /* Ocupa tot l’espai disponible per fer scroll */
+  flex: 1;
   overflow-y: auto;
   margin-top: 10px;
   padding-right: 5px;
@@ -715,17 +656,15 @@ button .fa {
   gap: 10px;
 }
 
-/* Cada ítem de la llista */
 .dotacio-item {
   background-color: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 10px;
   display: flex;
-  flex-direction: column; /* Primera línia: text; segona: botons */
+  flex-direction: column;
   gap: 12px;
   margin-bottom: 10px;
-  /* Contenidor dels botons dins de cada item (p.ex. Cargar i Eliminar) */
 }
 .dotacio-item .dotacio-info {
   font-size: 14px;
@@ -733,19 +672,18 @@ button .fa {
 }
 .dotacio-item .button-container {
   display: flex;
-  gap: 10px; /* Espai entre botons */
+  gap: 10px;
 }
 .dotacio-item .button-container button {
-  flex: 1; /* Cada botó ocupa tot l'espai disponible */
+  flex: 1;
 }
 
-/* Botnons dins la llista de*/
 .dotacio-load,
 .dotacio-delete {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* Espai entre icona i text */
+  gap: 8px;
   padding: 6px 12px;
   border: none;
   border-radius: 8px;
@@ -758,7 +696,6 @@ button .fa {
   background-color: #eceffc;
   color: #004aad;
 }
-
 .dotacio-load:hover {
   background-color: #dce0fa;
 }
@@ -767,19 +704,16 @@ button .fa {
   background-color: #fdeceb;
   color: #e03131;
 }
-
 .dotacio-delete:hover {
   background-color: #fccac9;
 }
 
-/* Footer del modal: botó "Afegir" a la dreta */
 .modal-footer {
   display: flex;
-  justify-content: flex-end; /* Botó a la dreta */
-  padding-top: 10px; /* Separació de la llista scrollable */
+  justify-content: flex-end;
+  padding-top: 10px;
 }
 
-/* Botó de tancar centrat al modal */
 .close-dotacio-button {
   width: 120px;
   height: 40px;
@@ -794,19 +728,15 @@ button .fa {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 10px auto; /* Centrar el botó al modal */
+  margin: 10px auto;
 }
-
-/* Efectes hover i clic */
 .close-dotacio-button:hover {
   background-color: #c78e00;
 }
-
 .close-dotacio-button:active {
   transform: scale(0.95);
 }
 
-/* Animació per al modal (si cal) */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -819,22 +749,21 @@ button .fa {
 }
 .chip-group-title {
   display: block;
-  font-size: var(--font-size-base); /* 15px, igual que les altres labels */
-  font-weight: 500; /* Una mica més de pes per donar-li jerarquia de títol */
+  font-size: var(--font-size-base);
+  font-weight: 500;
   color: var(--subtext-color);
   margin-top: 0;
-  margin-bottom: 10px; /* Mateix espai que les altres labels */
+  margin-bottom: 10px;
   text-align: left;
 }
 
 .chip-group {
   display: flex;
   gap: 10px;
-  margin-bottom: 25px; /* Mateix espai que entre form-groups */
+  margin-bottom: 25px;
   width: 100%;
 }
 
-/* Estil base comú per a TOTS els botons dins del formulari (chips i ocr) */
 .chip,
 .btn-ocr-inline {
   display: inline-flex;
@@ -850,7 +779,6 @@ button .fa {
   line-height: 1;
 }
 
-/* Estil per als CHIPS INACTIUS */
 .chip:not(.chip-active) {
   background-color: #ffffff;
   border: 1px solid var(--input-border);
@@ -858,7 +786,6 @@ button .fa {
   opacity: 0.7;
   font-size: 13px;
 }
-
 .chip:not(.chip-active):hover {
   border-color: var(--primary-color);
   color: var(--primary-color);
@@ -867,7 +794,6 @@ button .fa {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
-/* Estil per al CHIP ACTIU */
 .chip.chip-active {
   font-size: 13px;
   font-weight: 600;
@@ -875,7 +801,6 @@ button .fa {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Colors específics per al CHIP ACTIU */
 .chip-group.service-1 .chip.chip-active {
   background-color: var(--service-1-bg);
   border: 1px solid var(--service-1-border);
@@ -900,7 +825,6 @@ button .fa {
   color: color-mix(in srgb, var(--service-4-border) 80%, black 20%);
 }
 
-/* Línia de separació (si la vols utilitzar) */
 .section-divider {
   border: none;
   height: 1px;
@@ -908,7 +832,6 @@ button .fa {
   margin: 25px 0;
 }
 
-/* Contenidor per alinear l'etiqueta i el botó d'escaneig */
 .label-action-container {
   display: flex;
   justify-content: space-between;
@@ -916,97 +839,77 @@ button .fa {
   width: 100%;
   margin-bottom: 10px;
 }
-
 .label-action-container label {
   margin-bottom: 0;
 }
 
-/* Estil ESPECÍFIC per al botó d'escaneig */
 .btn-ocr-inline {
-  flex: 0 1 auto; /* No creix, s'encongeix si cal, base automàtica */
+  flex: 0 1 auto;
   gap: 6px;
   background-color: #ffffff;
   border: 1px solid var(--input-border);
   font-size: 13px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  /* >>> AQUÍ LA SOLUCIÓ AL COLOR <<< */
-  /* Forcem el color del text a ser el de la variable principal (negre/gris fosc) */
   color: var(--text-color);
 }
-
 .btn-ocr-inline .icon {
   width: 16px;
   height: 16px;
-  /* Assegura't que l'SVG original sigui negre. Així no calen filtres. */
 }
-
-/* Efectes d'interacció per al botó d'escaneig */
 .btn-ocr-inline:hover {
-  border-color: var(--primary-color); /* La vora es posa blava en fer hover */
+  border-color: var(--primary-color);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
-
 .btn-ocr-inline:active {
   transform: translateY(0) scale(0.98);
   background-color: var(--bg-tab-hover);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* ========================================================================== */
-/* ESTILS PER A CONTROLS DESHABILITATS TEMPORALMENT per ocr                   */
-/* ========================================================================== */
 .disabled-control {
-  opacity: 0.4 !important; /* Opacitat molt baixa per indicar clarament que no es pot fer servir */
-  cursor: not-allowed !important; /* El cursor canvia per reforçar que no és clicable */
-  pointer-events: none !important; /* Aquesta és la propietat clau: ignora completament els esdeveniments de ratolí/tàctil */
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }
 
 .ocr-action-container {
-  /* Contenidor per al botó, permet centrar-lo fàcilment */
   display: flex;
-  justify-content: center; /* Centra el botó horitzontalment */
+  justify-content: center;
   width: 100%;
-  margin-top: 15px; /* Una mica d'espai sobre el botó */
-  margin-bottom: 25px; /* Espai sota el botó, abans del següent camp */
+  margin-top: 15px;
+  margin-bottom: 25px;
 }
 
 .btn-ocr-scan {
-  /* Aparença del botó. */
-  align-items: center; /* Alineació vertical */
-  gap: 10px; /* Espai entre icona i text */
+  align-items: center;
+  gap: 10px;
   background-color: #ffffff;
   border: 1px solid #ff9f0a;
   color: #ff9f0a;
-  padding: 10px 20px; /* Espai intern per fer-lo més gran */
-  border-radius: 8px; /* Cantonades arrodonides consistents */
+  padding: 10px 20px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  /* Petita ombra per donar-li profunditat */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  /* Estils per a la icona dins del botó */
-  /* Efectes d'interacció */
 }
 .btn-ocr-scan .icon {
   width: 20px;
   height: 20px;
-  /* Si la teva icona SVG és negra, pots canviar el seu color amb filter.
-     Això genera el color blau de la teva marca. */
   filter: invert(79%) sepia(57%) saturate(1477%) hue-rotate(334deg) brightness(102%) contrast(101%);
 }
 .btn-ocr-scan:hover {
-  /* En fer hover, podem fer el fons d'un color taronja pàl·lid */
-  background-color: var(--textfield-warning-bg); /* El groc/crema que ja tenies definit */
+  background-color: var(--textfield-warning-bg);
   border-color: #ff9f0a;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 .btn-ocr-scan:active {
   transform: translateY(0) scale(0.98);
-  background-color: color-mix(in srgb, var(--textfield-warning-bg) 80%, black 10%); /* Una mica més fosc */
+  background-color: color-mix(in srgb, var(--textfield-warning-bg) 80%, black 10%);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -1024,25 +927,22 @@ button .fa {
 }
 
 #services-container {
-  display: grid; /* actiu grid */
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  gap: 1rem; /* separació entre recuadres */
+  gap: 1rem;
   align-items: start;
 }
 
 .service-button {
-  /* Mida responsive */
   --size: clamp(40px, 5vw, 50px);
   inline-size: var(--size);
   block-size: var(--size);
-  /* Centrat perfecte */
-  display: grid; /* << únic display */
+  display: grid;
   place-items: center;
-  /* Estil base */
   border-radius: 8px;
   font-size: 16px;
   font-weight: 700;
-  line-height: 1; /* evita desplaçaments verticals */
+  line-height: 1;
   padding: 0;
   box-sizing: border-box;
   box-shadow: 0 2px 4px var(--bg-transp-ajustes);
@@ -1050,7 +950,6 @@ button .fa {
   color: var(--text-color);
   cursor: pointer;
   transition: filter 0.2s ease, transform 0.2s ease;
-  /* Colors de cada servei */
 }
 .service-button.service-1 {
   background: var(--service-1-border);
@@ -1068,21 +967,19 @@ button .fa {
   transform: scale(0.96);
 }
 
-/* Estat ACTIU */
 .service-button.active-square {
   filter: none;
   border: 1px solid var(--border-btn-service);
   transform: scale(1.05);
 }
 
-/* Estat INACTIU */
 .service-button:not(.active-square) {
   opacity: 0.5;
 }
 
 .service {
   padding-top: clamp(10px, 2vw, 20px);
-  padding-bottom: clamp(15px, 3vw, 30px); /* Mantenim o ajustem el padding inferior */
+  padding-bottom: clamp(15px, 3vw, 30px);
   padding-left: clamp(10px, 2vw, 20px);
   padding-right: clamp(10px, 2vw, 20px);
   background-color: var(--bg-color);
@@ -1104,15 +1001,13 @@ button .fa {
   background-color: var(--service-4-bg);
 }
 
-/* Contenidor general d'opcions */
 .options-container {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Alineació a la dreta */
+  justify-content: flex-end;
 }
 
-/* Botó principal d'opcions (tres punts, etc.) */
 .options-btn {
   width: clamp(40px, 5vw, 50px);
   height: clamp(40px, 5vw, 50px);
@@ -1153,15 +1048,13 @@ button .fa {
   filter: brightness(0.9);
 }
 
-/* Menú desplegable: disposició en columna per mostrar els botons un sota l'altre */
 .options-dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Espai entre els botons */
-  /* Eliminem el padding, fons, ombra i border-radius */
+  gap: 10px;
   padding: 0;
   background: transparent;
   box-shadow: none;
@@ -1171,22 +1064,17 @@ button .fa {
   transform: translateY(-10px);
   animation: dropdownAnimation 0.3s ease-out forwards;
 }
-
-/* Amagat per defecte (via classe hidden) */
 .options-dropdown.hidden {
   display: none;
 }
 
-/* Animació per al desplegable */
 @keyframes dropdownAnimation {
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-/* Estil comú per als botons del menú */
 .option-btn {
-  width: clamp(40px, 5vw, 50px);
   width: clamp(40px, 5vw, 50px);
   border-radius: 8px;
   border: none;
@@ -1267,10 +1155,6 @@ button .fa {
   filter: brightness(0.9);
 }
 
-/* ------------------------- */
-/* MODAL “BOTTOM SHEET” BASE OCR */
-/* ------------------------- */
-/* Contenidor de fons semi-transparent que puja des de baix */
 .modal-bottom {
   position: fixed;
   top: 0;
@@ -1280,26 +1164,20 @@ button .fa {
   padding: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: flex-end; /* Alinea el contingut a la part inferior */
+  align-items: flex-end;
   justify-content: center;
   z-index: 9999;
-  /* Animació d'entrada/sortida */
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
-/* Quan el modal és visible */
 .modal-bottom.visible {
   opacity: 1;
   transform: translateY(0);
 }
-
-/* Quan el modal està amagat (per a JavaScript) */
 .modal-bottom.hidden {
   display: none;
 }
 
-/* El contingut del modal (la part que té el text i els botons) */
 .modal-bottom-content {
   background-color: var(--primary-color);
   color: #ffffff;
@@ -1318,18 +1196,14 @@ button .fa {
   transform: translateY(0);
 }
 
-/* ---------------------------- */
-/* Títol i descripció centrats  */
-/* ---------------------------- */
 .modal-title-container {
   display: flex;
-  align-items: center; /* Alinea verticalment el text i l'etiqueta */
-  justify-content: center; /* Centra el conjunt */
-  gap: 8px; /* Espai entre el títol i l'etiqueta */
-  margin-bottom: 16px; /* Espai sota el títol/etiqueta */
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-/* Títol del modal (eliminem marges individuals) */
 .modal-bottom-title {
   margin: 0;
   font-size: 1.1rem;
@@ -1337,20 +1211,18 @@ button .fa {
   color: #f5f5f7;
 }
 
-/* Etiqueta BETA */
 .beta-tag {
-  background-color: #ff9f0a; /* Un taronja que destaca bé */
-  color: #000000; /* Text negre per a bon contrast */
-  font-size: 0.6rem; /* Mida de font petita */
-  font-weight: 700; /* Negreta */
-  padding: 2px 5px; /* Padding petit */
-  border-radius: 4px; /* Cantonades arrodonides */
-  text-transform: uppercase; /* Text en majúscules */
+  background-color: #ff9f0a;
+  color: #000000;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
   line-height: 1;
-  align-self: center; /* Ajuda a l'alineació vertical */
+  align-self: center;
 }
 
-/* Descripció/Subtítol (ajustem marges) */
 .modal-bottom-description {
   margin: 0 0 25px 0;
   text-align: center;
@@ -1358,78 +1230,60 @@ button .fa {
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.4;
 }
-
 .modal-bottom-description b {
   color: #ffffff;
   font-weight: 600;
 }
 
-/* ------------------------------------- */
-/* Contenidor per als 2 botons (en fila) */
-/* ------------------------------------- */
 .modal-bottom-row {
   display: flex;
-  justify-content: center; /* Centra els botons horitzontalment */
+  justify-content: center;
   align-items: center;
-  gap: 60px; /* Espai entre els botons */
+  gap: 60px;
 }
 
-/* -------------------------------------- */
-/* Cada botó en forma de “quadrat”        */
-/* -------------------------------------- */
 .modal-bottom-btn {
-  /* Mida del botó */
-  width: 100px; /* Una mica més ample per a millor toc */
+  width: 100px;
   height: 90px;
-  border-radius: 12px; /* Cantonades arrodonides */
+  border-radius: 12px;
   display: flex;
-  flex-direction: column; /* Icona a dalt, text a sota */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px; /* Espai entre icona i text */
-  /* >>> NOU: ESTIL VISUAL DELS BOTONS <<< */
-  background-color: #f5f5f7; /* Un gris mitjà-fosc per al fons del botó */
+  gap: 6px;
+  background-color: #f5f5f7;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s ease-out;
 }
-
-/* Efecte hover i active/clic */
 .modal-bottom-btn:hover {
-  background-color: #e5e5e7; /* Un gris una mica més clar en fer hover */
+  background-color: #e5e5e7;
 }
-
 .modal-bottom-btn:active {
-  transform: scale(0.97); /* Un petit efecte de "pressió" en fer clic */
+  transform: scale(0.97);
 }
-
-/* Icona dins del botó */
 .modal-bottom-btn img {
-  width: 28px; /* Mida de la icona */
+  width: 28px;
   height: 28px;
 }
 
-/* Text a sota de la icona */
 .modal-bottom-text {
-  font-size: 0.85rem; /* 14px o similar */
-  font-weight: 500; /* Pes mitjà */
-  color: var(--text-color); /* Text blanc/gris clar */
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-color);
 }
 
-/* Assegura't que el pare .service tingui position: relative; (ja ho tenies, està bé) */
 .service {
   position: relative;
-  /* ... */
 }
 
-/* Estil de l'overlay de progrés (ara amb classe) */
 .ocr-progress-container {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.85); /* Fons blanc translúcid */
+  background-color: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(4px);
   z-index: 10;
   display: flex;
@@ -1440,11 +1294,9 @@ button .fa {
   opacity: 1;
   transition: opacity 0.3s ease;
 }
-
-/* Quan està amagat (la classe 'hidden' que afegeix/treu el JS) */
 .ocr-progress-container.hidden {
   opacity: 0;
-  pointer-events: none; /* Evita que es pugui interactuar amb l'overlay amagat */
+  pointer-events: none;
 }
 
 .ocr-progress-text {
@@ -1454,12 +1306,11 @@ button .fa {
   margin-top: 15px;
 }
 
-/* Spinner animat */
 .ocr-spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid #f3f3f3; /* Gris clar */
-  border-top: 4px solid var(--primary-color); /* Color de la teva marca */
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1534,9 +1385,9 @@ button .fa {
 }
 
 .modal-content {
-  max-height: 80vh; /* Limita l'altura al 80% de l'alçada de la finestra */
+  max-height: 80vh;
   text-align: left;
-  overflow-y: auto; /* Mostra una barra de desplaçament vertical si és necessari */
+  overflow-y: auto;
   position: relative;
   margin: 10% auto;
   background-color: var(--bg-color);
@@ -1615,9 +1466,9 @@ button .fa {
 
 .diet-modal-content {
   display: flex;
-  flex-direction: column; /* header | scroll | footer */
-  max-height: 80vh; /* límit d’alçada total del modal */
-  overflow: hidden; /* que el scroll només afecti el fill .diet-list */
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
 }
 
 #diet-modal-title {
@@ -1636,16 +1487,16 @@ button .fa {
 }
 
 .diet-list {
-  flex: 1; /* ocupa tot l’espai disponible */
-  overflow-y: auto; /* només aquesta secció es desplaça */
-  padding: 20px 0; /* el teu espai vertical actual */
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
 .no-diets-text {
-  margin: 20px 0; /* manté una mica d’aire */
+  margin: 20px 0;
   text-align: center;
 }
 
@@ -1659,42 +1510,34 @@ button .fa {
   filter: brightness(0.9);
 }
 
-/* ──────────────────────────────────────────────
-   GESTOR DE DIETAS – restyling d’un sol ítem
-   ────────────────────────────────────────────── */
-/* 1 ▸ Caixa principal de cada dieta */
 .diet-item {
   display: flex;
-  flex-direction: column; /* text a dalt, botons a sota  */
-  gap: 0.75rem; /* espai vertical             */
+  flex-direction: column;
+  gap: 0.75rem;
   padding: 12px 16px;
   background: #f9f9f9;
   border: 1px solid var(--grey-border);
   border-radius: 8px;
 }
 
-/* 2 ▸ Primària (data – franja) */
 .diet-date {
   font-size: 14px;
   font-weight: 500;
 }
 
-/* 3 ▸ Contenidor dels dos botons */
 .diet-icons {
   display: flex;
-  justify-content: space-between; /* un al costat de l’altre     */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
-  gap: 10px; /* separació entre botons      */
+  gap: 10px;
 }
-
-/* 4 ▸ Botons: reaprofitem les mateixes classes que a dotacions  */
 .diet-icons button {
-  flex: 1; /* ocupen el mateix ample      */
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* espai icona-text            */
+  gap: 8px;
   padding: 10px 0;
   border: none;
   border-radius: 8px;
@@ -1704,9 +1547,7 @@ button .fa {
   transition: background-color 0.2s ease;
 }
 
-/* 4.1 ▸ Eliminar */
 .diet-delete {
-  /* classe ja aplicada al botó */
   background: #fdeceb;
   color: #e03131;
 }
@@ -1714,9 +1555,7 @@ button .fa {
   background: #fccac9;
 }
 
-/* 4.2 ▸ Carregar */
 .diet-load {
-  /* classe ja aplicada al botó */
   background: #eceffc;
   color: #004aad;
 }
@@ -1724,13 +1563,11 @@ button .fa {
   background: #dce0fa;
 }
 
-/* 5 ▸ Icones lleugerament més petites per encaixar */
 .diet-icons img {
   width: 20px !important;
   height: 20px !important;
 }
 
-/* Botó de tancar centrat al modal */
 .close-diet-button {
   width: 120px;
   height: 40px;
@@ -1745,14 +1582,11 @@ button .fa {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 10px auto; /* Centrar el botó al modal */
+  margin: 10px auto;
 }
-
-/* Efectes hover i clic */
 .close-diet-button:hover {
   background-color: #c78e00;
 }
-
 .close-diet-button:active {
   transform: scale(0.95);
 }
@@ -1903,7 +1737,6 @@ button .fa {
   padding: 20px;
   text-align: center;
   font-family: sans-serif;
-  /* opcional: mantén l’accessibilitat per a teclat/ratolí */
 }
 .footer .footer__content {
   display: flex;
@@ -1940,13 +1773,12 @@ button .fa {
   background-color: rgba(255, 255, 255, 0.1);
 }
 .footer .footer-btn:focus {
-  background-color: transparent; /* netegem la “taca” */
-  outline: none; /* o outline personalitzat, com vulguis */
+  background-color: transparent;
+  outline: none;
 }
 .footer .footer-btn:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
-  /* el background continua transparent */
 }
 .footer .footer-btn:active {
   background-color: rgba(255, 255, 255, 0.2);
@@ -1980,25 +1812,21 @@ button .fa {
   transform: translateY(100%);
   opacity: 0;
 }
-
 #install-prompt.visible {
   transform: translateY(0);
   opacity: 1;
 }
-
 #install-prompt p {
   margin: 0 0 30px 0;
   font-size: 16px;
   font-weight: bold;
 }
-
 #install-prompt .install-buttons {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 30px;
 }
-
 #install-prompt button {
   padding: 10px 20px;
   font-size: 14px;
@@ -2008,23 +1836,19 @@ button .fa {
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
 #install-prompt #install-button {
   background-color: var(--secondary-color);
   color: var(--text-color);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
-
 #install-prompt #install-button:hover {
   background-color: var(--secondary-color-hover);
   transform: scale(1.05);
 }
-
 #install-prompt #dismiss-button {
   background-color: #5c6064;
   color: var(--text-color);
 }
-
 #install-prompt #dismiss-button:hover {
   background-color: #5a6268;
   transform: scale(1.05);
@@ -2133,9 +1957,6 @@ button .icon {
   }
   .ajustes-panel .big-btn i {
     font-size: 18px;
-  }
-  .ajustes-panel .big-btn:first-child {
-    padding-top: 20px;
   }
   .tabs-container {
     top: calc(var(--tab-height) - 4px);
@@ -2267,7 +2088,7 @@ button .icon {
     max-height: 70vh;
     margin: 20% auto;
     overflow: auto;
-    padding: 20px 20px 20px 20px;
+    padding: 20px;
   }
   .modal-content h2,
   .modal-content h3 {

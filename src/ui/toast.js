@@ -1,83 +1,67 @@
 /**
  * @file toast.js
- * @description Sistema de notificacions Toast amb cua.
+ * @description Sistema de notificacions Toast amb cua i accessibilitat.
  * @module toastNotifier
  */
 
 // --- Constants ---
 const CONTAINER_ID = "toast-container";
-const TOAST_CLASS = "toast"; // Classe base per a cada toast
-const DEFAULT_DURATION = 3000; // Duració per defecte en ms
-const DEFAULT_TYPE = "info"; // Tipus per defecte si no s'especifica
+const TOAST_CLASS = "toast";
+const DEFAULT_DURATION = 3000;
+const DEFAULT_TYPE = "info";
 
-// --- Variables d'Estat del Mòdul ---
-let toastQueue = []; // Cua de missatges pendents { message, type, duration }
-let isToastVisible = false; // Flag per saber si hi ha un toast actiu
-let toastContainerElement = null; // Cache del contenidor
+// --- Variables d'Estat ---
+let toastQueue = [];
+let isToastVisible = false;
+let toastContainerElement = null;
 
 // --- Funcions Privades ---
 
-/** Processa el següent missatge de la cua si no hi ha cap toast visible. */
+/** Processa el següent missatge de la cua. */
 function _processQueue() {
-  if (isToastVisible || toastQueue.length === 0) {
-    return; // No fa res si ja hi ha un toast o la cua està buida
-  }
+  if (isToastVisible || toastQueue.length === 0) return;
 
-  // Cacheja el contenidor si encara no s'ha fet
   if (!toastContainerElement) {
     toastContainerElement = document.getElementById(CONTAINER_ID);
     if (!toastContainerElement) {
-      console.error(
-        `[Toast] Contenidor amb ID '${CONTAINER_ID}' no trobat! No es poden mostrar toasts.`
-      );
-      toastQueue = []; // Buidem la cua si no hi ha contenidor
+      console.error(`[Toast] Contenidor '${CONTAINER_ID}' no trobat.`);
+      toastQueue = [];
       return;
     }
   }
 
-  isToastVisible = true; // Marca com a visible abans de crear
-  const toastData = toastQueue.shift(); // Treu el primer de la cua
+  isToastVisible = true;
+  const toastData = toastQueue.shift();
   _displayToast(toastData);
 }
 
 /**
- * Crea i mostra un element toast al DOM.
- * @param {object} toastData - Objecte amb { message, type, duration }.
+ * Mostra un toast.
+ * @param {Object} toastData - { message, type, duration }
  */
 function _displayToast({ message, type, duration }) {
   const toastElement = document.createElement("div");
-  // Aplica classe base i classe de tipus (success, error, etc.)
   toastElement.className = `${TOAST_CLASS} ${type || DEFAULT_TYPE}`;
-  toastElement.textContent = message;
-
-  // Accessibilitat: Informa als lectors de pantalla
+  toastElement.textContent = message.replace(/[<>&]/g, ""); // Sanitització
   toastElement.setAttribute("role", "alert");
-  // 'polite' espera que acabi de parlar, 'assertive' interromp
-  // toastElement.setAttribute('aria-live', 'polite');
+  toastElement.setAttribute("aria-live", "polite");
 
-  // Afegeix el toast al contenidor
   toastContainerElement.appendChild(toastElement);
 
-  // Temporitzador per eliminar el toast i processar el següent
   setTimeout(() => {
-    // Animació de sortida (opcional, es pot fer amb CSS)
-    // toastElement.style.opacity = '0';
-    // toastElement.style.transform = 'translateY(10px)';
-    // setTimeout(() => { // Espera que acabi l'animació CSS
     toastElement.remove();
-    isToastVisible = false; // Marca com no visible
-    _processQueue(); // Intenta processar el següent
-    // }, 300); // Temps de l'animació de sortida
+    isToastVisible = false;
+    _processQueue();
   }, duration || DEFAULT_DURATION);
 }
 
 // --- Funcions Públiques ---
 
 /**
- * Afegeix un missatge a la cua de toasts per mostrar.
- * @param {string} message - El missatge a mostrar.
- * @param {('success'|'error'|'info'|'warning')} [type='info'] - El tipus de toast (per estil CSS).
- * @param {number} [duration=DEFAULT_DURATION] - Duració en milisegons.
+ * Afegeix un toast a la cua.
+ * @param {string} message
+ * @param {string} [type=DEFAULT_TYPE]
+ * @param {number} [duration=DEFAULT_DURATION]
  * @export
  */
 export function showToast(
@@ -85,8 +69,18 @@ export function showToast(
   type = DEFAULT_TYPE,
   duration = DEFAULT_DURATION
 ) {
-  if (!message) return; // No afegeix toasts buits
-
+  if (!message || duration < 0) return; // Edge cases
   toastQueue.push({ message, type, duration });
-  _processQueue(); // Intenta processar immediatament
+  _processQueue();
+}
+
+/**
+ * Cancel·la tots els toasts pendents.
+ * @export
+ */
+export function cancelAllToasts() {
+  toastQueue = [];
+  if (isToastVisible) {
+    // Opcional: eliminar toast actual si cal
+  }
 }

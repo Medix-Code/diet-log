@@ -1,9 +1,9 @@
 /**
  * @file formService.js
- * @description Gestiona l'estat del formulari, la detecció de canvis
- *              i l'autoguardat amb feedback visual “Google-Docs style”.
+ * @description Gestiona l'estat del formulari, detecció de canvis i autoguardat amb feedback.
  * @module formService
  */
+
 // ────────────────────────────────────────────────────────────
 // IMPORTS
 // ────────────────────────────────────────────────────────────
@@ -11,11 +11,10 @@ import {
   getSignatureConductor,
   getSignatureAjudant,
 } from "./signatureService.js";
-import { getCurrentDietType } from "../utils/utils.js";
+import { getCurrentDietType, debounce } from "../utils/utils.js";
 import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
 import { autoSaveDiet } from "./dietService.js";
 import {
-  indicateUnsaved,
   resetDirty,
   indicateSaving,
   indicateSaved,
@@ -51,203 +50,268 @@ const SERVICE_FIELD_SELECTORS = {
 
 const CHIP_ACTIVE_CLASS = "chip-active";
 
-// ─ Temps i animacions
-const INPUT_CHANGE_DEBOUNCE_MS = 150; // resposta ràpida
-const DELAY_UNSAVED = 400; // apareix la píndola a 0,4 s
-const AUTOSAVE_DELAY_MS = 1000; // autosave ≃ 1 s desp. del darrer canvi
-const MIN_SPINNER_VISIBLE_MS = 300; // spinner mínim
+// ─ Temps i animacions (augmentat debounce per inputs a 800ms per evitar toasts prematurs)
+const INPUT_CHANGE_DEBOUNCE_MS = 800; // Canvi: Augmentat de 150ms per donar temps a escriure números llargs
+const AUTOSAVE_DELAY_MS = 1000;
+const MIN_SPINNER_VISIBLE_MS = 300;
 
 // ────────────────────────────────────────────────────────────
-// ESTAT INTERN
+// CLASSE PRINCIPAL (millora encapsulació i mantenibilitat)
 // ────────────────────────────────────────────────────────────
-let initialFormDataStr = ""; // “foto” després del darrer guardat
-let saveStart = 0; // per calcular la durada del spinner
+class FormService {
+  constructor() {
+    this.initialFormDataStr = "";
+    this.saveStart = 0;
+    this.debouncedAutoSave = debounce(
+      this.triggerAutoSave.bind(this),
+      AUTOSAVE_DELAY_MS
+    );
+    this.debouncedHandler = debounce(
+      this.handleInputChange.bind(this), // Canvi: Apunta a handleInputChange per centralitzar validació/autoguardat
+      INPUT_CHANGE_DEBOUNCE_MS
+    );
+  }
 
-// ────────────────────────────────────────────────────────────
-// HELPERS
-// ────────────────────────────────────────────────────────────
-const debounce = (fn, wait) => {
-  let t;
-  const debounced = (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn.apply(null, args), wait);
-  };
-  debounced.cancel = () => clearTimeout(t);
-  return debounced;
-};
+  /**
+   * És prou complet per guardar?
+   * @returns {boolean}
+   */
+  isFormReadyForSave() {
+    try {
+      const dateOk = !!document.getElementById(IDS.DATE)?.value.trim();
+      const typeOk = !!document.getElementById(IDS.DIET_TYPE)?.value.trim();
+      const svcNum = document.getElementById("service-number-1")?.value.trim();
+      const svcNumOk = /^\d{9}$/.test(svcNum);
+      return dateOk && typeOk && svcNumOk;
+    } catch (err) {
+      console.warn("[FormService] Error validant formulari:", err);
+      return false;
+    }
+  }
 
-/** És prou complet per guardar? */
-function isFormReadyForSave() {
-  const dateOk = !!document.getElementById(IDS.DATE)?.value;
-  const typeOk = !!document.getElementById(IDS.DIET_TYPE)?.value;
-  const svcNum = document.getElementById("service-number-1")?.value.trim();
-  const svcNumOk = /^\d{9}$/.test(svcNum); // 9 xifres exactes
-  return dateOk && typeOk && svcNumOk;
-}
+  /**
+   * Hi ha canvis pendents?
+   * @returns {boolean}
+   */
+  hasPendingChanges() {
+    return (
+      JSON.stringify(this.getFormDataObject() || {}) !== this.initialFormDataStr
+    );
+  }
 
-/** Hi ha canvis respecte l'últim “save”? */
-function hasPendingChanges() {
-  return JSON.stringify(getFormDataObject() || {}) !== initialFormDataStr;
-}
+  /**
+   * Construeix objecte amb dades del formulari.
+   * @returns {Object|null}
+   */
+  getFormDataObject() {
+    try {
+      const generalData = {
+        date: document.getElementById(IDS.DATE)?.value.trim() || "",
+        dietType:
+          document.getElementById(IDS.DIET_TYPE)?.value.trim() ||
+          getCurrentDietType(),
+        vehicleNumber: document.getElementById(IDS.VEHICLE)?.value.trim() || "",
+        person1: document.getElementById(IDS.P1)?.value.trim() || "",
+        person2: document.getElementById(IDS.P2)?.value.trim() || "",
+        serviceType:
+          document.getElementById(IDS.SERVICE_TYPE)?.value.trim() || "TSU",
+        signatureConductor: getSignatureConductor(),
+        signatureAjudant: getSignatureAjudant(),
+      };
 
-/** Construeix un objecte amb totes les dades del formulari */
-function getFormDataObject() {
-  try {
-    const generalData = {
-      date: document.getElementById(IDS.DATE)?.value.trim() || "",
-      dietType:
-        document.getElementById(IDS.DIET_TYPE)?.value.trim() ||
-        getCurrentDietType(),
-      vehicleNumber: document.getElementById(IDS.VEHICLE)?.value.trim() || "",
-      person1: document.getElementById(IDS.P1)?.value.trim() || "",
-      person2: document.getElementById(IDS.P2)?.value.trim() || "",
-      serviceType:
-        document.getElementById(IDS.SERVICE_TYPE)?.value.trim() || "TSU",
-      signatureConductor: getSignatureConductor(),
-      signatureAjudant: getSignatureAjudant(),
-    };
+      const servicesData = Array.from(
+        document.querySelectorAll(SERVICE_CONTAINER_SELECTOR)
+      ).map((panel) => {
+        const s = {};
+        for (const [k, sel] of Object.entries(SERVICE_FIELD_SELECTORS)) {
+          s[k] = panel.querySelector(sel)?.value.trim() || "";
+        }
+        const activeChip = panel.querySelector(`.chip.${CHIP_ACTIVE_CLASS}`);
+        s.mode = activeChip?.dataset.mode || "3.6";
+        return s;
+      });
 
-    const servicesData = Array.from(
-      document.querySelectorAll(SERVICE_CONTAINER_SELECTOR)
-    ).map((panel) => {
-      const s = {};
-      for (const [k, sel] of Object.entries(SERVICE_FIELD_SELECTORS)) {
-        s[k] = panel.querySelector(sel)?.value.trim() || "";
-      }
-      const activeChip = panel.querySelector(`.chip.${CHIP_ACTIVE_CLASS}`);
-      s.mode = activeChip?.dataset.mode || "3.6";
-      return s;
+      return { generalData, servicesData };
+    } catch (err) {
+      console.error("[FormService] Error recollint dades:", err);
+      return null;
+    }
+  }
+
+  /**
+   * Guarda amb spinner i errors.
+   */
+  async triggerAutoSave() {
+    if (!this.isFormReadyForSave() || !this.hasPendingChanges()) return;
+
+    try {
+      this.saveStart = Date.now();
+      indicateSaving();
+
+      await autoSaveDiet();
+
+      const elapsed = Date.now() - this.saveStart;
+      setTimeout(indicateSaved, Math.max(0, MIN_SPINNER_VISIBLE_MS - elapsed));
+
+      this.initialFormDataStr = JSON.stringify(this.getFormDataObject() || {});
+    } catch (err) {
+      console.warn("[Autosave skipped]", err.message);
+      indicateSaveError("Revisa dades de Serveis");
+    }
+  }
+
+  /**
+   * Captura estat inicial.
+   */
+  captureInitialFormState() {
+    this.initialFormDataStr = JSON.stringify(this.getFormDataObject() || {});
+    this.handleFormChange();
+  }
+
+  /**
+   * Estat del botó de guardar.
+   * @param {boolean} enabled
+   */
+  setSaveButtonState(enabled) {
+    const b = document.getElementById(IDS.SAVE_BTN);
+    if (!b) return;
+    b.disabled = !enabled;
+    b.setAttribute("aria-disabled", !enabled ? "true" : "false");
+    b.classList.toggle("is-disabled", !enabled);
+  }
+
+  /**
+   * Maneja canvis al formulari (ara auxiliar per handleInputChange).
+   */
+  handleFormChange() {
+    this.debouncedAutoSave.cancel();
+
+    if (!this.hasPendingChanges()) {
+      this.setSaveButtonState(false);
+      resetDirty();
+      return;
+    }
+
+    if (this.isFormReadyForSave()) {
+      this.setSaveButtonState(true);
+      this.debouncedAutoSave();
+    } else {
+      this.setSaveButtonState(false);
+      resetDirty();
+    }
+  }
+
+  /**
+   * Lògica de validació i autoguardat aquí; només s'executa després de 800ms sense tecles.
+   * Crida validació, maneig de canvis i autoguardat si cal.
+   * (Canvi: Integrat com a handler principal per debounce)
+   */
+  handleInputChange() {
+    this.validateForm();
+    this.handleFormChange();
+    this.autoSaveIfNeeded();
+  }
+  validateForm() {
+    console.log("[FormService] Validant formulari...");
+  }
+
+  autoSaveIfNeeded() {
+    // Exemple: Si hi ha canvis, activa autoguardat
+    if (this.hasPendingChanges() && this.isFormReadyForSave()) {
+      this.debouncedAutoSave();
+    }
+  }
+
+  /**
+   * Afegeix listeners d'input.
+   */
+  addInputListeners() {
+    const container = document.getElementById(FORM_CONTAINER_ID);
+    if (!container) return;
+
+    container.addEventListener("input", this.debouncedHandler);
+    container.addEventListener("change", this.debouncedHandler);
+
+    container.addEventListener(
+      "blur",
+      (e) => {
+        if (e.target.matches("input, select, textarea")) {
+          this.handleFormChange();
+          if (this.isFormReadyForSave() && this.hasPendingChanges()) {
+            this.debouncedAutoSave.cancel(); // Cancel·la qualsevol autoguardat pendent per evitar duplicats
+            this.triggerAutoSave();
+          }
+        }
+      },
+      true
+    );
+
+    const dateInput = document.getElementById(IDS.DATE);
+    dateInput?.addEventListener("change", () => {
+      dateInput.blur();
+      this.debouncedHandler(); // Crida el handler debounced per consistència
     });
 
-    return { generalData, servicesData };
-  } catch (err) {
-    console.error("[FormService] Error recollint dades:", err);
-    return null;
-  }
-}
-
-/** Guarda amb spinner mínim i gestió d'errors */
-async function triggerAutoSave() {
-  if (!isFormReadyForSave() || !hasPendingChanges()) return;
-
-  try {
-    saveStart = Date.now();
-    indicateSaving();
-
-    await autoSaveDiet(); // ← pot llençar error
-
-    const elapsed = Date.now() - saveStart;
-    setTimeout(indicateSaved, Math.max(0, MIN_SPINNER_VISIBLE_MS - elapsed));
-
-    // Actualitzem la “foto” post-guardat
-    initialFormDataStr = JSON.stringify(getFormDataObject() || {});
-  } catch (err) {
-    console.warn("[Autosave skipped]", err.message);
-    indicateSaveError("Revisa dades de Serveis");
-  }
-}
-
-const debouncedAutoSave = debounce(triggerAutoSave, AUTOSAVE_DELAY_MS);
-
-// ────────────────────────────────────────────────────────────
-// PUBLIC API
-// ────────────────────────────────────────────────────────────
-export function captureInitialFormState() {
-  initialFormDataStr = JSON.stringify(getFormDataObject() || {});
-  handleFormChange(); // prim. avaluació
-}
-
-export function setSaveButtonState(enabled) {
-  const b = document.getElementById(IDS.SAVE_BTN);
-  if (!b) return;
-  b.disabled = !enabled;
-  b.setAttribute("aria-disabled", !enabled);
-  b.classList.toggle("is-disabled", !enabled);
-}
-
-function handleFormChange() {
-  debouncedAutoSave.cancel();
-
-  if (!hasPendingChanges()) {
-    setSaveButtonState(false);
-    resetDirty();
-    return;
+    window.addEventListener("beforeunload", () => {
+      this.debouncedAutoSave.cancel();
+      if (this.isFormReadyForSave()) autoSaveDiet();
+    });
   }
 
-  if (isFormReadyForSave()) {
-    //indicateUnsaved(DELAY_UNSAVED);
-    setSaveButtonState(true);
-    debouncedAutoSave();
-  } else {
-    setSaveButtonState(false);
-    resetDirty();
-  }
-}
+  /**
+   * Listener per tipus de servei.
+   */
+  addServiceTypeListener() {
+    const select = document.getElementById(IDS.SERVICE_TYPE);
+    if (!select) return;
 
-export const revalidateFormState = handleFormChange;
-
-export function addInputListeners() {
-  const container = document.getElementById(FORM_CONTAINER_ID);
-  if (!container) return;
-
-  const debouncedHandler = debounce(handleFormChange, INPUT_CHANGE_DEBOUNCE_MS);
-  container.addEventListener("input", debouncedHandler);
-  container.addEventListener("change", debouncedHandler);
-
-  // flush immediat en deixar un camp
-  container.addEventListener(
-    "blur",
-    (e) => {
-      if (e.target.matches("input, select, textarea")) {
-        handleFormChange(); // ① actualitza pending-changes ara mateix
-        if (isFormReadyForSave() && hasPendingChanges()) {
-          cancelPendingAutoSave();
-          triggerAutoSave(); // ② guarda immediat
-        }
+    select.addEventListener("change", (e) => {
+      const v = e.target.value.trim();
+      updateServicePanelsForServiceType(v);
+      try {
+        localStorage.setItem(LS_SERVICE_TYPE_KEY, v); // Seguretat: No emmagatzemar dades sensibles aquí
+      } catch (err) {
+        console.error("No s’ha pogut desar tipus servei", err);
       }
-    },
-    true
-  );
+    });
+  }
 
-  // UX mòbil per al date-picker
-  const dateInput = document.getElementById(IDS.DATE);
-  dateInput?.addEventListener("change", () => {
-    dateInput.blur();
-    debouncedHandler();
-  });
+  cancelPendingAutoSave() {
+    this.debouncedAutoSave.cancel();
+  }
 
-  // Save d'emergència en sortir de la pàgina
-  window.addEventListener("beforeunload", () => {
-    cancelPendingAutoSave();
-    if (isFormReadyForSave()) autoSaveDiet();
-  });
+  addDoneBehavior() {
+    const c = document.getElementById(FORM_CONTAINER_ID);
+    c?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.matches('input[enterkeyhint="done"]')) {
+        e.preventDefault();
+        e.target.blur();
+      }
+    });
+  }
+
+  gatherAllData() {
+    return this.getFormDataObject();
+  }
+
+  getInitialFormDataStr() {
+    return this.initialFormDataStr;
+  }
 }
 
-export function addServiceTypeListener() {
-  const select = document.getElementById(IDS.SERVICE_TYPE);
-  if (!select) return;
+// Instància única (singleton-like per escalabilitat)
+const formService = new FormService();
 
-  select.addEventListener("change", (e) => {
-    const v = e.target.value;
-    updateServicePanelsForServiceType(v);
-    try {
-      localStorage.setItem(LS_SERVICE_TYPE_KEY, v);
-    } catch (er) {
-      console.error("No s’ha pogut desar tipus servei", er);
-    }
-  });
-}
-
-export const cancelPendingAutoSave = () => debouncedAutoSave.cancel();
-export const addDoneBehavior = () => {
-  const c = document.getElementById(FORM_CONTAINER_ID);
-  c?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && e.target.matches('input[enterkeyhint="done"]')) {
-      e.preventDefault();
-      e.target.blur();
-    }
-  });
-};
-
-export const gatherAllData = () => getFormDataObject();
-export const getInitialFormDataStr = () => initialFormDataStr;
+// Exportar mètodes públics
+export const captureInitialFormState = () =>
+  formService.captureInitialFormState();
+export const setSaveButtonState = (enabled) =>
+  formService.setSaveButtonState(enabled);
+export const revalidateFormState = () => formService.handleFormChange();
+export const addInputListeners = () => formService.addInputListeners();
+export const addServiceTypeListener = () =>
+  formService.addServiceTypeListener();
+export const cancelPendingAutoSave = () => formService.cancelPendingAutoSave();
+export const addDoneBehavior = () => formService.addDoneBehavior();
+export const gatherAllData = () => formService.gatherAllData();
+export const getInitialFormDataStr = () => formService.getInitialFormDataStr();
