@@ -1,7 +1,6 @@
 /**
  * @file dotacion.js
- * @description Gestiona el desat, càrrega i eliminació de dotacions (combinacions
- *              de vehicle, conductor, ajudant i les seves signatures) usant localStorage.
+ * @description Gestiona dotacions amb localStorage.
  * @module dotacionService
  */
 
@@ -10,12 +9,12 @@ import {
   getSignatureAjudant,
   setSignatureConductor,
   setSignatureAjudant,
-  // updateSignatureIcons ja no cal importar-la si setSignature* l'actualitzen
 } from "./signatureService.js";
 import { showToast } from "../ui/toast.js";
+import { showConfirmModal } from "../ui/modals.js";
 
 // --- Constants ---
-const LS_KEY = "dotacions_v2"; // Clau per a localStorage (versionada per si canvia format)
+const LS_KEY = "dotacions_v2";
 const DOM_IDS = {
   MODAL: "dotacio-modal",
   OPTIONS_CONTAINER: "dotacio-options",
@@ -30,371 +29,343 @@ const DOM_IDS = {
 };
 const CSS_CLASSES = {
   MODAL_OPEN: "modal-open",
-  INPUT_ERROR: "input-error", // Classe per a inputs/grups amb error
+  INPUT_ERROR: "input-error",
   HIDDEN: "hidden",
 };
 const SELECTORS = {
-  PERSON_INPUT_GROUP: ".input-with-icon", // Selector del contenidor de person1/person2
+  PERSON_INPUT_GROUP: ".input-with-icon",
   DOTACIO_INFO: ".dotacio-info",
   LOAD_BTN: ".dotacio-load",
   DELETE_BTN: ".dotacio-delete",
 };
 const DATA_ATTRIBUTES = {
-  INDEX: "data-index", // Atribut per guardar l'índex als botons del modal
+  INDEX: "data-index",
 };
 
-// --- Variables d'Estat del Mòdul ---
-let savedDotacions = []; // Array d'objectes { numero, conductor, ajudant, firmaConductor, firmaAjudant }
-let dotacioModalElement = null;
-let optionsContainerElement = null;
-let dotacioTemplateElement = null;
-let noDotacioTextElement = null;
-let isInitialized = false;
-
-// --- Funcions Privades (Prefixades amb _) ---
-
-/** Carrega les dotacions des de localStorage amb gestió d'errors. */
-function _loadDotacionsFromStorage() {
-  try {
-    const savedJson = localStorage.getItem(LS_KEY);
-    savedDotacions = savedJson ? JSON.parse(savedJson) : [];
-    if (!Array.isArray(savedDotacions)) {
-      // Comprovació extra
-      console.warn(
-        "Les dades de dotacions a localStorage no eren un array vàlid. Reiniciant."
-      );
-      savedDotacions = [];
-    }
-  } catch (error) {
-    console.error("Error carregant les dotacions des de localStorage:", error);
-    savedDotacions = []; // Reseteja en cas d'error de parseig
-    // Opcionalment, notificar l'usuari
-    // showToast("Error al carregar les dotacions desades.", "error");
-  }
-}
-
-/** Desa l'array actual de dotacions a localStorage. */
-function _saveDotacionsToStorage() {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(savedDotacions));
-  } catch (error) {
-    console.error("Error desant les dotacions a localStorage:", error);
-    showToast("No s'han pogut desar les dotacions.", "error");
-  }
-}
-
-/** Valida els camps necessaris del formulari principal per desar una dotació. */
-function _validateDotacionInputs() {
-  const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
-  const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
-  const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
-  const conductorGroup = conductorInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
-  const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
-
-  // Neteja errors visuals previs
-  vehicleInput?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-  conductorGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-  ajudantGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-
-  const values = {
-    vehiculo: vehicleInput?.value.trim() || "",
-    conductor: conductorInput?.value.trim() || "",
-    ajudant: ajudantInput?.value.trim() || "",
-  };
-
-  const errors = [];
-  // 1. Comprova si el vehicle està omplert (obligatori)
-  if (!values.vehiculo) {
-    vehicleInput?.classList.add(CSS_CLASSES.INPUT_ERROR);
-    errors.push("Vehículo");
+// --- Classe Principal ---
+class DotacionService {
+  constructor() {
+    this.savedDotacions = [];
+    this.dotacioModalElement = null;
+    this.optionsContainerElement = null;
+    this.dotacioTemplateElement = null;
+    this.noDotacioTextElement = null;
+    this.isInitialized = false;
   }
 
-  // 2. Comprova si ALMENYS un entre Conductor o Ajudant està omplert
-  if (!values.conductor && !values.ajudant) {
-    // Si TOTS DOS estan buits, marca els dos com a error
-    conductorGroup?.classList.add(CSS_CLASSES.INPUT_ERROR);
-    ajudantGroup?.classList.add(CSS_CLASSES.INPUT_ERROR);
-    // Afegim un missatge d'error genèric per a aquesta condició
-    errors.push("Conductor o Ayudante");
-  }
+  /**
+   * Inicialitza el servei.
+   * @export
+   */
+  init() {
+    if (this.isInitialized) return;
 
-  if (errors.length > 0) {
-    showToast(`Faltan campos obligatorios: ${errors.join(", ")}.`, "error");
-    return null; // Indica validació fallida
-  }
-
-  return values; // Retorna valors nets si és vàlid
-}
-
-/** Busca l'índex d'una dotació existent (ignorant majúscules/minúscules). */
-function _findExistingDotacioIndex(vehiculo, conductor, ajudant) {
-  const vLower = vehiculo.toLowerCase();
-  const cLower = conductor.toLowerCase();
-  const aLower = ajudant.toLowerCase();
-  return savedDotacions.findIndex(
-    (d) =>
-      d.numero.toLowerCase() === vLower &&
-      d.conductor.toLowerCase() === cLower &&
-      d.ajudant.toLowerCase() === aLower
-  );
-}
-
-/** Abre el modal de gestión de dotaciones. */
-function _openDotacioModal() {
-  if (!dotacioModalElement) return;
-  dotacioModalElement.style.display = "block";
-  document.body.classList.add(CSS_CLASSES.MODAL_OPEN);
-  _displayDotacioOptions(); // Actualitza la llista cada vegada que s'obre
-  // TODO: Gestionar focus dins del modal
-}
-
-/** Cierra el modal de gestión de dotaciones. */
-function _closeDotacioModal() {
-  if (!dotacioModalElement) return;
-  dotacioModalElement.style.display = "none";
-  document.body.classList.remove(CSS_CLASSES.MODAL_OPEN);
-  // TODO: Retornar focus al botó que el va obrir
-  document.getElementById(DOM_IDS.OPEN_MODAL_BTN)?.focus();
-}
-
-/** Actualiza la lista de dotaciones mostrada en el modal. */
-function _displayDotacioOptions() {
-  if (!optionsContainerElement || !dotacioTemplateElement) return;
-
-  optionsContainerElement.innerHTML = ""; // Neteja el contenidor
-
-  if (savedDotacions.length === 0) {
-    noDotacioTextElement?.classList.remove(CSS_CLASSES.HIDDEN);
-  } else {
-    noDotacioTextElement?.classList.add(CSS_CLASSES.HIDDEN);
-    savedDotacions.forEach((dotacio, index) => {
-      const clone = dotacioTemplateElement.content.cloneNode(true);
-      const infoSpan = clone.querySelector(SELECTORS.DOTACIO_INFO);
-      const loadBtn = clone.querySelector(SELECTORS.LOAD_BTN);
-      const deleteBtn = clone.querySelector(SELECTORS.DELETE_BTN);
-
-      if (infoSpan) infoSpan.textContent = _formatDotacioListText(dotacio);
-      if (loadBtn) loadBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
-      if (deleteBtn) deleteBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
-
-      optionsContainerElement.appendChild(clone);
-    });
-  }
-}
-
-/** Formatea el texto para mostrar una dotación en la lista. */
-function _formatDotacioListText(dotacio) {
-  const unitat = dotacio.numero || "S/N";
-  const cShort = _shortNameAndSurname(dotacio.conductor);
-  const aShort = _shortNameAndSurname(dotacio.ajudant);
-  return `${unitat} - ${cShort} / ${aShort}`; // Format una mica més clar
-}
-
-/** Acorta un nombre completo a Nombre + Primer Apellido. */
-function _shortNameAndSurname(fullName) {
-  if (!fullName || typeof fullName !== "string") return "S/D"; // Sense Dada
-  const parts = fullName.trim().split(/\s+/); // Divideix per espais múltiples
-  if (parts.length === 0) return "S/D";
-  if (parts.length === 1) return parts[0];
-  return `${parts[0]} ${parts[1]}`; // Nom + Primer cognom
-}
-
-/** Carga los datos de una dotación seleccionada en el formulario principal. */
-function _loadDotacio(index) {
-  if (index < 0 || index >= savedDotacions.length) {
-    console.warn(`Índex de dotació invàlid per carregar: ${index}`);
-    return;
-  }
-  const selected = savedDotacions[index];
-
-  // Neteja errors previs del formulari abans de carregar
-  _clearDotacionInputErrors();
-
-  // Carrega valors
-  document.getElementById(DOM_IDS.VEHICLE_INPUT).value = selected.numero || "";
-  document.getElementById(DOM_IDS.PERSON1_INPUT).value =
-    selected.conductor || "";
-  document.getElementById(DOM_IDS.PERSON2_INPUT).value = selected.ajudant || "";
-
-  // Actualitza signatures (setSignature* ja actualitza la UI)
-  setSignatureConductor(selected.firmaConductor || "");
-  setSignatureAjudant(selected.firmaAjudant || "");
-
-  showToast(`Dotació ${selected.numero} carregada.`, "success");
-  _closeDotacioModal();
-}
-
-/** Elimina una dotación del array y actualiza el almacenamiento y la UI. */
-function _deleteDotacio(index) {
-  if (index < 0 || index >= savedDotacions.length) {
-    console.warn(`Índex de dotació invàlid per eliminar: ${index}`);
-    return;
-  }
-  const deletedDotacio = savedDotacions.splice(index, 1)[0]; // Elimina i obté l'eliminat
-  _saveDotacionsToStorage();
-  showToast(
-    `Dotació ${_formatDotacioListText(deletedDotacio)} eliminada.`,
-    "warning"
-  );
-  _displayDotacioOptions(); // Actualitza la llista al modal
-}
-
-/** Gestiona els clics dins del contenidor d'opcions (delegació). */
-function _handleOptionsClick(event) {
-  const target = event.target;
-  const loadButton = target.closest(SELECTORS.LOAD_BTN);
-  const deleteButton = target.closest(SELECTORS.DELETE_BTN);
-
-  if (loadButton) {
-    event.stopPropagation(); // Evita que altres listeners reaccionin
-    const index = parseInt(loadButton.getAttribute(DATA_ATTRIBUTES.INDEX), 10);
-    if (!isNaN(index)) _loadDotacio(index);
-  } else if (deleteButton) {
-    event.stopPropagation();
-    const index = parseInt(
-      deleteButton.getAttribute(DATA_ATTRIBUTES.INDEX),
-      10
+    this.dotacioModalElement = document.getElementById(DOM_IDS.MODAL);
+    this.optionsContainerElement = document.getElementById(
+      DOM_IDS.OPTIONS_CONTAINER
     );
-    if (!isNaN(index)) {
-      // Opcional: Demanar confirmació abans d'esborrar
-      // const confirmed = await showConfirmModal("Segur que vols eliminar aquesta dotació?");
-      // if (confirmed) _deleteDotacio(index);
-      _deleteDotacio(index); // Elimina directament per ara
-    }
-  }
-}
-
-// --- Funcions Públiques / Exportades ---
-
-/**
- * Inicialitza el servei de dotacions: carrega dades, configura listeners.
- * @export
- */
-export function initDotacion() {
-  if (isInitialized) return;
-
-  // Cacheig d'elements DOM
-  dotacioModalElement = document.getElementById(DOM_IDS.MODAL);
-  optionsContainerElement = document.getElementById(DOM_IDS.OPTIONS_CONTAINER);
-  dotacioTemplateElement = document.getElementById(DOM_IDS.TEMPLATE);
-  noDotacioTextElement = document.getElementById(DOM_IDS.NO_DOTACIO_TEXT);
-  const addDotacioBtn = document.getElementById(DOM_IDS.ADD_BTN);
-  const openDotacioBtn = document.getElementById(DOM_IDS.OPEN_MODAL_BTN);
-  const closeDotacioBtn = document.getElementById(DOM_IDS.CLOSE_MODAL_BTN);
-
-  // Comprovació d'elements essencials
-  if (
-    !dotacioModalElement ||
-    !optionsContainerElement ||
-    !dotacioTemplateElement ||
-    !addDotacioBtn ||
-    !openDotacioBtn ||
-    !closeDotacioBtn
-  ) {
-    console.warn(
-      "Dotacion Service: Falten elements DOM essencials. Funcionalitat limitada."
+    this.dotacioTemplateElement = document.getElementById(DOM_IDS.TEMPLATE);
+    this.noDotacioTextElement = document.getElementById(
+      DOM_IDS.NO_DOTACIO_TEXT
     );
-    return;
-  }
+    const addDotacioBtn = document.getElementById(DOM_IDS.ADD_BTN);
+    const openDotacioBtn = document.getElementById(DOM_IDS.OPEN_MODAL_BTN);
+    const closeDotacioBtn = document.getElementById(DOM_IDS.CLOSE_MODAL_BTN);
 
-  _loadDotacionsFromStorage();
-
-  // Listeners botons principals
-  addDotacioBtn.addEventListener("click", addDotacioFromMainForm);
-  openDotacioBtn.addEventListener("click", _openDotacioModal);
-  closeDotacioBtn.addEventListener("click", _closeDotacioModal);
-
-  // Listener per tancar modal clicant fora (al fons)
-  dotacioModalElement.addEventListener("click", (event) => {
-    if (event.target === dotacioModalElement) {
-      _closeDotacioModal();
-    }
-  });
-
-  // Listener per tancar amb 'Escape'
-  document.addEventListener("keydown", (event) => {
     if (
-      event.key === "Escape" &&
-      dotacioModalElement.style.display === "block"
-    ) {
-      _closeDotacioModal();
-    }
-  });
+      !this.dotacioModalElement ||
+      !this.optionsContainerElement ||
+      !this.dotacioTemplateElement ||
+      !addDotacioBtn ||
+      !openDotacioBtn ||
+      !closeDotacioBtn
+    )
+      return;
 
-  // Listener per delegació dins del modal
-  optionsContainerElement.addEventListener("click", _handleOptionsClick);
+    this._loadDotacionsFromStorage();
 
-  // Configura listeners per netejar errors als inputs principals
-  const inputsToWatch = [
-    DOM_IDS.VEHICLE_INPUT,
-    DOM_IDS.PERSON1_INPUT,
-    DOM_IDS.PERSON2_INPUT,
-  ];
-  inputsToWatch.forEach((inputId) => {
-    const input = document.getElementById(inputId);
-    input?.addEventListener("input", () => {
-      const group = input.closest(SELECTORS.PERSON_INPUT_GROUP);
-      if (group) {
-        group.classList.remove(CSS_CLASSES.INPUT_ERROR);
-      } else {
-        input.classList.remove(CSS_CLASSES.INPUT_ERROR);
-      }
+    addDotacioBtn.addEventListener(
+      "click",
+      this.addDotacioFromMainForm.bind(this)
+    );
+    openDotacioBtn.addEventListener("click", this._openDotacioModal.bind(this));
+    closeDotacioBtn.addEventListener(
+      "click",
+      this._closeDotacioModal.bind(this)
+    );
+
+    this.dotacioModalElement.addEventListener("click", (event) => {
+      if (event.target === this.dotacioModalElement) this._closeDotacioModal();
     });
-  });
 
-  isInitialized = true;
-  console.log("Dotacion Service inicialitzat.");
-  // No cal cridar _displayDotacioOptions aquí, es fa quan s'obre el modal
-}
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        this.dotacioModalElement.style.display === "block"
+      )
+        this._closeDotacioModal();
+    });
 
-/**
- * Gestiona el desat d'una dotació des del formulari principal.
- * Valida, comprova existència, desa/sobrescriu i actualitza UI.
- * (Abans era una funció interna, ara és més explícita).
- * @export // Exportem si es vol cridar des d'un altre lloc, sinó pot ser interna
- */
-export function addDotacioFromMainForm() {
-  const validatedValues = _validateDotacionInputs();
-  if (!validatedValues) return; // La validació ha fallat (ja s'ha mostrat toast)
+    this.optionsContainerElement.addEventListener(
+      "click",
+      this._handleOptionsClick.bind(this)
+    );
 
-  const { vehiculo, conductor, ajudant } = validatedValues;
-  const firmaConductor = getSignatureConductor(); // Obté signatures actuals
-  const firmaAjudant = getSignatureAjudant();
+    const inputsToWatch = [
+      DOM_IDS.VEHICLE_INPUT,
+      DOM_IDS.PERSON1_INPUT,
+      DOM_IDS.PERSON2_INPUT,
+    ];
+    inputsToWatch.forEach((inputId) => {
+      const input = document.getElementById(inputId);
+      input?.addEventListener("input", () => {
+        const group = input.closest(SELECTORS.PERSON_INPUT_GROUP);
+        if (group) group.classList.remove(CSS_CLASSES.INPUT_ERROR);
+        else input.classList.remove(CSS_CLASSES.INPUT_ERROR);
+      });
+    });
 
-  const existingIndex = _findExistingDotacioIndex(vehiculo, conductor, ajudant);
-
-  const newDotacioData = {
-    numero: vehiculo,
-    conductor: conductor,
-    ajudant: ajudant,
-    firmaConductor: firmaConductor,
-    firmaAjudant: firmaAjudant,
-  };
-
-  if (existingIndex !== -1) {
-    // Sobresriu
-    savedDotacions[existingIndex] = newDotacioData;
-    showToast(`Dotació ${vehiculo} actualitzada.`, "success");
-  } else {
-    // Afegeix nova
-    savedDotacions.push(newDotacioData);
-    showToast(`Nova dotació ${vehiculo} desada.`, "success");
+    this.isInitialized = true;
   }
 
-  _saveDotacionsToStorage();
-  // No cal actualitzar la llista del modal aquí, es farà quan s'obri
-  // _displayDotacioOptions();
+  _loadDotacionsFromStorage() {
+    try {
+      const savedJson = localStorage.getItem(LS_KEY);
+      this.savedDotacions = savedJson ? JSON.parse(savedJson) : [];
+      if (!Array.isArray(this.savedDotacions)) this.savedDotacions = [];
+    } catch (error) {
+      this.savedDotacions = [];
+    }
+  }
+
+  _saveDotacionsToStorage() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(this.savedDotacions));
+    } catch (error) {
+      showToast("No s'han pogut desar les dotacions.", "error");
+    }
+  }
+
+  _validateDotacionInputs() {
+    const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
+    const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
+    const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
+    const conductorGroup = conductorInput?.closest(
+      SELECTORS.PERSON_INPUT_GROUP
+    );
+    const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
+
+    vehicleInput?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+    conductorGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+    ajudantGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+
+    const values = {
+      vehiculo: vehicleInput?.value.trim() || "",
+      conductor: conductorInput?.value.trim() || "",
+      ajudant: ajudantInput?.value.trim() || "",
+    };
+
+    const errors = [];
+    if (!values.vehiculo) {
+      vehicleInput?.classList.add(CSS_CLASSES.INPUT_ERROR);
+      errors.push("Vehículo");
+    }
+
+    if (!values.conductor && !values.ajudant) {
+      conductorGroup?.classList.add(CSS_CLASSES.INPUT_ERROR);
+      ajudantGroup?.classList.add(CSS_CLASSES.INPUT_ERROR);
+      errors.push("Conductor o Ayudante");
+    }
+
+    if (errors.length > 0) {
+      showToast(`Faltan campos obligatorios: ${errors.join(", ")}.`, "error");
+      return null;
+    }
+
+    return values;
+  }
+
+  _findExistingDotacioIndex(vehiculo, conductor, ajudant) {
+    const vLower = vehiculo.toLowerCase();
+    const cLower = conductor.toLowerCase();
+    const aLower = ajudant.toLowerCase();
+    return this.savedDotacions.findIndex(
+      (d) =>
+        d.numero.toLowerCase() === vLower &&
+        d.conductor.toLowerCase() === cLower &&
+        d.ajudant.toLowerCase() === aLower
+    );
+  }
+
+  _openDotacioModal() {
+    if (!this.dotacioModalElement) return;
+    this.dotacioModalElement.style.display = "block";
+    document.body.classList.add(CSS_CLASSES.MODAL_OPEN);
+    this._displayDotacioOptions();
+  }
+
+  _closeDotacioModal() {
+    if (!this.dotacioModalElement) return;
+    this.dotacioModalElement.style.display = "none";
+    document.body.classList.remove(CSS_CLASSES.MODAL_OPEN);
+    document.getElementById(DOM_IDS.OPEN_MODAL_BTN)?.focus();
+  }
+
+  _displayDotacioOptions() {
+    if (!this.optionsContainerElement || !this.dotacioTemplateElement) return;
+
+    this.optionsContainerElement.innerHTML = "";
+
+    if (this.savedDotacions.length === 0) {
+      this.noDotacioTextElement?.classList.remove(CSS_CLASSES.HIDDEN);
+    } else {
+      this.noDotacioTextElement?.classList.add(CSS_CLASSES.HIDDEN);
+      this.savedDotacions.forEach((dotacio, index) => {
+        const clone = this.dotacioTemplateElement.content.cloneNode(true);
+        const infoSpan = clone.querySelector(SELECTORS.DOTACIO_INFO);
+        const loadBtn = clone.querySelector(SELECTORS.LOAD_BTN);
+        const deleteBtn = clone.querySelector(SELECTORS.DELETE_BTN);
+
+        if (infoSpan)
+          infoSpan.textContent = this._formatDotacioListText(dotacio);
+        if (loadBtn) loadBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
+        if (deleteBtn) deleteBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
+
+        this.optionsContainerElement.appendChild(clone);
+      });
+    }
+  }
+
+  _formatDotacioListText(dotacio) {
+    const unitat = dotacio.numero || "S/N";
+    const cShort = this._shortNameAndSurname(dotacio.conductor);
+    const aShort = this._shortNameAndSurname(dotacio.ajudant);
+    return `${unitat} - ${cShort} / ${aShort}`;
+  }
+
+  _shortNameAndSurname(fullName) {
+    if (!fullName || typeof fullName !== "string") return "S/D";
+    const parts = fullName
+      .trim()
+      .split(/\s+/)
+      .filter((part) => part.length > 0);
+    if (parts.length === 0) return "S/D";
+    if (parts.length === 1) return parts[0];
+    return `${parts[0]} ${parts[1]}`;
+  }
+
+  _loadDotacio(index) {
+    if (index < 0 || index >= this.savedDotacions.length) return;
+    const selected = this.savedDotacions[index];
+
+    this._clearDotacionInputErrors();
+
+    document.getElementById(DOM_IDS.VEHICLE_INPUT).value =
+      selected.numero || "";
+    document.getElementById(DOM_IDS.PERSON1_INPUT).value =
+      selected.conductor || "";
+    document.getElementById(DOM_IDS.PERSON2_INPUT).value =
+      selected.ajudant || "";
+
+    setSignatureConductor(selected.firmaConductor || "");
+    setSignatureAjudant(selected.firmaAjudant || "");
+
+    showToast(`Dotació ${selected.numero} carregada.`, "success");
+    this._closeDotacioModal();
+  }
+
+  async _deleteDotacio(index) {
+    if (index < 0 || index >= this.savedDotacions.length) return;
+    const deletedDotacio = this.savedDotacions[index];
+    const confirmed = await showConfirmModal(
+      `Segur que vols eliminar aquesta dotació: ${this._formatDotacioListText(
+        deletedDotacio
+      )}?`,
+      "Eliminar dotació"
+    );
+    if (!confirmed) return;
+
+    this.savedDotacions.splice(index, 1);
+    this._saveDotacionsToStorage();
+    showToast(
+      `Dotació ${this._formatDotacioListText(deletedDotacio)} eliminada.`,
+      "warning"
+    );
+    this._displayDotacioOptions();
+  }
+
+  _handleOptionsClick(event) {
+    const target = event.target;
+    const loadButton = target.closest(SELECTORS.LOAD_BTN);
+    const deleteButton = target.closest(SELECTORS.DELETE_BTN);
+
+    if (loadButton) {
+      event.stopPropagation();
+      const index = parseInt(
+        loadButton.getAttribute(DATA_ATTRIBUTES.INDEX),
+        10
+      );
+      if (!isNaN(index)) this._loadDotacio(index);
+    } else if (deleteButton) {
+      event.stopPropagation();
+      const index = parseInt(
+        deleteButton.getAttribute(DATA_ATTRIBUTES.INDEX),
+        10
+      );
+      if (!isNaN(index)) this._deleteDotacio(index);
+    }
+  }
+
+  addDotacioFromMainForm() {
+    const validatedValues = this._validateDotacionInputs();
+    if (!validatedValues) return;
+
+    const { vehiculo, conductor, ajudant } = validatedValues;
+    const firmaConductor = getSignatureConductor();
+    const firmaAjudant = getSignatureAjudant();
+
+    const existingIndex = this._findExistingDotacioIndex(
+      vehiculo,
+      conductor,
+      ajudant
+    );
+
+    const newDotacioData = {
+      numero: vehiculo,
+      conductor,
+      ajudant,
+      firmaConductor,
+      firmaAjudant,
+    };
+
+    if (existingIndex !== -1) {
+      this.savedDotacions[existingIndex] = newDotacioData;
+      showToast(`Dotació ${vehiculo} actualitzada.`, "success");
+    } else {
+      this.savedDotacions.push(newDotacioData);
+      showToast(`Nova dotació ${vehiculo} desada.`, "success");
+    }
+
+    this._saveDotacionsToStorage();
+  }
+
+  _clearDotacionInputErrors() {
+    const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
+    const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
+    const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
+
+    const conductorGroup = conductorInput?.closest(
+      SELECTORS.PERSON_INPUT_GROUP
+    );
+    const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
+
+    vehicleInput?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+    conductorGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+    ajudantGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+  }
 }
 
-function _clearDotacionInputErrors() {
-  const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
-  const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
-  const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
-
-  const conductorGroup = conductorInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
-  const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
-
-  vehicleInput?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-  conductorGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-  ajudantGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-}
+const dotacionService = new DotacionService();
+export const initDotacion = () => dotacionService.init();
+export const addDotacioFromMainForm = () =>
+  dotacionService.addDotacioFromMainForm();

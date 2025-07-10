@@ -1,17 +1,9 @@
-// ---------------------------------------------------------------------------
-// dietService.js – lògica de persistència i flux de treball de la dieta
-// ---------------------------------------------------------------------------
-
 /**
  * @file dietService.js
- * @description Lògica de negoci per a la gestió de dietes: desar, carregar,
- *              actualitzar, eliminar i validar abans de les operacions.
+ * @description Gestió de dietes.
  * @module dietService
  */
 
-// ────────────────────────────────────────────────────────────
-// Imports
-// ────────────────────────────────────────────────────────────
 import { timeAgo } from "../utils/relativeTime.js";
 import {
   addDiet,
@@ -31,7 +23,7 @@ import {
   closeDietModal,
   displayDietOptions,
 } from "../ui/modals.js";
-import { getCurrentTab } from "../ui/tabs.js";
+
 import {
   indicateSaving,
   indicateSaved,
@@ -50,9 +42,7 @@ import {
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { getDietDisplayInfo } from "../utils/utils.js";
 
-// ────────────────────────────────────────────────────────────
-// Constants i selectors DOM
-// ────────────────────────────────────────────────────────────
+// --- Constants ---
 const DOM_IDS = {
   DADES_TAB: "tab-dades",
   SERVEIS_TAB: "tab-serveis",
@@ -78,22 +68,54 @@ const CSS_CLASSES = {
   ERROR_TAB: "error-tab",
 };
 
-// ────────────────────────────────────────────────────────────
-// Helper – construcció d'una dieta normalitzada
-// ────────────────────────────────────────────────────────────
-function buildDietObject(generalData, servicesData, dietId) {
-  if (!generalData || !Array.isArray(servicesData) || !dietId) {
-    throw new Error("Dades incompletes per construir Dieta.");
+// --- Classe Diet (mantenim com està, però exportada) ---
+export class Diet {
+  constructor({
+    id = "",
+    date = "",
+    dietType = "",
+    vehicleNumber = "",
+    person1 = "",
+    person2 = "",
+    signatureConductor = "",
+    signatureAjudant = "",
+    services = [],
+    serviceType = "TSU",
+    timeStampDiet = new Date().toISOString(),
+  } = {}) {
+    this.id = String(id);
+    this.date = String(date);
+    this.dietType = String(dietType);
+    this.vehicleNumber = String(vehicleNumber);
+    this.person1 = String(person1);
+    this.person2 = String(person2);
+    this.signatureConductor = String(signatureConductor);
+    this.signatureAjudant = String(signatureAjudant);
+    this.services = Array.isArray(services) ? services : [];
+    this.serviceType = String(serviceType);
+    this.timeStampDiet = String(timeStampDiet);
   }
+}
 
-  return {
+// --- Funcions ---
+
+function buildDietObject(generalData, servicesData, dietId) {
+  if (
+    !generalData ||
+    !Array.isArray(servicesData) ||
+    servicesData.length === 0 ||
+    !dietId
+  )
+    throw new Error("Dades incompletes.");
+  if (!/^\d{9}$/.test(dietId)) throw new Error("ID invàlid.");
+
+  return new Diet({
     id: dietId,
     date: generalData.date || "",
     dietType: generalData.dietType || "",
     vehicleNumber: generalData.vehicleNumber || "",
     person1: generalData.person1 || "",
     person2: generalData.person2 || "",
-    serviceType: generalData.serviceType || "TSU",
     signatureConductor: generalData.signatureConductor || "",
     signatureAjudant: generalData.signatureAjudant || "",
     services: servicesData.map((s) => ({
@@ -105,13 +127,10 @@ function buildDietObject(generalData, servicesData, dietId) {
       endTime: s.endTime || "",
       mode: s.mode || "3.6",
     })),
-    timeStampDiet: new Date().toISOString(),
-  };
+    serviceType: generalData.serviceType || "TSU",
+  });
 }
 
-// ────────────────────────────────────────────────────────────
-// Validació de pestanyes
-// ────────────────────────────────────────────────────────────
 function validateFormTabs() {
   const dadesTabElement = document.getElementById(DOM_IDS.DADES_TAB);
   const serveisTabElement = document.getElementById(DOM_IDS.SERVEIS_TAB);
@@ -141,21 +160,15 @@ function validateFormTabs() {
   return false;
 }
 
-// ────────────────────────────────────────────────────────────
-// Populate del formulari amb dades de la dieta
-// ────────────────────────────────────────────────────────────
 function populateFormWithDietData(diet) {
-  // Dades generals
-  document.getElementById(DOM_IDS.DATE_INPUT).value = diet.date || "";
-  document.getElementById(DOM_IDS.DIET_TYPE_SELECT).value = diet.dietType || "";
-  document.getElementById(DOM_IDS.VEHICLE_INPUT).value =
-    diet.vehicleNumber || "";
-  document.getElementById(DOM_IDS.PERSON1_INPUT).value = diet.person1 || "";
-  document.getElementById(DOM_IDS.PERSON2_INPUT).value = diet.person2 || "";
+  const getEl = (id) => document.getElementById(id);
+  getEl(DOM_IDS.DATE_INPUT).value = diet.date || "";
+  getEl(DOM_IDS.DIET_TYPE_SELECT).value = diet.dietType || "";
+  getEl(DOM_IDS.VEHICLE_INPUT).value = diet.vehicleNumber || "";
+  getEl(DOM_IDS.PERSON1_INPUT).value = diet.person1 || "";
+  getEl(DOM_IDS.PERSON2_INPUT).value = diet.person2 || "";
 
-  const serviceTypeSelect = document.getElementById(
-    DOM_IDS.SERVICE_TYPE_SELECT
-  );
+  const serviceTypeSelect = getEl(DOM_IDS.SERVICE_TYPE_SELECT);
   if (serviceTypeSelect) {
     serviceTypeSelect.value = diet.serviceType || "TSU";
     updateServicePanelsForServiceType(serviceTypeSelect.value);
@@ -164,7 +177,6 @@ function populateFormWithDietData(diet) {
   setSignatureConductor(diet.signatureConductor || "");
   setSignatureAjudant(diet.signatureAjudant || "");
 
-  // Serveis
   const serviceElements = document.querySelectorAll(SERVICE_CONTAINER_SELECTOR);
   diet.services.forEach((serviceData, idx) => {
     const el = serviceElements[idx];
@@ -179,9 +191,9 @@ function populateFormWithDietData(diet) {
     removeErrorClassesFromService(el);
   });
 
-  // Neteja possibles serveis restants
   for (let i = diet.services.length; i < serviceElements.length; i++) {
     const el = serviceElements[i];
+    if (!el) continue;
     Object.values(SERVICE_FIELD_SELECTORS).forEach((sel) => {
       const input = el.querySelector(sel);
       if (input) input.value = "";
@@ -190,28 +202,24 @@ function populateFormWithDietData(diet) {
   }
 }
 
-// ────────────────────────────────────────────────────────────
-// Gestió de guardat (manual i auto)
-// ────────────────────────────────────────────────────────────
 async function performSave(isManual) {
   indicateSaving();
   setSaveButtonState(false);
 
   try {
-    await new Promise((r) => setTimeout(r, 500)); // micro delay UX
+    await new Promise((r) => setTimeout(r, 500));
 
-    if (!validateFormTabs())
-      throw new Error("Validació de la pestanya Serveis fallida");
+    if (!validateFormTabs()) throw new Error("Validació fallida");
 
     const { generalData, servicesData } = gatherAllData();
-    const dietId = servicesData[0]?.serviceNumber?.slice(0, 9);
-    if (!dietId) throw new Error("ID de dieta no vàlid");
+    const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
+    if (!dietId || !/^\d{9}$/.test(dietId)) throw new Error("ID invàlid");
 
     const dietToSave = buildDietObject(generalData, servicesData, dietId);
 
-    (await getDiet(dietId))
-      ? await updateDiet(dietToSave)
-      : await addDiet(dietToSave);
+    const existingDiet = await getDiet(dietId);
+    if (existingDiet) await updateDiet(dietToSave);
+    else await addDiet(dietToSave);
 
     if (isManual) showToast("Dieta guardada correctament.", "success");
 
@@ -221,7 +229,6 @@ async function performSave(isManual) {
     captureInitialFormState();
     indicateSaved();
   } catch (err) {
-    console.error("[Save] ERROR:", err);
     indicateSaveError(err.message || "No se pudo guardar");
     if (isManual) showToast(`Error al guardar: ${err.message}`, "error");
     setSaveButtonState(true);
@@ -237,17 +244,11 @@ export async function autoSaveDiet() {
   await performSave(false);
 }
 
-// ────────────────────────────────────────────────────────────
-// Carregar, eliminar, helpers
-// ────────────────────────────────────────────────────────────
 export async function loadDietById(dietId) {
-  if (!dietId) throw new Error("ID de dieta no proporcionat");
+  if (!dietId || typeof dietId !== "string") throw new Error("ID invàlid");
 
   const diet = await getDiet(dietId);
-  if (!diet) {
-    showToast(`No se encontró la dieta con ID ${dietId}.`, "error");
-    throw new Error(`Dieta amb ID ${dietId} no trobada.`);
-  }
+  if (!diet) throw new Error(`Dieta no trobada: ${dietId}`);
 
   populateFormWithDietData(diet);
   captureInitialFormState();
@@ -268,17 +269,12 @@ export async function deleteDietHandler(id, dietDate, dietType) {
   const confirmed = await showConfirmModal(msg, "Eliminar dieta");
   if (!confirmed) return;
 
-  try {
-    await deleteDietById(id);
-    showToast("Dieta eliminada correctamente.", "warning");
-    await displayDietOptions();
+  await deleteDietById(id);
+  showToast("Dieta eliminada correctamente.", "error");
+  await displayDietOptions();
 
-    const remaining = await getAllDiets();
-    if (remaining.length === 0) closeDietModal();
-  } catch (err) {
-    console.error("Error eliminant la dieta", err);
-    showToast(`Error al eliminar la dieta: ${err.message}`, "error");
-  }
+  const remaining = await getAllDiets();
+  if (remaining.length === 0) closeDietModal();
 }
 
 function applyModeToServiceElement(el, mode) {
@@ -288,9 +284,6 @@ function applyModeToServiceElement(el, mode) {
   );
 }
 
-// ────────────────────────────────────────────────────────────
-// Bloc "Últim guardat"
-// ────────────────────────────────────────────────────────────
 let lastSavedDate = null;
 
 export function renderLastSaved() {
@@ -301,4 +294,4 @@ export function renderLastSaved() {
 
 setInterval(() => {
   if (lastSavedDate) renderLastSaved();
-}, 60_000);
+}, 60000);

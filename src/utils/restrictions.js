@@ -1,24 +1,33 @@
 /**
  * @file restrictions.js
- * @description Aplica restriccions d'entrada en temps real a certs camps del formulari.
+ * @description Aplica restriccions d'entrada en temps real.
  * @module inputRestrictions
  */
 
-import { showToast } from "../ui/toast.js"; // Assegura't de tenir la ruta correcta
+import { showToast } from "../ui/toast.js";
 
 // --- Constants ---
 const SELECTORS = {
-  SERVICE_NUMBER_INPUT: ".service-number", // Selector per als inputs de número de servei
+  SERVICE_NUMBER_INPUT: ".service-number",
 };
 const ERROR_MESSAGES = {
   DIGITS_ONLY: "Solo se permiten dígitos (0-9) en el número de servicio.",
 };
 
+// --- Helper: Debounce per toast ---
+function debounce(fn, delay) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+const debouncedToast = debounce(showToast, 300); // Evita spam
+
 // --- Funcions Públiques ---
 
 /**
- * Configura les restriccions per als inputs de número de servei,
- * permetent només l'entrada de dígits.
+ * Configura restriccions per números de servei.
  * @export
  */
 export function setupServiceNumberRestrictions() {
@@ -32,13 +41,10 @@ export function setupServiceNumberRestrictions() {
   }
 
   serviceNumberInputs.forEach((inputElement) => {
-    // Evita afegir listeners múltiples si la funció es crida més d'un cop
     if (inputElement.dataset.restrictionsSetup === "true") return;
     inputElement.dataset.restrictionsSetup = "true";
 
-    // Keypress: Permet només dígits (i tecles de control com Backspace, Fletxes)
     inputElement.addEventListener("keypress", (event) => {
-      // Permet tecles de control (Backspace, Tab, Enter, Fletxes, etc.) en diferents navegadors
       if (
         event.key === "Enter" ||
         event.key === "Tab" ||
@@ -49,36 +55,26 @@ export function setupServiceNumberRestrictions() {
       ) {
         return;
       }
-      // Comprova si la tecla premuda NO és un dígit
       if (!/\d/.test(event.key)) {
-        event.preventDefault(); // Bloqueja la introducció del caràcter
-        // Mostra el toast només un cop per evitar molestar
-        // Podria implementar-se amb un debounce o un flag temporal
-        showToast(ERROR_MESSAGES.DIGITS_ONLY, "warning"); // Canviat a 'warning' potser?
+        event.preventDefault();
+        debouncedToast(ERROR_MESSAGES.DIGITS_ONLY, "warning");
       }
     });
 
-    // Paste: Comprova si el text enganxat conté només dígits
     inputElement.addEventListener("paste", (event) => {
       try {
         const pastedData = (
           event.clipboardData || window.clipboardData
         )?.getData("text");
-        if (pastedData && !/^\d+$/.test(pastedData)) {
-          event.preventDefault(); // Bloqueja l'enganxat
-          showToast(ERROR_MESSAGES.DIGITS_ONLY, "warning");
+        if (pastedData && !/^\d*$/.test(pastedData)) {
+          // Permet buides
+          event.preventDefault();
+          debouncedToast(ERROR_MESSAGES.DIGITS_ONLY, "warning");
         }
       } catch (error) {
-        console.error("Error processant l'event 'paste':", error);
-        event.preventDefault(); // Bloqueja per seguretat si hi ha error
+        console.error("Error processant 'paste':", error);
+        event.preventDefault();
       }
     });
-
-    // Input: Podria ser útil per netejar caràcters invàlids si fallen keypress/paste
-    // inputElement.addEventListener('input', (event) => {
-    //    event.target.value = event.target.value.replace(/\D/g, '');
-    // });
   });
-
-  console.log("Restriccions per a números de servei configurades.");
 }
