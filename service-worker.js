@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Aquesta variable serà actualitzada automàticament pel teu workflow de GitHub Actions.
-const VERSION = "20250711133615"; // Un valor inicial per a desenvolupament local
+const VERSION = "20250711133713"; // Un valor inicial per a desenvolupament local
 
 const APP_SHELL_CACHE_NAME = `misdietas-app-shell-${VERSION}`;
 const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
