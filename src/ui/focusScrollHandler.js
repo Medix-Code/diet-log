@@ -22,9 +22,9 @@ function scrollToFocusedElement(element) {
     labelHeight = labelRect.height + LABEL_MARGIN;
   }
 
-  // Inclou l'alçada del teclat per camps inferiors (dinàmic)
+  // Dins de scrollToFocusedElement, afegeix això abans del scrollTo
   const dynamicOffset =
-    BASE_SCROLL_OFFSET + labelHeight + (keyboardHeight || 0);
+    BASE_SCROLL_OFFSET + labelHeight + (keyboardHeight || 0) + 50; // +50px extra per camps inferiors com Ayudante
 
   // Calcula la posició relativa al viewport
   const rect = element.getBoundingClientRect();
@@ -37,13 +37,12 @@ function scrollToFocusedElement(element) {
     behavior: "smooth",
   });
 
-  // Fallback: Si el teclat tapa encara, usa scrollIntoView per centrar
+  // Fallback amb scrollIntoView: Canvia block a 'nearest' per posicionar al més proper visible
   setTimeout(() => {
     if (keyboardHeight > 0) {
-      // Només si teclat obert
-      element.scrollIntoView({ block: "center", behavior: "smooth" }); // Centra l'input al viewport
+      element.scrollIntoView({ block: "nearest", behavior: "smooth" }); // 'nearest' evita centrar si ja és visible, millor per inferiors
     }
-  }, 200); // Delay addicional per estabilitzar
+  }, 200);
 }
 
 // Afegeix listener de focus a tots els elements editables

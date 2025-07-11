@@ -5,12 +5,20 @@ let isKeyboardOpen = false;
 const MARGIN_ABOVE_KEYBOARD = 10; // Marge per "arran" (ajusta: 5-15px)
 const THRESHOLD = 150; // Per evitar falsos positius
 
-// Funció per ajustar posició: fixa arran del teclat, ignorant scroll
+const scrollContainer = document.querySelector(".tab-content-container"); // Ajusta si el teu container scrollable és diferent (ex.: 'main')
+
+// Funció per ajustar posició de la pill i padding del container
 function adjustPillPosition(height = keyboardHeight) {
   if (isKeyboardOpen && height > THRESHOLD) {
     savePill.style.bottom = `calc(${height}px + ${MARGIN_ABOVE_KEYBOARD}px + env(safe-area-inset-bottom, 0px))`;
+    if (scrollContainer) {
+      scrollContainer.style.paddingBottom = `${height + 50}px`; // Padding = alçada teclat + marge extra per seguretat
+    }
   } else {
-    savePill.style.bottom = `calc(20px + env(safe-area-inset-bottom, 0px))`; // Posició original
+    savePill.style.bottom = `calc(20px + env(safe-area-inset-bottom, 0px))`;
+    if (scrollContainer) {
+      scrollContainer.style.paddingBottom = "0px"; // Restaura quan teclat tancat
+    }
   }
 }
 
