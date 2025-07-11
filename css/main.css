@@ -367,8 +367,8 @@ main {
   position: fixed;
   bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   right: calc(16px + env(safe-area-inset-right, 0px));
-  transition: bottom 0.3s ease-out;
-  z-index: 1200;
+  transition: bottom 0.3s ease-out; /* Suavitat en moviments */
+  z-index: 1200; /* Per sobre de tot */
   display: flex;
   align-items: center;
   gap: 6px;
