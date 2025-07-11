@@ -238,9 +238,31 @@ class DotacionService {
 
   _formatDotacioListText(dotacio) {
     const unitat = dotacio.numero || "S/N";
-    const cShort = this._shortNameAndSurname(dotacio.conductor);
-    const aShort = this._shortNameAndSurname(dotacio.ajudant);
-    return `${unitat} - ${cShort} / ${aShort}`;
+    const conductor = dotacio.conductor || "S/D";
+    const ajudant = dotacio.ajudant || "S/D";
+
+    let cDisplay = conductor;
+    let aDisplay = ajudant;
+
+    // Crea un element temporal per mesurar amplada amb estils reals
+    const tempEl = document.createElement("span");
+    tempEl.style.visibility = "hidden";
+    tempEl.style.whiteSpace = "nowrap";
+    tempEl.style.fontSize = getComputedStyle(document.body).fontSize; // Copia font-size
+    tempEl.style.fontFamily = getComputedStyle(document.body).fontFamily; // Copia font-family
+    tempEl.textContent = `${unitat} - ${cDisplay} / ${aDisplay}`;
+    document.body.appendChild(tempEl);
+    const textWidth = tempEl.offsetWidth;
+    document.body.removeChild(tempEl);
+
+    const maxWidth = 180; // Reduït per activar truncat en mòbils (ajusta amb DevTools)
+
+    if (textWidth > maxWidth) {
+      cDisplay = this._shortNameAndSurname(conductor);
+      aDisplay = this._shortNameAndSurname(ajudant);
+    }
+
+    return `${unitat} - ${cDisplay} / ${aDisplay}`;
   }
 
   _shortNameAndSurname(fullName) {
@@ -249,9 +271,41 @@ class DotacionService {
       .trim()
       .split(/\s+/)
       .filter((part) => part.length > 0);
+
     if (parts.length === 0) return "S/D";
     if (parts.length === 1) return parts[0];
-    return `${parts[0]} ${parts[1]}`;
+
+    // Llista d'articles a ignorar (ampliada)
+    const articles = new Set([
+      "de",
+      "la",
+      "del",
+      "el",
+      "los",
+      "las",
+      "von",
+      "van",
+      "d'",
+      "es",
+      "da",
+      "dels",
+      "i",
+      "y",
+    ]);
+
+    // Filtra articles i obté nom + cognoms rellevants
+    const filteredParts = parts.filter(
+      (part) => !articles.has(part.toLowerCase())
+    );
+
+    // Primer nom + inicials dels cognoms
+    const firstName = filteredParts[0];
+    const surnames = filteredParts
+      .slice(1)
+      .map((surname) => surname[0] + ".")
+      .join("");
+
+    return `${firstName} ${surnames}`;
   }
 
   _loadDotacio(index) {

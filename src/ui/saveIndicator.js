@@ -86,11 +86,12 @@ export function indicateUnsaved(delay = DELAY_UNSAVED) {
 }
 
 /**
- * Indica que s'està guardant.
+ * Indica que s'està guardant, amb missatge personalitzat opcional.
+ * @param {string} [msg="Guardando…"] - Missatge a mostrar.
  */
-export function indicateSaving() {
+export function indicateSaving(msg = "Guardando…") {
   clearTimeout(unsavedTimer);
-  showPill("Guardando…", CSS.SAVING);
+  showPill(msg, CSS.SAVING);
 }
 
 /**
