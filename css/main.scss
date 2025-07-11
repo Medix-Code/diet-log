@@ -766,6 +766,11 @@ button {
   }
 }
 
+#dotacio-options {
+  margin-top: 15px; /* Espai addicional per evitar trepitjar la barra. Ajusta a 10-20px segons proves */
+  padding: 0 10px; /* Opcional: Padding lateral per centrar millor els ítems */
+}
+
 .dotacio-item {
   background-color: #f9f9f9;
   border: 1px solid #ddd;

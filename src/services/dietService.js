@@ -99,7 +99,8 @@ export class Diet {
 
 // --- Funcions ---
 
-function buildDietObject(generalData, servicesData, dietId) {
+async function buildDietObject(generalData, servicesData, dietId) {
+  // Feta async
   if (
     !generalData ||
     !Array.isArray(servicesData) ||
@@ -108,6 +109,11 @@ function buildDietObject(generalData, servicesData, dietId) {
   )
     throw new Error("Dades incompletes.");
   if (!/^\d{9}$/.test(dietId)) throw new Error("ID invàlid.");
+
+  const existingDiet = await getDiet(dietId); // Ara await funciona dins d'async
+  const timeStampDiet = existingDiet
+    ? existingDiet.timeStampDiet
+    : new Date().toISOString(); // Manté l'original si existeix
 
   return new Diet({
     id: dietId,
@@ -128,6 +134,7 @@ function buildDietObject(generalData, servicesData, dietId) {
       mode: s.mode || "3.6",
     })),
     serviceType: generalData.serviceType || "TSU",
+    timeStampDiet: timeStampDiet, // Usa l'original o nou
   });
 }
 
@@ -215,7 +222,7 @@ async function performSave(isManual) {
     const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
     if (!dietId || !/^\d{9}$/.test(dietId)) throw new Error("ID invàlid");
 
-    const dietToSave = buildDietObject(generalData, servicesData, dietId);
+    const dietToSave = await buildDietObject(generalData, servicesData, dietId); // Afegeix await aquí
 
     const existingDiet = await getDiet(dietId);
     if (existingDiet) await updateDiet(dietToSave);
@@ -228,10 +235,25 @@ async function performSave(isManual) {
 
     captureInitialFormState();
     indicateSaved();
+
+    // Nou: Refresca la llista si el modal està obert
+    const modal = document.getElementById(DOM_IDS.DIET_MODAL);
+    if (modal && modal.style.display === "block") {
+      await displayDietOptions(); // Crida per refrescar immediatament
+    }
+
+    // Depuració: Log per confirmar guardat
+    console.log(
+      "Dieta guardada amb ID:",
+      dietId,
+      "Timestamp:",
+      dietToSave.timeStampDiet
+    );
   } catch (err) {
     indicateSaveError(err.message || "No se pudo guardar");
     if (isManual) showToast(`Error al guardar: ${err.message}`, "error");
     setSaveButtonState(true);
+    console.error("Error en guardat:", err);
   }
 }
 
