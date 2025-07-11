@@ -365,7 +365,7 @@ main {
 
 .save-pill {
   position: fixed;
-  bottom: calc(20px + env(keyboard-inset-bottom, 0px) + env(safe-area-inset-bottom, 0px)); /* Combina amb safe-area per iOS */
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   right: calc(16px + env(safe-area-inset-right, 0px));
   transition: bottom 0.3s ease-out;
   z-index: 1200;
