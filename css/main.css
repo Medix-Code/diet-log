@@ -1,3 +1,4 @@
+@charset "UTF-8";
 :root {
   --primary-color: #004aad;
   --secondary-color: #004aad;
@@ -461,6 +462,9 @@ button .fa {
 .tab-content-container {
   margin-top: 120px;
   padding: 20px;
+  overflow-y: auto; /* Permet scroll vertical */
+  transition: padding-bottom 0.3s ease; /* Transició suau per padding-bottom, evitant salts */
+  scroll-behavior: smooth; /* Opcional: Scroll suau global */
 }
 
 .tab-content {

@@ -5,42 +5,20 @@ let isKeyboardOpen = false;
 const MARGIN_ABOVE_KEYBOARD = 10;
 const THRESHOLD = 150;
 
-const SPACER_ID = "keyboard-spacer";
-const scrollContainer = document.querySelector(".tab-content-container"); // Ajusta si cal (ex.: 'main' o '#main-content')
-
-// Funció per obtenir/crear el spacer dins del container scrollable
-function getSpacer() {
-  let el = document.getElementById(SPACER_ID);
-  if (!el && scrollContainer) {
-    el = document.createElement("div");
-    el.id = SPACER_ID;
-    el.style.width = "100%";
-    el.style.height = "0px";
-    el.style.pointerEvents = "none";
-    el.style.transition = "height 0.3s ease"; // Transició suau per alçada
-    el.setAttribute("aria-hidden", "true"); // Accessibilitat
-    scrollContainer.appendChild(el); // Afegeix al container scrollable, no a body
-  }
-  return el;
-}
-
-// Funció per ajustar l'alçada del spacer
-function setSpacerHeight(h = 0) {
-  const spacer = getSpacer();
-  if (spacer) {
-    spacer.style.height = `${h}px`;
-  }
-}
+const scrollContainer = document.querySelector(".tab-content-container"); // Contenidor scrollable
 
 // Funció per ajustar posició: fixa arran del teclat, ignorant scroll
 function adjustPillPosition(height = keyboardHeight) {
-  // Espai extra perquè el formulari pugui desplaçar-se
-  setSpacerHeight(isKeyboardOpen ? height : 0);
-
   if (isKeyboardOpen && height > THRESHOLD) {
     savePill.style.bottom = `calc(${height}px + ${MARGIN_ABOVE_KEYBOARD}px + env(safe-area-inset-bottom, 0px))`;
+    if (scrollContainer) {
+      scrollContainer.style.paddingBottom = `${height + 50}px`; // Padding = alçada teclat + marge extra per seguretat
+    }
   } else {
     savePill.style.bottom = `calc(20px + env(safe-area-inset-bottom, 0px))`;
+    if (scrollContainer) {
+      scrollContainer.style.paddingBottom = "0px"; // Restaura quan teclat tancat
+    }
   }
 }
 
@@ -91,4 +69,4 @@ document.addEventListener("focusout", () => {
   setTimeout(adjustPillPosition, 100);
 });
 
-export { keyboardHeight, isKeyboardOpen };
+export { keyboardHeight, isKeyboardOpen }; // Afegeix isKeyboardOpen aquí
