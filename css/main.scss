@@ -536,10 +536,9 @@ button {
 .tab-content-container {
   margin-top: 120px;
   padding: 20px;
-  overflow-y: auto;
-  scroll-behavior: smooth; /* Scroll natiu suau */
-  will-change: scroll-position, transform; /* Optimitza per GPU, redueix pauses en mòbils */
-  transition: scroll-top 0.4s ease-in-out; /* Transició més llarga per sensació suau */
+  overflow-y: auto; /* Permet scroll vertical */
+  transition: padding-bottom 0.3s ease; /* Transició suau per padding-bottom, evitant salts */
+  scroll-behavior: smooth; /* Opcional: Scroll suau global */
 }
 
 .tab-content {
