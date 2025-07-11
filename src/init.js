@@ -26,6 +26,7 @@ import { initCameraOcr } from "./services/cameraOcr.js";
 import { initDotacion } from "./services/dotacion.js";
 import { getAnonymousUserId } from "./services/userService.js";
 import "./ui/keyboardHandler.js";
+import "./ui/focusScrollHandler.js";
 
 // --- Constants Específiques d'Inicialització ---
 const DONATION_LINK_ID = "openDonation";
