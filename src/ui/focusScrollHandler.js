@@ -31,25 +31,27 @@ function scrollToFocusedElement(element) {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const targetY = rect.top + scrollTop - dynamicOffset;
 
-  // Scroll suau
-  window.scrollTo({
-    top: targetY,
-    behavior: "smooth",
-  });
+  // Scroll suau amb behavior 'smooth' i delay augmentat per sincronitzar amb teclat
+  setTimeout(() => {
+    window.scrollTo({
+      top: targetY,
+      behavior: "smooth", // Ja suau, però amb delay més gran per fluiditat
+    });
+  }, 200); // Augmentat a 200ms per esperar millor l'estabilització
 
-  // Fallback: Si el teclat tapa encara, usa scrollIntoView per centrar
+  // Fallback: Si el teclat tapa encara, usa scrollIntoView per centrar amb smooth
   setTimeout(() => {
     if (keyboardHeight > 0) {
       // Només si teclat obert
-      element.scrollIntoView({ block: "center", behavior: "smooth" }); // Centra l'input al viewport
+      element.scrollIntoView({ block: "center", behavior: "smooth" }); // Centra l'input al viewport amb suavitat
     }
-  }, 200); // Delay addicional per estabilitzar
+  }, 300); // Delay addicional augmentat per estabilitzar i fer-ho més suau
 }
 
 // Afegeix listener de focus a tots els elements editables
 formElements.forEach((el) => {
   el.addEventListener("focus", () => {
-    setTimeout(() => scrollToFocusedElement(el), 100);
+    setTimeout(() => scrollToFocusedElement(el), 200); // Delay inicial augmentat per més suavitat
   });
 });
 
@@ -58,7 +60,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" || e.key === "Tab") {
     const focused = document.activeElement;
     if (focused && focused.tagName === "INPUT") {
-      setTimeout(() => scrollToFocusedElement(document.activeElement), 100);
+      setTimeout(() => scrollToFocusedElement(document.activeElement), 200);
     }
   }
 });
