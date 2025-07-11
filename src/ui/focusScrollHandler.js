@@ -8,50 +8,67 @@ const formElements = document.querySelectorAll("input, select, textarea");
 const BASE_SCROLL_OFFSET = 120; // Pixels per sobre de l'input per visibilitat
 const LABEL_MARGIN = 20; // Marge extra entre label i input
 
-/**
- * Desplaça el contenidor fins que l’element quedi visible.
- * La primera passada (anticipada=true) ignora l’alçada del teclat.
- */
-function scrollToFocusedElement(element, anticipada = false) {
+// Funció per scroll suau a l'element focusat, incloent alçada del label i teclat
+function scrollToFocusedElement(element) {
   if (!element) return;
 
-  // Alçada del <label> (si existeix)
-  const label = element.closest(".form-group")?.querySelector("label");
-  const labelTall = label
-    ? label.getBoundingClientRect().height + LABEL_MARGIN
-    : 0;
+  // Troba el label associat
+  const parentGroup = element.closest(".form-group");
+  const label = parentGroup ? parentGroup.querySelector("label") : null;
 
-  // Offset total: base + label + (teclat si no és passada anticipada)
-  const offset =
-    BASE_SCROLL_OFFSET + labelTall + (anticipada ? 0 : keyboardHeight);
+  let labelHeight = 0;
+  if (label) {
+    const labelRect = label.getBoundingClientRect();
+    labelHeight = labelRect.height + LABEL_MARGIN;
+  }
 
-  // Destí de l’scroll
+  // Inclou l'alçada del teclat per camps inferiors (dinàmic)
+  const dynamicOffset =
+    BASE_SCROLL_OFFSET + labelHeight + (keyboardHeight || 0);
+
+  // Calcula la posició relativa al viewport
   const rect = element.getBoundingClientRect();
-  const targetY = rect.top + window.scrollY - offset;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const targetY = rect.top + scrollTop - dynamicOffset;
 
-  window.scrollTo({ top: targetY, behavior: "smooth" });
+  // Scroll suau amb behavior 'smooth' i delay augmentat per sincronitzar amb teclat
+  setTimeout(() => {
+    window.scrollTo({
+      top: targetY,
+      behavior: "smooth", // Ja suau, però amb delay més gran per fluiditat
+    });
+  }, 200); // Augmentat a 200ms per esperar millor l'estabilització
+
+  // Fallback: Si el teclat tapa encara, usa scrollIntoView per centrar amb smooth
+  setTimeout(() => {
+    if (keyboardHeight > 0) {
+      // Només si teclat obert
+      element.scrollIntoView({ block: "center", behavior: "smooth" }); // Centra l'input al viewport amb suavitat
+    }
+  }, 300); // Delay addicional augmentat per estabilitzar i fer-ho més suau
 }
 
 // Afegeix listener de focus a tots els elements editables
-formElements.forEach((el) =>
-  el.addEventListener("focus", () => handleFocus(el))
-);
+formElements.forEach((el) => {
+  el.addEventListener("focus", () => {
+    setTimeout(() => scrollToFocusedElement(el), 200); // Delay inicial augmentat per més suavitat
+  });
+});
 
-document.addEventListener("focusin", (e) => {
-  if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) {
-    // petita espera per assegurar que visualViewport ja s'ha actualitzat
-    requestAnimationFrame(() => scrollToFocusedElement(e.target));
+// Opcional: Escolta keydown per fletxa "següent"
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === "Tab") {
+    const focused = document.activeElement;
+    if (focused && focused.tagName === "INPUT") {
+      setTimeout(() => scrollToFocusedElement(document.activeElement), 200);
+    }
   }
 });
 
-/**
- * Gestor de focus en dues passades:
- *   1) immediata (sense alçada de teclat) ― evita que l’input quedi tapat;
- *   2) definitiva un frame més tard ― ja coneixem keyboardHeight.
- */
-function handleFocus(element) {
-  scrollToFocusedElement(element, /*anticipada=*/ true);
+function handleFocus(el) {
+  // 1a passada immediata: almenys el camp queda a la vora superior
+  scrollToFocusedElement(el, /*anticipat=*/ true);
 
-  // Un sol frame (~16 ms) perquè visualViewport/geometrychange s’hagi actualitzat
-  requestAnimationFrame(() => scrollToFocusedElement(element));
+  // 2a passada ~60‒80 ms després, quan geometrychange o resize ja ha disparat
+  setTimeout(() => scrollToFocusedElement(el), 80);
 }
