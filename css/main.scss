@@ -2386,31 +2386,68 @@ button .icon {
     padding: 16px;
   }
 
+  #diet-options {
+    overflow-y: auto; /* Manté scroll automàtic */
+    scrollbar-width: thin; /* Per Firefox: Fa la barra estreta */
+    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
+      var(--scrollbar-track, transparent); /* Usa variables per temes (gris clar / transparent) */
+  }
+
+  /* Per WebKit browsers (Chrome, Safari, iOS) - Fa-la minimalista i estreta */
+  #diet-options::-webkit-scrollbar {
+    width: 6px; /* Estreta */
+    background: var(--scrollbar-track, transparent); /* Fons transparent */
+    transition: opacity 0.3s ease; /* Suau aparició/desaparició */
+    opacity: 0; /* Amaga per defecte quan no s'usa */
+  }
+
+  #diet-options:hover::-webkit-scrollbar,
+  #diet-options:active::-webkit-scrollbar {
+    opacity: 1; /* Mostra en hover/touch per usabilitat */
+  }
+
+  #diet-options::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)); /* Gris suau */
+    border-radius: 10px; /* Cantonades arrodonides */
+    border: 2px solid transparent; /* Espai interior */
+    background-clip: padding-box; /* Evita solapaments */
+  }
+
+  #diet-options::-webkit-scrollbar-thumb:hover {
+    background: var(
+      --scrollbar-thumb-hover,
+      rgba(0, 0, 0, 0.4)
+    ); /* Més visible en hover */
+  }
+
+  /* Opcional: Amaga en iOS quan no s'usa, més minimalista */
+  #diet-options::-webkit-scrollbar {
+    -webkit-appearance: none; /* Elimina estil natiu */
+  }
+
+  /* Per llistes i ítems (per evitar solapaments amb la barra) */
   #diet-options li {
     border-radius: 8px;
-    padding: 10px 15px;
+    padding: 10px 15px 10px 10px; /* Padding-right extra per espai de barra */
     margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between; /* Espai entre text i botons */
+    align-items: center;
+    white-space: nowrap; /* Evita salts de línia en text */
+    overflow: hidden; /* Amaga text extra si cal */
+    text-overflow: ellipsis; /* "..." per text llarg */
+  }
 
-    span {
-      font-size: 1rem;
-      font-weight: 200;
-      margin-right: 5px;
-    }
+  #diet-options li span {
+    font-size: 1rem;
+    font-weight: 200;
+    margin-right: 5px;
+    flex: 1; /* Ocupa espai flexible per evitar solapaments */
+  }
 
-    button.delete-diet {
-      width: 34px;
-      height: 34px;
-      font-size: 14px;
-      border: 1px solid var(--border-btt);
-      border-radius: 8px;
-      background-color: var(--bg-color);
-      transition: all 0.3s ease;
-      margin-left: 10px;
-
-      i {
-        font-size: 14px;
-      }
-    }
+  #diet-options li button {
+    flex-shrink: 0; /* Botons no es redueixen */
+    margin-left: 10px;
   }
 
   .modal-buttons {

@@ -210,23 +210,37 @@ function populateFormWithDietData(diet) {
 }
 
 async function performSave(isManual) {
-  indicateSaving();
+  const { generalData, servicesData } = gatherAllData();
+  const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
+  if (!dietId || !/^\d{9}$/.test(dietId)) throw new Error("ID invàlid");
+
+  const existingDiet = await getDiet(dietId);
+
+  // Personalitza missatge si és nova dieta
+  const isNewDiet = !existingDiet || Object.keys(existingDiet).length === 0;
+  const saveMessage = isNewDiet ? "Guardando nueva dieta…" : "Guardando…";
+  indicateSaving(saveMessage);
+
+  // Log per depurar el missatge
+  console.log("Missatge indicat:", saveMessage, "És nova?", isNewDiet);
+
   setSaveButtonState(false);
 
   try {
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500)); // Simulació, mantinguda
 
     if (!validateFormTabs()) throw new Error("Validació fallida");
 
-    const { generalData, servicesData } = gatherAllData();
-    const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
-    if (!dietId || !/^\d{9}$/.test(dietId)) throw new Error("ID invàlid");
+    const dietToSave = await buildDietObject(generalData, servicesData, dietId);
 
-    const dietToSave = await buildDietObject(generalData, servicesData, dietId); // Afegeix await aquí
-
-    const existingDiet = await getDiet(dietId);
-    if (existingDiet) await updateDiet(dietToSave);
-    else await addDiet(dietToSave);
+    // Guardat amb try-catch específic per capturar errors reals
+    if (existingDiet) {
+      await updateDiet(dietToSave);
+      console.log("Dieta actualitzada amb ID:", dietId);
+    } else {
+      await addDiet(dietToSave);
+      console.log("Nova dieta guardada amb ID:", dietId);
+    }
 
     if (isManual) showToast("Dieta guardada correctament.", "success");
 
@@ -236,24 +250,13 @@ async function performSave(isManual) {
     captureInitialFormState();
     indicateSaved();
 
-    // Nou: Refresca la llista si el modal està obert
-    const modal = document.getElementById(DOM_IDS.DIET_MODAL);
-    if (modal && modal.style.display === "block") {
-      await displayDietOptions(); // Crida per refrescar immediatament
-    }
-
-    // Depuració: Log per confirmar guardat
-    console.log(
-      "Dieta guardada amb ID:",
-      dietId,
-      "Timestamp:",
-      dietToSave.timeStampDiet
-    );
+    // Nou: Refresca la llista del gestor automàticament per veure la dieta guardada
+    await displayDietOptions();
   } catch (err) {
+    console.error("Error detallat en guardat:", err); // Log detallat per depurar
     indicateSaveError(err.message || "No se pudo guardar");
     if (isManual) showToast(`Error al guardar: ${err.message}`, "error");
     setSaveButtonState(true);
-    console.error("Error en guardat:", err);
   }
 }
 
