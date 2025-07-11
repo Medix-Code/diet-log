@@ -7,6 +7,7 @@
 import { loadDietById, deleteDietHandler } from "../services/dietService.js";
 import { getDietDisplayInfo, capitalizeFirstLetter } from "../utils/utils.js";
 import { getAllDiets } from "../db/indexedDbDietRepository.js";
+import { hasPendingChanges } from "../services/formService.js";
 
 // --- Constants ---
 const CSS_CLASSES = {
@@ -197,7 +198,7 @@ function _createDietListItem(diet) {
   return dietItem;
 }
 
-async function _handleDietListClick(event) {
+export async function _handleDietListClick(event) {
   const target = event.target;
   const loadButton = target.closest(`.${CSS_CLASSES.DIET_LOAD_BTN}`);
   const deleteButton = target.closest(`.${CSS_CLASSES.DIET_DELETE_BTN}`);
@@ -210,17 +211,21 @@ async function _handleDietListClick(event) {
     if (!dietId) return;
 
     const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
-    const confirmed = await showConfirmModal(
-      `¿Quieres cargar la dieta de la ${franjaText} del ${ddmmaa}? Los datos no guardados del formulario actual se perderán.`,
-      "Cargar dieta"
-    );
 
-    if (confirmed) {
-      try {
-        await loadDietById(dietId);
-      } catch (error) {
-        // Maneig
-      }
+    // Nou: Comprova si hi ha canvis pendents al formulari
+    if (hasPendingChanges()) {
+      const confirmed = await showConfirmModal(
+        `¿Quieres cargar la dieta de la ${franjaText} del ${ddmmaa}? Los datos no guardados del formulario actual se perderán.`,
+        "Cargar dieta"
+      );
+
+      if (!confirmed) return;
+    } // Si no hi ha canvis, carrega directament sense confirm
+
+    try {
+      await loadDietById(dietId);
+    } catch (error) {
+      // Maneig d'error, ex.: showToast("Error al cargar la dieta.", "error");
     }
   } else if (deleteButton) {
     event.stopPropagation();

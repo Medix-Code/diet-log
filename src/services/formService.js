@@ -315,3 +315,4 @@ export const cancelPendingAutoSave = () => formService.cancelPendingAutoSave();
 export const addDoneBehavior = () => formService.addDoneBehavior();
 export const gatherAllData = () => formService.gatherAllData();
 export const getInitialFormDataStr = () => formService.getInitialFormDataStr();
+export const hasPendingChanges = () => formService.hasPendingChanges();
