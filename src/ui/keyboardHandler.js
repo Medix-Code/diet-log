@@ -4,13 +4,17 @@ let keyboardHeight = 0;
 let isKeyboardOpen = false;
 const MARGIN_ABOVE_KEYBOARD = 10; // Marge per "arran" (ajusta: 5-15px)
 const THRESHOLD = 150; // Per evitar falsos positius
+const SPACER_ID = "keyboard-spacer";
 
 // Funció per ajustar posició: fixa arran del teclat, ignorant scroll
 function adjustPillPosition(height = keyboardHeight) {
+  // Espai extra perquè el formulari pugui desplaçar-se
+  setSpacerHeight(isKeyboardOpen ? height : 0);
+
   if (isKeyboardOpen && height > THRESHOLD) {
-    savePill.style.bottom = `calc(${height}px + ${MARGIN_ABOVE_KEYBOARD}px + env(safe-area-inset-bottom, 0px))`;
+    savePill.style.bottom = `calc(${height}px + ${MARGIN_ABOVE_KEYBOARD}px + env(safe-area-inset-bottom,0px))`;
   } else {
-    savePill.style.bottom = `calc(20px + env(safe-area-inset-bottom, 0px))`; // Posició original
+    savePill.style.bottom = `calc(20px + env(safe-area-inset-bottom,0px))`;
   }
 }
 
@@ -62,3 +66,20 @@ document.addEventListener("focusout", () => {
 });
 
 export { keyboardHeight };
+
+function getSpacer() {
+  let el = document.getElementById(SPACER_ID);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = SPACER_ID;
+    el.style.width = "100%";
+    el.style.height = "0px";
+    el.style.pointerEvents = "none";
+    document.body.appendChild(el); // o dins <main>
+  }
+  return el;
+}
+
+function setSpacerHeight(h = 0) {
+  getSpacer().style.height = `${h}px`;
+}
