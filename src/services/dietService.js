@@ -221,9 +221,6 @@ async function performSave(isManual) {
   const saveMessage = isNewDiet ? "Guardando nueva dieta…" : "Guardando…";
   indicateSaving(saveMessage);
 
-  // Log per depurar el missatge
-  console.log("Missatge indicat:", saveMessage, "És nova?", isNewDiet);
-
   setSaveButtonState(false);
 
   try {
@@ -236,10 +233,8 @@ async function performSave(isManual) {
     // Guardat amb try-catch específic per capturar errors reals
     if (existingDiet) {
       await updateDiet(dietToSave);
-      console.log("Dieta actualitzada amb ID:", dietId);
     } else {
       await addDiet(dietToSave);
-      console.log("Nova dieta guardada amb ID:", dietId);
     }
 
     if (isManual) showToast("Dieta guardada correctament.", "success");
@@ -253,7 +248,6 @@ async function performSave(isManual) {
     // Nou: Refresca la llista del gestor automàticament per veure la dieta guardada
     await displayDietOptions();
   } catch (err) {
-    console.error("Error detallat en guardat:", err); // Log detallat per depurar
     indicateSaveError(err.message || "No se pudo guardar");
     if (isManual) showToast(`Error al guardar: ${err.message}`, "error");
     setSaveButtonState(true);
