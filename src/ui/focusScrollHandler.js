@@ -1,5 +1,5 @@
 // src/ui/focusScrollHandler.js
-import { keyboardHeight } from "./keyboardHandler.js"; // Importa l'alçada del teclat
+import { keyboardHeight, isKeyboardOpen } from "./keyboardHandler.js"; // Importa també isKeyboardOpen per optimitzacions
 
 // Selecciona tots els inputs i selects del formulari (ajusta selectors si cal)
 const formElements = document.querySelectorAll("input, select, textarea");
@@ -9,7 +9,7 @@ const BASE_SCROLL_OFFSET = 120; // Pixels per sobre de l'input per visibilitat
 const LABEL_MARGIN = 20; // Marge extra entre label i input
 
 // Funció per scroll suau a l'element focusat, incloent alçada del label i teclat
-function scrollToFocusedElement(element) {
+function scrollToFocusedElement(element, anticipat = false) {
   if (!element) return;
 
   // Troba el label associat
@@ -22,37 +22,48 @@ function scrollToFocusedElement(element) {
     labelHeight = labelRect.height + LABEL_MARGIN;
   }
 
-  // Inclou l'alçada del teclat per camps inferiors (dinàmic)
-  const dynamicOffset =
-    BASE_SCROLL_OFFSET + labelHeight + (keyboardHeight || 0);
+  // Inclou l'alçada del teclat només si no és passada anticipada o teclat ja obert
+  const teclatOffset = anticipat && !isKeyboardOpen ? 0 : keyboardHeight || 0;
 
   // Calcula la posició relativa al viewport
   const rect = element.getBoundingClientRect();
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  const targetY = rect.top + scrollTop - dynamicOffset;
+  const targetY =
+    rect.top + scrollTop - (BASE_SCROLL_OFFSET + labelHeight + teclatOffset);
 
-  // Scroll suau amb behavior 'smooth' i delay augmentat per sincronitzar amb teclat
-  setTimeout(() => {
+  // Scroll suau amb requestAnimationFrame per més fluiditat
+  requestAnimationFrame(() => {
     window.scrollTo({
       top: targetY,
-      behavior: "smooth", // Ja suau, però amb delay més gran per fluiditat
+      behavior: "smooth",
     });
-  }, 200); // Augmentat a 200ms per esperar millor l'estabilització
+  });
 
-  // Fallback: Si el teclat tapa encara, usa scrollIntoView per centrar amb smooth
-  setTimeout(() => {
-    if (keyboardHeight > 0) {
-      // Només si teclat obert
-      element.scrollIntoView({ block: "center", behavior: "smooth" }); // Centra l'input al viewport amb suavitat
-    }
-  }, 300); // Delay addicional augmentat per estabilitzar i fer-ho més suau
+  // Fallback: Si el teclat tapa encara, usa scrollIntoView per centrar
+  if (!anticipat) {
+    // Només en la segona passada
+    setTimeout(() => {
+      if (keyboardHeight > 0) {
+        requestAnimationFrame(() => {
+          element.scrollIntoView({ block: "center", behavior: "smooth" });
+        });
+      }
+    }, 100); // Delay ajustat per segona passada
+  }
+}
+
+// Funció per manejar focus amb dues passades (la teva proposta refinada)
+function handleFocus(el) {
+  // 1a passada immediata: Posiciona aproximadament (anticipat = true)
+  scrollToFocusedElement(el, true);
+
+  // 2a passada amb delay curt: Ajusta amb dades del teclat
+  setTimeout(() => scrollToFocusedElement(el), 50); // 50ms per sincronitzar amb resize/geometrychange
 }
 
 // Afegeix listener de focus a tots els elements editables
 formElements.forEach((el) => {
-  el.addEventListener("focus", () => {
-    setTimeout(() => scrollToFocusedElement(el), 200); // Delay inicial augmentat per més suavitat
-  });
+  el.addEventListener("focus", () => handleFocus(el)); // Usa la nova funció
 });
 
 // Opcional: Escolta keydown per fletxa "següent"
@@ -60,15 +71,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" || e.key === "Tab") {
     const focused = document.activeElement;
     if (focused && focused.tagName === "INPUT") {
-      setTimeout(() => scrollToFocusedElement(document.activeElement), 200);
+      handleFocus(document.activeElement); // Usa handleFocus per canvis de camp
     }
   }
 });
-
-function handleFocus(el) {
-  // 1a passada immediata: almenys el camp queda a la vora superior
-  scrollToFocusedElement(el, /*anticipat=*/ true);
-
-  // 2a passada ~60‒80 ms després, quan geometrychange o resize ja ha disparat
-  setTimeout(() => scrollToFocusedElement(el), 80);
-}
