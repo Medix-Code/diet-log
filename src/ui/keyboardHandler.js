@@ -60,3 +60,5 @@ document.addEventListener("focusin", (e) => {
 document.addEventListener("focusout", () => {
   setTimeout(adjustPillPosition, 100);
 });
+
+export { keyboardHeight };
