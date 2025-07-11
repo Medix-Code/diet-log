@@ -434,8 +434,11 @@ main {
 // SAVE-PILL · indicador de guardat flotant
 .save-pill {
   position: fixed;
-  bottom: calc(20px + env(keyboard-inset-bottom, 0px));
+  bottom: calc(
+    20px + env(keyboard-inset-bottom, 0px) + env(safe-area-inset-bottom, 0px)
+  ); /* Combina amb safe-area per iOS */
   right: calc(16px + env(safe-area-inset-right, 0px));
+  transition: bottom 0.3s ease-out;
   z-index: 1200;
   display: flex;
   align-items: center;
@@ -449,7 +452,6 @@ main {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   opacity: 0;
   transform: translateY(12px);
-  transition: opacity 0.25s, transform 0.25s;
 
   &.visible {
     opacity: 1;

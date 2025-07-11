@@ -20,11 +20,12 @@ import { setupModalGenerics } from "./ui/modals.js";
 import { setupDatePickers, setupTimePickers } from "./ui/pickers.js";
 import { setupServiceNumberRestrictions } from "./utils/restrictions.js";
 import { initSettingsPanel } from "./ui/settingsPanel.js";
-import * as formService from "./services/formService.js"; // Importem tot el mòdul
+import * as formService from "./services/formService.js";
 import { initPwaInstall } from "./services/pwaInstallHandler.js";
 import { initCameraOcr } from "./services/cameraOcr.js";
 import { initDotacion } from "./services/dotacion.js";
 import { getAnonymousUserId } from "./services/userService.js";
+import "./ui/keyboardHandler.js";
 
 // --- Constants Específiques d'Inicialització ---
 const DONATION_LINK_ID = "openDonation";
