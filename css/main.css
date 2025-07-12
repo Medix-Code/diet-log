@@ -1535,7 +1535,6 @@ button .fa {
   flex-direction: column;
   gap: 15px;
   min-height: 250px;
-  max-height: 480px; /* p. ex. 6 targetes visibles; ajusta al gust */
 }
 
 .no-diets-text {
