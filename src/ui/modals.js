@@ -288,21 +288,18 @@ export function removeDietItemFromList(dietId) {
     ?.closest(".diet-item");
   if (!itemToRemove) return;
 
-  itemToRemove.remove(); // Remove immediat
+  // MILLORA: Anima l'alçada de la llista per una transició suau quan puja
+  const currentHeight = dietOptionsListElement.scrollHeight + "px";
+  dietOptionsListElement.style.height = currentHeight;
 
-  dietOptionsListElement.style.height =
-    dietOptionsListElement.scrollHeight + "px"; // Set inicial
+  itemToRemove.remove(); // Remove immediat per tancar el gap
+
   requestAnimationFrame(() => {
     dietOptionsListElement.style.height =
-      dietOptionsListElement.scrollHeight + "px"; // Recalcula després remove
+      dietOptionsListElement.scrollHeight + "px"; // Recalcula i anima a la nova alçada (menor)
   });
 
-  // CORRECCIÓ: Refresca visibilitat immediat per mostrar text si és l'última
-  if (dietOptionsListElement.children.length === 0) {
-    dietOptionsListElement.classList.add(CSS_CLASSES.HIDDEN);
-    noDietsTextElement.classList.remove(CSS_CLASSES.HIDDEN);
-    noDietsTextElement.textContent = "No hay dietas guardadas.";
-  }
+  // Actualitza visibilitat immediatament (mostra text si és l'última dieta)
   updateDietListVisibility();
 }
 
@@ -357,6 +354,9 @@ export function openDietModal() {
   if (dietModalElement) {
     _openGenericModal(dietModalElement);
     displayDietOptions();
+    // MILLORA: Calcula max-height dinàmica per evitar tallades
+    const modalHeight = dietModalElement.offsetHeight;
+    dietOptionsListElement.style.maxHeight = `calc(${modalHeight}px - 150px)`; // Ajusta 150px per títol + botó + paddings
   }
 }
 
@@ -400,6 +400,10 @@ export async function displayDietOptions() {
 
 // Nova funció auxiliar per actualitzar visibilitat de la llista
 function updateDietListVisibility() {
+  console.log(
+    "Actualitzant visibilitat: children.length =",
+    dietOptionsListElement.children.length
+  ); // DEPURACIÓ
   if (dietOptionsListElement.children.length === 0) {
     dietOptionsListElement.classList.add(CSS_CLASSES.HIDDEN);
     noDietsTextElement.classList.remove(CSS_CLASSES.HIDDEN);
@@ -449,7 +453,7 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
 
       setTimeout(async () => {
         dietItem.remove(); // Elimina per tancar gap
-        updateDietListVisibility(); // MILLORA: Actualitza visibilitat immediat (mostra text si última)
+        updateDietListVisibility(); // Actualitza immediat (mostra text si última)
         await deleteDietHandler(dietId, dietDate, dietType);
       }, 300);
     } else {
@@ -513,9 +517,9 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       dietItem.style.opacity = "0";
 
       setTimeout(async () => {
+        dietItem.remove(); // Elimina per tancar gap
+        updateDietListVisibility(); // Actualitza immediat (mostra text si última)
         await deleteDietHandler(dietId, dietDate, dietType);
-        dietItem.remove();
-        dietModalElement.style.overflow = ""; // MILLORA: Restaura scroll de modal
       }, 300);
     } else {
       dietItem.style.transform = "translateX(0)";
@@ -561,8 +565,7 @@ export function restoreDietItemToList(diet) {
     restoredItem.style.transform = "translateX(0)"; // Slide-in a posició original
     initSwipeToDelete(restoredItem, diet.id, diet.date, diet.dietType);
   });
-
+  updateDietListVisibility();
   dietOptionsListElement.classList.remove(CSS_CLASSES.HIDDEN);
   noDietsTextElement.classList.add(CSS_CLASSES.HIDDEN);
-  updateDietListVisibility();
 }
