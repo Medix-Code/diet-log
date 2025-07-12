@@ -20,4 +20,3 @@ Disallow: /
 
 User-agent: CCBot
 Disallow: /
-
