@@ -1534,6 +1534,7 @@ button .fa {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  min-height: 250px;
 }
 
 .no-diets-text {
