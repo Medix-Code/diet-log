@@ -1568,7 +1568,7 @@ button .fa {
   outline: none; /* Evita outline per defecte en focus, però pots afegir un border alternatiu si cal */
 }
 
-/* Opcional: Striping per llistes llargues (ítems alterns) */
+/* Opcional: Satriping per llistes llargues (ítems alterns) */
 .diet-list .diet-item:nth-child(even) {
   background-color: #f5f5f5; /* NOU: Gris més clar i subtil per menys "diferència" visible */
 }
