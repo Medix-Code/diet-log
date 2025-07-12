@@ -1749,7 +1749,7 @@ button {
   }
 }
 
-/* Opcional: Satriping per llistes llargues (ítems alterns) */
+/* Opcional: Striping per llistes llargues (ítems alterns) */
 .diet-list .diet-item:nth-child(even) {
   background-color: #f5f5f5; /* NOU: Gris més clar i subtil per menys "diferència" visible */
 }
@@ -2589,13 +2589,16 @@ button .icon {
   // MODAL DE GESTIÓ DE DIETES i LLISTA (#diet-options)
   #diet-options {
     overflow-y: auto; /* Manté scroll automàtic quan la llista creix */
-    transition: height 0.3s ease-out; /* Animació suau per canvis d'alçada, segons Google (200-400ms recomanat) */
-    scrollbar-width: thin; /* Per Firefox: Barra estreta i discreta, com recomana MDN per estètica minimalista */
+    transition: height 0.3s ease-out; /* Animació suau per canvis d'alçada */
+    scrollbar-width: thin; /* Per Firefox: Barra estreta */
     scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-      var(--scrollbar-track, transparent); /* Colors custom amb variables per temes (gris suau / transparent) */
-    scrollbar-gutter: stable; /* Reserva espai per la barra per evitar salts de layout, segons CSS guies estàndard */
-    will-change: height; /* Optimitza animacions en GPU per fluïdesa, recomanat per CSS-Tricks en llistes dinàmiques */
-    max-height: 400px; /* Límit d'alçada per evitar llistes infinites en modals, segons Material Design per contenidors scrollables */
+      var(--scrollbar-track, transparent); /* Colors custom */
+    scrollbar-gutter: stable; /* Reserva espai per barra */
+    will-change: height; /* Optimitza animacions */
+    max-height: calc(
+      80vh - 150px
+    ); /* MILLORA: Alçada dinàmica basada en viewport (80vh menys capçalera + padding modal, ajusta 150px segons el teu layout) */
+    height: auto; /* Permet expansió natural sense límit fix */
   }
 
   /* Per WebKit browsers (Chrome, Safari, iOS, Edge) - Custom scrollbar minimalista i estreta */
@@ -2663,7 +2666,9 @@ button .icon {
   /* Responsivitat: Ajusta en pantalles petites (opcional, per mòbils) */
   @media (max-width: 600px) {
     #diet-options {
-      max-height: 300px; /* Redueix alçada en mòbils per evitar ocupar tota la pantalla */
+      max-height: calc(
+        70vh - 120px
+      ); /* MILLORA: Redueix offsets per mòbils (menys capçalera/padding) */
     }
 
     #diet-options li {
