@@ -2317,8 +2317,8 @@ button .icon {
     scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent); /* Colors custom */
     scrollbar-gutter: stable; /* Reserva espai per barra */
     will-change: height; /* Optimitza animacions */
-    max-height: calc(80vh - 150px); /* MILLORA: Alçada dinàmica basada en viewport (80vh menys capçalera + padding modal, ajusta 150px segons el teu layout) */
-    height: auto; /* Permet expansió natural sense límit fix */
+    height: auto; /* MILLORA: Alçada natural per mostrar tot sense tallades si curt */
+    max-height: none; /* MILLORA: Elimina límit fix, ara calculat en JS per adaptar-se */
   }
   /* Per WebKit browsers (Chrome, Safari, iOS, Edge) - Custom scrollbar minimalista i estreta */
   #diet-options::-webkit-scrollbar {
@@ -2370,7 +2370,7 @@ button .icon {
 }
 @media (max-width: 768px) and (max-width: 600px) {
   #diet-options {
-    max-height: calc(70vh - 120px); /* MILLORA: Redueix offsets per mòbils (menys capçalera/padding) */
+    height: auto; /* Manté flexible en mòbils */
   }
   #diet-options li {
     padding: 10px 15px 10px 10px; /* Padding més compacte per espai limitat */

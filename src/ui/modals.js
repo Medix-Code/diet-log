@@ -354,9 +354,11 @@ export function openDietModal() {
   if (dietModalElement) {
     _openGenericModal(dietModalElement);
     displayDietOptions();
-    // MILLORA: Calcula max-height dinàmica per evitar tallades
-    const modalHeight = dietModalElement.offsetHeight;
-    dietOptionsListElement.style.maxHeight = `calc(${modalHeight}px - 150px)`; // Ajusta 150px per títol + botó + paddings
+
+    // MILLORA: Calcula max-height dinàmica basada en viewport real per evitar tallades
+    const viewportHeight = window.innerHeight;
+    const offsets = 150; // Ajusta: top-bar (~60px) + títol (~40px) + botó (~50px) + paddings (~0px)
+    dietOptionsListElement.style.maxHeight = `calc(${viewportHeight}px - ${offsets}px)`; // Assegura visibilitat completa
   }
 }
 
