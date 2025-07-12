@@ -46,11 +46,11 @@
   --light-grey: #f5f5f5;
   --prompt_box_shadow: rgba(0, 0, 0, 0.3);
   --toast-info-bg: #e6f3ff;
-  --toast-success-bg: #d4edda;
-  --toast-error-bg: #f8d7da;
-  --toast-warning-bg: #fff3cd;
-  --toast-text-color: #1a1a1a;
-  --toast-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  --toast-success-bg: #28a745;
+  --toast-error-bg: #dc3545;
+  --toast-warning-bg: #dc3545;
+  --toast-text-color: #ffffff;
+  --toast-box-shadow: rgba(0, 0, 0, 0.15);
   --service-1-bg: #e9f7ef;
   --service-1-border: #8ddfd0;
   --service-2-bg: #e8f4fd;
@@ -1506,7 +1506,6 @@ button .fa {
   display: flex;
   flex-direction: column;
   max-height: 80vh;
-  overflow: hidden;
 }
 
 #diet-modal {
@@ -2235,7 +2234,7 @@ button .icon {
     padding: 15px 0;
   }
   .diet-item {
-    padding: 14px 12px;
+    padding: 14px 20px;
   }
   .diet-icons {
     gap: 20px;

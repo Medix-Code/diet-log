@@ -155,7 +155,7 @@ class FormService {
 
       this.initialFormDataStr = JSON.stringify(this.getFormDataObject() || {});
     } catch (err) {
-      console.warn("[Autosave skipped]", err.message || "Error desconegut");
+      console.warn("[Autosave skipped]", err?.message || "Error desconegut");
       indicateSaveError("Revisa dades de Serveis");
     }
   }
