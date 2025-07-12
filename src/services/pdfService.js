@@ -1,6 +1,6 @@
 /**
  * @file pdfService.js
- * @description Genera i descarrega PDF de dietes.
+ * @description Genera i descarrega PDF de dietes amb validacions i missatges d'usuari optimitzats.
  * @module pdfService
  */
 
@@ -8,8 +8,8 @@ import { showToast } from "../ui/toast.js";
 import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
-import { getDiet } from "../db/indexedDbDietRepository.js"; // NOU: Import per carregar dieta de BD
-import { getDietDisplayInfo } from "../utils/utils.js"; // NOU: Per info addicional si cal
+import { getDiet } from "../db/indexedDbDietRepository.js";
+import { getDietDisplayInfo } from "../utils/utils.js";
 
 // --- Constants ---
 const DOM_IDS = {
@@ -31,64 +31,61 @@ const PDF_SETTINGS = {
   SIGNATURE_HEIGHT: 50,
   WATERMARK_TEXT: "misdietas.com",
   DEFAULT_FILENAME: "dieta.pdf",
-  EMPTY_FIELD_PLACEHOLDER: "",
   SERVICE_NUMBER_COLOR: "#004aad",
   MODE_PREFIX_TEXT_COLOR: "#8B0000",
   MAX_SIGNATURE_NAME_LENGTH: 31,
 };
 
-const generalFieldCoordinates = {
-  date: { x: 155, y: 732, size: 16, color: "#000000" },
-  vehicleNumber: { x: 441, y: 732, size: 16, color: "#000000" },
-  person1: { x: 65, y: 368, size: 16, color: "#000000" },
-  person2: { x: 310, y: 368, size: 16, color: "#000000" },
-};
-
-const baseServiceFieldCoordinates = {
-  serviceNumber: { x: 130, y: 715, size: 16, color: "#000000" },
-  origin: { x: 232, y: 698, size: 16, color: "#000000" },
-  originTime: { x: 441, y: 698, size: 16, color: "#000000" },
-  destination: { x: 232, y: 683, size: 16, color: "#000000" },
-  destinationTime: { x: 441, y: 681, size: 16, color: "#000000" },
-  endTimeNormal: { x: 441, y: 665, size: 16, color: "#000000" },
-  endTimeModeText: {
-    x: 390,
-    y: 665,
-    size: 16,
-    color: PDF_SETTINGS.MODE_PREFIX_TEXT_COLOR,
+const FIELD_COORDINATES = {
+  general: {
+    date: { x: 155, y: 732, size: 16, color: "#000000" },
+    vehicleNumber: { x: 441, y: 732, size: 16, color: "#000000" },
+    person1: { x: 65, y: 368, size: 16, color: "#000000" },
+    person2: { x: 310, y: 368, size: 16, color: "#000000" },
   },
-  endTimeValueWhenPrefixed: { x: 441, y: 665, size: 16, color: "#000000" },
+  service: {
+    serviceNumber: { x: 130, y: 715, size: 16, color: "#000000" },
+    origin: { x: 232, y: 698, size: 16, color: "#000000" },
+    originTime: { x: 441, y: 698, size: 16, color: "#000000" },
+    destination: { x: 232, y: 683, size: 16, color: "#000000" },
+    destinationTime: { x: 441, y: 681, size: 16, color: "#000000" },
+    endTimeNormal: { x: 441, y: 665, size: 16, color: "#000000" },
+    endTimeModeText: {
+      x: 390,
+      y: 665,
+      size: 16,
+      color: PDF_SETTINGS.MODE_PREFIX_TEXT_COLOR,
+    },
+    endTimeValueWhenPrefixed: { x: 441, y: 665, size: 16, color: "#000000" },
+  },
+  signature: {
+    conductor: { x: 125, y: 295, width: 100, height: 50 },
+    ayudante: { x: 380, y: 295, width: 100, height: 50 },
+  },
+  fixedText: {
+    website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
+  },
 };
 
-const signatureCoordinates = {
-  conductor: { x: 125, y: 295, width: 100, height: 50 },
-  ayudante: { x: 380, y: 295, width: 100, height: 50 },
-};
-
-const fixedTextCoordinates = {
-  website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
-};
-
-// --- Auxiliars ---
-
+// --- Utility Functions ---
 function toTitleCase(str) {
   if (!str || typeof str !== "string" || str.trim() === "") return "";
-  const words = str.split(/\s+/).filter((word) => word.length > 0);
-  const titleCasedWords = words.map((word) => {
-    if (word.includes("-")) {
-      return word
-        .split("-")
-        .map((part) =>
-          part
-            ? part.charAt(0).toUpperCase() + part.substring(1).toLowerCase()
-            : ""
-        )
-        .join("-");
-    } else {
-      return word.charAt(0).toUpperCase() + word.substring(1).toLowerCase();
-    }
-  });
-  return titleCasedWords.join(" ");
+  return str
+    .split(/\s+/)
+    .filter((word) => word)
+    .map((word) =>
+      word.includes("-")
+        ? word
+            .split("-")
+            .map((part) =>
+              part
+                ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                : ""
+            )
+            .join("-")
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join(" ");
 }
 
 function hexToRgb(hex) {
@@ -96,12 +93,13 @@ function hexToRgb(hex) {
   const sanitizedHex = hex.replace("#", "");
   if (sanitizedHex.length !== 6) return { r: 0, g: 0, b: 0 };
   const bigint = parseInt(sanitizedHex, 16);
-  if (isNaN(bigint)) return { r: 0, g: 0, b: 0 };
-  return {
-    r: (bigint >> 16) & 255,
-    g: (bigint >> 8) & 255,
-    b: bigint & 255,
-  };
+  return isNaN(bigint)
+    ? { r: 0, g: 0, b: 0 }
+    : {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255,
+      };
 }
 
 function formatDateForPdf(dateString) {
@@ -115,193 +113,198 @@ function getPdfTemplateUrl(generalData) {
 }
 
 function handleValidationUIErrors(isDadesValid, isServeisValid) {
-  const dadesTabElement = document.getElementById(DOM_IDS.DADES_TAB);
-  const serveisTabElement = document.getElementById(DOM_IDS.SERVEIS_TAB);
-  dadesTabElement?.classList.remove(CSS_CLASSES.ERROR_TAB);
-  serveisTabElement?.classList.remove(CSS_CLASSES.ERROR_TAB);
-  let toastMessage = "";
+  const dadesTab = document.getElementById(DOM_IDS.DADES_TAB);
+  const serveisTab = document.getElementById(DOM_IDS.SERVEIS_TAB);
+  dadesTab?.classList.remove(CSS_CLASSES.ERROR_TAB);
+  serveisTab?.classList.remove(CSS_CLASSES.ERROR_TAB);
+
+  let message = "";
   if (!isDadesValid && !isServeisValid) {
-    toastMessage = "Completa los campos obligatorios en Datos y Servicios.";
-    dadesTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
-    serveisTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
+    message = "Completa els camps obligatoris a Dades i Serveis.";
+    dadesTab?.classList.add(CSS_CLASSES.ERROR_TAB);
+    serveisTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else if (!isDadesValid) {
-    toastMessage = "Completa los campos obligatorios en la pestaña Datos.";
-    dadesTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
+    message = "Completa els camps obligatoris a Dades.";
+    dadesTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else if (!isServeisValid) {
-    toastMessage = "Completa los campos obligatorios en la pestaña Servicios.";
-    serveisTabElement?.classList.add(CSS_CLASSES.ERROR_TAB);
+    message = "Completa els camps obligatoris a Serveis.";
+    serveisTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   }
-  if (toastMessage) showToast(toastMessage, "error");
+
+  if (message) showToast(message, "error");
 }
 
-// --- Principals ---
+function downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
 
-export async function fillPdf(data, servicesData) {
-  if (!data || !Array.isArray(servicesData))
+// --- Core Functions ---
+async function fillPdf(generalData, servicesData) {
+  if (!generalData || !Array.isArray(servicesData))
     throw new Error("Dades invàlides.");
   if (!window.PDFLib) throw new Error("PDFLib no carregada.");
 
   const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
+  const pdfTemplateUrl = getPdfTemplateUrl(generalData);
+  const pdfBytes = await fetch(pdfTemplateUrl).then((res) => res.arrayBuffer());
+  const pdfDoc = await PDFDocument.load(pdfBytes);
+  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const page = pdfDoc.getPages()[0];
+  const rgbFromHex = (hex) => {
+    const { r, g, b } = hexToRgb(hex);
+    return rgb(r / 255, g / 255, b / 255);
+  };
 
-  try {
-    const pdfTemplateUrl = getPdfTemplateUrl(data);
-    const pdfBytes = await fetch(pdfTemplateUrl).then((res) =>
-      res.arrayBuffer()
-    );
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const page = pdfDoc.getPages()[0];
-    const defaultTextColorRgbFn = (hex) => {
-      const c = hexToRgb(hex);
-      return rgb(c.r / 255, c.g / 255, c.b / 255);
-    };
-
-    Object.entries(generalFieldCoordinates).forEach(([field, coords]) => {
-      let value = data[field] || "";
-      if (field === "date") value = formatDateForPdf(value);
-      if (field === "vehicleNumber") value = value.toUpperCase();
-      if (
-        (field === "person1" || field === "person2") &&
-        value.length > PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH
-      ) {
+  // General fields
+  Object.entries(FIELD_COORDINATES.general).forEach(([field, coords]) => {
+    let value = generalData[field] || "";
+    if (field === "date") value = formatDateForPdf(value);
+    if (field === "vehicleNumber") value = value.toUpperCase();
+    if (field === "person1" || field === "person2") {
+      value = toTitleCase(value);
+      if (value.length > PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH) {
         value =
-          toTitleCase(value).substring(
-            0,
-            PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH - 3
-          ) + "...";
-      } else if (field === "person1" || field === "person2") {
-        value = toTitleCase(value);
+          value.slice(0, PDF_SETTINGS.MAX_SIGNATURE_NAME_LENGTH - 3) + "...";
       }
-      page.drawText(value, {
-        ...coords,
-        font: helveticaFont,
-        color: defaultTextColorRgbFn(coords.color),
-      });
+    }
+    page.drawText(value, {
+      ...coords,
+      font: helveticaFont,
+      color: rgbFromHex(coords.color),
+    });
+  });
+
+  // Service fields
+  servicesData.forEach((service, index) => {
+    const yOffset = index * PDF_SETTINGS.SERVICE_Y_OFFSET;
+    const serviceMode = service.mode || "3.6";
+
+    page.drawText(service.serviceNumber || "", {
+      ...FIELD_COORDINATES.service.serviceNumber,
+      y: FIELD_COORDINATES.service.serviceNumber.y - yOffset,
+      font: helveticaFont,
+      color: rgbFromHex(PDF_SETTINGS.SERVICE_NUMBER_COLOR),
     });
 
-    servicesData.forEach((service, index) => {
-      const yOffset = index * PDF_SETTINGS.SERVICE_Y_OFFSET;
-      const serviceMode = service.mode || "3.6";
+    page.drawText(service.origin || "", {
+      ...FIELD_COORDINATES.service.origin,
+      y: FIELD_COORDINATES.service.origin.y - yOffset,
+      font: helveticaFont,
+      color: rgbFromHex(FIELD_COORDINATES.service.origin.color),
+    });
 
-      page.drawText(service.serviceNumber || "", {
-        ...baseServiceFieldCoordinates.serviceNumber,
-        y: baseServiceFieldCoordinates.serviceNumber.y - yOffset,
+    page.drawText(service.originTime || "", {
+      ...FIELD_COORDINATES.service.originTime,
+      y: FIELD_COORDINATES.service.originTime.y - yOffset,
+      font: helveticaFont,
+      color: rgbFromHex(FIELD_COORDINATES.service.originTime.color),
+    });
+
+    if (serviceMode === "3.6") {
+      page.drawText(service.destination || "", {
+        ...FIELD_COORDINATES.service.destination,
+        y: FIELD_COORDINATES.service.destination.y - yOffset,
         font: helveticaFont,
-        color: defaultTextColorRgbFn(PDF_SETTINGS.SERVICE_NUMBER_COLOR),
+        color: rgbFromHex(FIELD_COORDINATES.service.destination.color),
       });
-      page.drawText(service.origin || "", {
-        ...baseServiceFieldCoordinates.origin,
-        y: baseServiceFieldCoordinates.origin.y - yOffset,
+      page.drawText(service.destinationTime || "", {
+        ...FIELD_COORDINATES.service.destinationTime,
+        y: FIELD_COORDINATES.service.destinationTime.y - yOffset,
         font: helveticaFont,
-        color: defaultTextColorRgbFn(baseServiceFieldCoordinates.origin.color),
+        color: rgbFromHex(FIELD_COORDINATES.service.destinationTime.color),
       });
-      page.drawText(service.originTime || "", {
-        ...baseServiceFieldCoordinates.originTime,
-        y: baseServiceFieldCoordinates.originTime.y - yOffset,
+    }
+
+    const endTimeValue = (service.endTime || "").trim();
+    if (serviceMode !== "3.6" && endTimeValue) {
+      page.drawText(serviceMode, {
+        ...FIELD_COORDINATES.service.endTimeModeText,
+        y: FIELD_COORDINATES.service.endTimeModeText.y - yOffset,
         font: helveticaFont,
-        color: defaultTextColorRgbFn(
-          baseServiceFieldCoordinates.originTime.color
+        color: rgbFromHex(FIELD_COORDINATES.service.endTimeModeText.color),
+      });
+      page.drawText(endTimeValue, {
+        ...FIELD_COORDINATES.service.endTimeValueWhenPrefixed,
+        y: FIELD_COORDINATES.service.endTimeValueWhenPrefixed.y - yOffset,
+        font: helveticaFont,
+        color: rgbFromHex(
+          FIELD_COORDINATES.service.endTimeValueWhenPrefixed.color
         ),
       });
+    } else {
+      page.drawText(endTimeValue, {
+        ...FIELD_COORDINATES.service.endTimeNormal,
+        y: FIELD_COORDINATES.service.endTimeNormal.y - yOffset,
+        font: helveticaFont,
+        color: rgbFromHex(FIELD_COORDINATES.service.endTimeNormal.color),
+      });
+    }
+  });
 
-      if (serviceMode === "3.6") {
-        page.drawText(service.destination || "", {
-          ...baseServiceFieldCoordinates.destination,
-          y: baseServiceFieldCoordinates.destination.y - yOffset,
-          font: helveticaFont,
-          color: defaultTextColorRgbFn(
-            baseServiceFieldCoordinates.destination.color
-          ),
-        });
-        page.drawText(service.destinationTime || "", {
-          ...baseServiceFieldCoordinates.destinationTime,
-          y: baseServiceFieldCoordinates.destinationTime.y - yOffset,
-          font: helveticaFont,
-          color: defaultTextColorRgbFn(
-            baseServiceFieldCoordinates.destinationTime.color
-          ),
-        });
+  // Signatures
+  const embedSignature = async (signatureData, coords) => {
+    if (signatureData) {
+      try {
+        const pngImage = await pdfDoc.embedPng(signatureData);
+        page.drawImage(pngImage, { ...coords });
+      } catch (error) {
+        // Silent error handling for signatures
       }
+    }
+  };
 
-      const endTimeValue = (service.endTime || "").trim();
-      if (serviceMode !== "3.6" && endTimeValue) {
-        page.drawText(serviceMode, {
-          ...baseServiceFieldCoordinates.endTimeModeText,
-          y: baseServiceFieldCoordinates.endTimeModeText.y - yOffset,
-          font: helveticaFont,
-          color: defaultTextColorRgbFn(
-            baseServiceFieldCoordinates.endTimeModeText.color
-          ),
-        });
-        page.drawText(endTimeValue, {
-          ...baseServiceFieldCoordinates.endTimeValueWhenPrefixed,
-          y: baseServiceFieldCoordinates.endTimeValueWhenPrefixed.y - yOffset,
-          font: helveticaFont,
-          color: defaultTextColorRgbFn(
-            baseServiceFieldCoordinates.endTimeValueWhenPrefixed.color
-          ),
-        });
-      } else {
-        page.drawText(endTimeValue, {
-          ...baseServiceFieldCoordinates.endTimeNormal,
-          y: baseServiceFieldCoordinates.endTimeNormal.y - yOffset,
-          font: helveticaFont,
-          color: defaultTextColorRgbFn(
-            baseServiceFieldCoordinates.endTimeNormal.color
-          ),
-        });
-      }
-    });
+  await Promise.all([
+    embedSignature(
+      generalData.signatureConductor,
+      FIELD_COORDINATES.signature.conductor
+    ),
+    embedSignature(
+      generalData.signatureAjudant,
+      FIELD_COORDINATES.signature.ayudante
+    ),
+  ]);
 
-    const embedAndDrawSignature = async (signatureData, coords) => {
-      if (signatureData) {
-        try {
-          const pngImage = await pdfDoc.embedPng(signatureData);
-          page.drawImage(pngImage, { ...coords });
-        } catch (sigError) {
-          // Maneig silenciós
-        }
-      }
-    };
-    await embedAndDrawSignature(
-      data.signatureConductor,
-      signatureCoordinates.conductor
-    );
-    await embedAndDrawSignature(
-      data.signatureAjudant,
-      signatureCoordinates.ayudante
-    );
+  // Watermark
+  const watermarkText = PDF_SETTINGS.WATERMARK_TEXT;
+  const textSize = FIELD_COORDINATES.fixedText.website.size;
+  const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, textSize);
+  page.drawText(watermarkText, {
+    x: (page.getWidth() - textWidth) / 2,
+    y: FIELD_COORDINATES.fixedText.website.y,
+    size: textSize,
+    font: helveticaFont,
+    color: rgbFromHex(FIELD_COORDINATES.fixedText.website.color),
+  });
 
-    const text = PDF_SETTINGS.WATERMARK_TEXT;
-    const textSize = fixedTextCoordinates.website.size;
-    const textWidth = helveticaFont.widthOfTextAtSize(text, textSize);
-    const xCentered = (page.getWidth() - textWidth) / 2;
-    page.drawText(text, {
-      x: xCentered,
-      y: fixedTextCoordinates.website.y,
-      size: textSize,
-      font: helveticaFont,
-      color: defaultTextColorRgbFn(fixedTextCoordinates.website.color),
-    });
-
-    return await pdfDoc.save();
-  } catch (error) {
-    throw new Error(`Error en generació PDF: ${error.message}`);
-  }
+  return await pdfDoc.save();
 }
 
 export function buildPdfFileName(dateValue, dietType) {
-  const datePart = formatDateForPdf(dateValue).replace(/\//g, "_");
-  if (!datePart) return PDF_SETTINGS.DEFAULT_FILENAME;
-  let typePart = "dieta";
-  if (dietType === "lunch") typePart = "dieta_comida";
-  else if (dietType === "dinner") typePart = "dieta_cena";
-  return `${typePart}_${datePart}.pdf`;
+  const datePart = formatDateForPdf(dateValue).replace(/\//g, "_") || "";
+  const typePart =
+    dietType === "lunch"
+      ? "dieta_comida"
+      : dietType === "dinner"
+      ? "dieta_cena"
+      : "dieta";
+  return datePart
+    ? `${typePart}_${datePart}.pdf`
+    : PDF_SETTINGS.DEFAULT_FILENAME;
 }
 
 export async function generateAndDownloadPdf() {
-  if (!validateDadesTab() || !validateServeisTab()) {
-    handleValidationUIErrors(validateDadesTab(), validateServeisTab());
+  const isDadesValid = validateDadesTab();
+  const isServeisValid = validateServeisTab();
+
+  if (!isDadesValid || !isServeisValid) {
+    handleValidationUIErrors(isDadesValid, isServeisValid);
     return;
   }
 
@@ -313,36 +316,23 @@ export async function generateAndDownloadPdf() {
     ?.classList.remove(CSS_CLASSES.ERROR_TAB);
 
   try {
-    showToast("Generando PDF...", "info");
-
     const { generalData, servicesData } = gatherAllData();
     if (!generalData || !servicesData) throw new Error("Dades no recollides.");
 
     const pdfBytes = await fillPdf(generalData, servicesData);
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
-    const blob = new Blob([pdfBytes], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
+    downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), fileName);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setTimeout(() => URL.revokeObjectURL(url), 500);
-    showToast("PDF generado correctamente.", "success");
-
+    showToast("Descàrrega iniciada correctament.", "success");
     requestInstallPromptAfterAction();
   } catch (error) {
     showToast(
-      `Error al generar el PDF: ${error.message || "Desconocido"}`,
+      `Error en la generació del PDF: ${error.message || "Desconegut"}`,
       "error"
     );
   }
 }
 
-// NOU: Funció per descarregar PDF des del gestor, sense carregar al formulari
 export async function downloadDietPDF(dietId) {
   if (!dietId) {
     showToast("ID de dieta invàlid.", "error");
@@ -350,16 +340,9 @@ export async function downloadDietPDF(dietId) {
   }
 
   try {
-    showToast("Generando PDF...", "info");
-
-    // Carrega la dieta de la BD
     const diet = await getDiet(dietId);
-    if (!diet) {
-      showToast("Dieta no trobada.", "error");
-      return;
-    }
+    if (!diet) throw new Error("Dieta no trobada.");
 
-    // Adapta les dades al format esperat per fillPdf (generalData i servicesData)
     const generalData = {
       date: diet.date || "",
       dietType: diet.dietType || "",
@@ -381,24 +364,14 @@ export async function downloadDietPDF(dietId) {
       mode: service.mode || "3.6",
     }));
 
-    // Genera el PDF amb les dades carregades
     const pdfBytes = await fillPdf(generalData, servicesData);
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
-    const blob = new Blob([pdfBytes], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
+    downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), fileName);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setTimeout(() => URL.revokeObjectURL(url), 500);
-    showToast("PDF generado correctamente.", "success");
+    showToast("Descàrrega iniciada correctament.", "success");
   } catch (error) {
     showToast(
-      `Error al generar el PDF: ${error.message || "Desconocido"}`,
+      `Error en la generació del PDF: ${error.message || "Desconegut"}`,
       "error"
     );
   }

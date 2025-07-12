@@ -45,10 +45,12 @@
   --black: #000000;
   --light-grey: #f5f5f5;
   --prompt_box_shadow: rgba(0, 0, 0, 0.3);
-  --toast-success-bg: #28a745;
-  --toast-error-bg: #dc3545;
-  --toast-text-color: #ffffff;
-  --toast-box-shadow: rgba(0, 0, 0, 0.15);
+  --toast-info-bg: #e6f3ff;
+  --toast-success-bg: #d4edda;
+  --toast-error-bg: #f8d7da;
+  --toast-warning-bg: #fff3cd;
+  --toast-text-color: #1a1a1a;
+  --toast-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   --service-1-bg: #e9f7ef;
   --service-1-border: #8ddfd0;
   --service-2-bg: #e8f4fd;
@@ -1507,6 +1509,10 @@ button .fa {
   overflow: hidden;
 }
 
+#diet-modal {
+  transition: overflow 0.2s ease; /* Opcional: Suau canvi d'overflow per no bruscos */
+}
+
 #diet-modal-title {
   text-align: center;
   font-size: 1.1rem;
@@ -1547,15 +1553,19 @@ button .fa {
 
 .diet-item {
   position: relative;
-  background-color: #f9f9f9; /* Mantinc suau, però afegeix gradient opcional: linear-gradient(to bottom, #fff, #f9f9f9) */
-  border: 1px solid #eee; /* NOU: Borde suau per definició */
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
   border-radius: 8px;
   padding: 12px 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* NOU: Ombra lleu per elevació i visibilitat */
-  transition: box-shadow 0.2s ease; /* Suavitat en hover */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease, opacity 0.5s ease, transform 0.5s ease;
+  overflow: hidden;
+  min-height: 48px;
+  margin-bottom: 1rem;
 }
-.diet-item:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Més visible en interacció */
+.diet-item:hover, .diet-item:focus {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Més visible en interacció, incloent focus per accessibilitat */
+  outline: none; /* Evita outline per defecte en focus, però pots afegir un border alternatiu si cal */
 }
 
 /* Opcional: Striping per llistes llargues (ítems alterns) */
@@ -1564,13 +1574,17 @@ button .fa {
 }
 
 .diet-item-content {
+  display: flex;
+  justify-content: space-between; /* Separa text i botons automàticament */
+  align-items: center;
   transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
 .diet-date {
+  margin-right: 1rem; /* 16dp d'espai horitzontal entre text i botons (ajusta a 1.5rem si vols més) */
   font-size: 14px;
   width: 100%;
   text-align: left;
@@ -1601,7 +1615,7 @@ button .fa {
 
 .diet-icons {
   display: flex;
-  gap: 10px; /* Reduït per compacitat */
+  gap: 0.5rem;
   align-items: center;
   justify-content: center; /* NOU: Centrat horitzontal */
   width: 100%; /* Assegura que ocupi tot l'ample per centrat real */
@@ -1797,6 +1811,8 @@ button .fa {
   background-color: var(--text-color);
 }
 
+/* TOASTS */
+/* Contenidor dels toasts */
 #toast-container {
   position: fixed;
   bottom: 20px;
@@ -1808,26 +1824,81 @@ button .fa {
   align-items: center;
   gap: 10px;
   pointer-events: none;
+  width: 100%;
+  max-width: 600px; /* Límit màxim per pantalles grans */
+  padding: 0 16px; /* Espai lateral per mòbils */
+  box-sizing: border-box;
 }
 
+/* Estils base per als toasts */
 .toast {
-  width: 30vw;
-  min-width: 200px;
-  max-width: 400px;
-  background-color: var(--toast-success-bg);
-  color: var(--toast-text-color);
-  padding: 12px 24px;
-  border-radius: 8px;
-  text-align: center;
-  animation: fadeInOut 3s forwards;
-  box-shadow: 0 2px 6px var(--toast-box-shadow);
-  font-size: 16px;
+  width: 100%; /* Amplada completa dins del contenidor */
+  background-color: var(--toast-info-bg, #323232); /* Fons fosc per defecte, com Google dark mode */
+  color: var(--toast-text-color, #ffffff); /* Text clar per contrast */
+  padding: 16px 24px; /* Padding més ample per comoditat */
+  border-radius: 4px; /* Corners suau, com Material Design */
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12); /* Shadow elevat */
+  font-size: 14px; /* Font més petit i llegible */
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animació suau */
+  opacity: 0;
+  transform: translateY(100%); /* Inici des de baix per slide-up */
+  pointer-events: auto;
 }
+
+/* Estils per a tipus de toast (inspirats en Google Material) */
+.toast.info {
+  background-color: var(--toast-info-bg, #2196f3); /* Blau */
+  color: white;
+}
+
 .toast.success {
-  background-color: var(--toast-success-bg);
+  background-color: var(--toast-success-bg, #4caf50); /* Verd */
+  color: white;
 }
+
 .toast.error {
-  background-color: var(--toast-error-bg);
+  background-color: var(--toast-error-bg, #f44336); /* Vermell */
+  color: white;
+}
+
+.toast.warning {
+  background-color: var(--toast-warning-bg, #ff9800); /* Taronja */
+  color: white;
+}
+
+/* Botó Desfés (més prominent i accessible) */
+.toast-undo-btn {
+  margin-left: auto; /* Alinea a la dreta */
+  background: none;
+  border: none;
+  color: #ffffff; /* Blanc per contrast en fons fosc */
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 8px;
+  transition: opacity 0.2s ease;
+}
+
+.toast-undo-btn:hover,
+.toast-undo-btn:focus {
+  opacity: 0.7; /* Efecte hover/focus subtil */
+  outline: none; /* Elimina outline per defecte, però afegeix accessibilitat si cal */
+}
+
+/* Animacions d'entrada i sortida */
+.toast.toast-enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.toast-exit {
+  opacity: 0;
+  transform: translateY(100%);
 }
 
 @keyframes fadeInOut {
@@ -2096,6 +2167,13 @@ button .icon {
     padding: 8px 12px;
   }
 }
+/* Assegurar contrast per accessibilitat */
+@media (prefers-contrast: high) {
+  .toast {
+    color: var(--toast-text-color, #000);
+    box-shadow: var(--toast-box-shadow, 0 2px 6px rgba(0, 0, 0, 0.5));
+  }
+}
 @media (max-width: 768px) {
   .top-bar {
     height: calc(var(--top-bar-height) + 10px);
@@ -2233,56 +2311,71 @@ button .icon {
     padding: 16px;
   }
   #diet-options {
-    overflow-y: auto; /* Manté scroll automàtic */
-    scrollbar-width: thin; /* Per Firefox: Fa la barra estreta */
-    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent); /* Usa variables per temes (gris clar / transparent) */
+    overflow-y: auto; /* Manté scroll automàtic quan la llista creix */
+    transition: height 0.3s ease-out; /* Animació suau per canvis d'alçada, segons Google (200-400ms recomanat) */
+    scrollbar-width: thin; /* Per Firefox: Barra estreta i discreta, com recomana MDN per estètica minimalista */
+    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent); /* Colors custom amb variables per temes (gris suau / transparent) */
+    scrollbar-gutter: stable; /* Reserva espai per la barra per evitar salts de layout, segons CSS guies estàndard */
+    will-change: height; /* Optimitza animacions en GPU per fluïdesa, recomanat per CSS-Tricks en llistes dinàmiques */
+    max-height: 400px; /* Límit d'alçada per evitar llistes infinites en modals, segons Material Design per contenidors scrollables */
   }
-  /* Per WebKit browsers (Chrome, Safari, iOS) - Fa-la minimalista i estreta */
+  /* Per WebKit browsers (Chrome, Safari, iOS, Edge) - Custom scrollbar minimalista i estreta */
   #diet-options::-webkit-scrollbar {
-    width: 6px; /* Estreta */
-    background: var(--scrollbar-track, transparent); /* Fons transparent */
-    transition: opacity 0.3s ease; /* Suau aparició/desaparició */
+    width: 6px; /* Amplada estreta (equivalent a thin), segons Google per no intrusiu */
+    background: var(--scrollbar-track, transparent); /* Fons transparent per integració */
+    transition: opacity 0.3s ease; /* Suau aparició/desaparició, com en guies UX per feedback subtil */
     opacity: 0; /* Amaga per defecte quan no s'usa */
   }
   #diet-options:hover::-webkit-scrollbar,
   #diet-options:active::-webkit-scrollbar {
-    opacity: 1; /* Mostra en hover/touch per usabilitat */
+    opacity: 1; /* Mostra en hover o touch per interactivitat, segons WCAG per accessibilitat */
   }
   #diet-options::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)); /* Gris suau */
-    border-radius: 10px; /* Cantonades arrodonides */
-    border: 2px solid transparent; /* Espai interior */
-    background-clip: padding-box; /* Evita solapaments */
+    background: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)); /* Color suau del thumb */
+    border-radius: 10px; /* Cantonades arrodonides per estètica moderna, recomanat per Material Design */
+    border: 2px solid transparent; /* Espai interior per evitar solapaments */
+    background-clip: padding-box; /* Millora visual en borders, segons MDN */
   }
   #diet-options::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover, rgba(0, 0, 0, 0.4)); /* Més visible en hover */
+    background: var(--scrollbar-thumb-hover, rgba(0, 0, 0, 0.4)); /* Més visible en hover per feedback */
   }
-  /* Opcional: Amaga en iOS quan no s'usa, més minimalista */
+  /* Opcional: Elimina estil natiu en iOS/WebKit per un look més clean */
   #diet-options::-webkit-scrollbar {
-    -webkit-appearance: none; /* Elimina estil natiu */
+    -webkit-appearance: none;
   }
-  /* Per llistes i ítems (per evitar solapaments amb la barra) */
+  /* Estils per ítems de la llista (li) - Evita solapaments amb la barra i millora espaiat */
   #diet-options li {
     border-radius: 8px;
-    padding: 10px 15px 10px 10px; /* Padding-right extra per espai de barra */
-    margin-bottom: 10px;
+    padding: 12px 20px 12px 12px; /* Padding-right extra per espai de barra, segons Google per padding en llistes (16dp mínim) */
+    margin-bottom: 12px; /* Espai vertical entre ítems per llegibilitat, recomanat 8-16dp per Material Design */
     display: flex;
-    justify-content: space-between; /* Espai entre text i botons */
+    justify-content: space-between; /* Espai equilibrat entre text i botons */
     align-items: center;
     white-space: nowrap; /* Evita salts de línia en text */
-    overflow: hidden; /* Amaga text extra si cal */
-    text-overflow: ellipsis; /* "..." per text llarg */
+    overflow: hidden; /* Amaga contingut extra si cal */
+    text-overflow: ellipsis; /* "..." per text llarg, millora en pantalles petites */
   }
   #diet-options li span {
     font-size: 1rem;
     font-weight: 200;
-    margin-right: 5px;
-    flex: 1; /* Ocupa espai flexible per evitar solapaments */
+    margin-right: 10px; /* MILLORA: Més espai entre text i botons per claredat */
+    flex: 1; /* Ocupa espai flexible per evitar compressió */
   }
   #diet-options li button {
-    flex-shrink: 0; /* Botons no es redueixen */
-    margin-left: 10px;
+    flex-shrink: 0; /* Botons mantenen mida fixa */
+    margin-left: 8px; /* Espai entre botons si n'hi ha múltiples */
   }
+  /* Responsivitat: Ajusta en pantalles petites (opcional, per mòbils) */
+}
+@media (max-width: 768px) and (max-width: 600px) {
+  #diet-options {
+    max-height: 300px; /* Redueix alçada en mòbils per evitar ocupar tota la pantalla */
+  }
+  #diet-options li {
+    padding: 10px 15px 10px 10px; /* Padding més compacte per espai limitat */
+  }
+}
+@media (max-width: 768px) {
   .modal-buttons {
     flex-direction: row;
     gap: 20px;
@@ -2295,6 +2388,17 @@ button .icon {
   }
   .signature-canvas-container {
     height: 200px;
+  }
+}
+/* Responsivitat per mòbils */
+@media (max-width: 600px) {
+  #toast-container {
+    bottom: 16px;
+    padding: 0 8px;
+  }
+  .toast {
+    padding: 12px 16px;
+    font-size: 13px;
   }
 }
 *,
