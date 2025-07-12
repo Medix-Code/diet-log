@@ -1778,13 +1778,6 @@ button {
   text-align: left;
 }
 
-/* BLOC DE BOTONS */
-.diet-icons {
-  display: flex;
-  gap: 12px; /* separació entre botons */
-  flex-shrink: 0; /* mai no es comprimeixen */
-}
-
 .delete-reveal {
   position: absolute;
   top: 0;
