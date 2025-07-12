@@ -1715,6 +1715,7 @@ button {
   flex-direction: column;
   gap: 15px;
   min-height: 250px;
+  max-height: calc(80px * 6); /* p. ex. 6 targetes visibles; ajusta al gust */
 }
 
 .no-diets-text {
@@ -1732,6 +1733,10 @@ button {
 }
 
 .diet-item {
+  height: 80px; /* escull 72 – 96 px segons preferències visuals */
+
+  display: flex; /* alineació vertical/horizontal més senzilla */
+  align-items: center; /* centra el contingut a l’eix Y */
   position: relative;
   background-color: #f9f9f9;
   border: 1px solid #eee;
@@ -1754,14 +1759,13 @@ button {
   background-color: #f5f5f5; /* NOU: Gris més clar i subtil per menys "diferència" visible */
 }
 
-.diet-item-content {
+diet-item-content {
+  flex: 1;
   display: flex;
-  justify-content: space-between; /* Separa text i botons automàticament */
-  align-items: center;
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row; /* <── canvi clau */
+  justify-content: space-between;
+  align-items: center; /* alineació vertical central */
+  gap: 16px; /* manté separació sense fer créixer l’alçada */
 }
 
 .diet-date {
