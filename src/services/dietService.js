@@ -19,15 +19,17 @@ import {
 } from "./servicesPanelManager.js";
 import { showToast } from "../ui/toast.js";
 import {
-  showConfirmModal,
+  openDietModal,
   closeDietModal,
   displayDietOptions,
+  removeDietItemFromList,
 } from "../ui/modals.js";
 
 import {
   indicateSaving,
   indicateSaved,
   indicateSaveError,
+  resetDirty,
 } from "../ui/saveIndicator.js";
 import {
   gatherAllData,
@@ -235,6 +237,9 @@ async function performSave(isManual) {
       await updateDiet(dietToSave);
     } else {
       await addDiet(dietToSave);
+      // NOU: Si és una recreació (nova dieta amb ID existent eliminat), reseteja l'estat per permetre auto-save en nous canvis
+      captureInitialFormState(); // Reseteja l'estat inicial del formulari
+      resetDirty(); // Neteja l'indicador de canvis pendents (de saveIndicator.js)
     }
 
     if (isManual) showToast("Dieta guardada correctament.", "success");
@@ -281,19 +286,36 @@ export async function loadDietById(dietId) {
   closeDietModal();
 }
 
+// Funció actualitzada
 export async function deleteDietHandler(id, dietDate, dietType) {
+  console.log(`Iniciant eliminació de dieta ID: ${id}`); // Log per depuració
   if (!id) return;
-  const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
-  const msg = `¿Confirmas que quieres eliminar permanentemente la dieta de la ${franjaText} del ${ddmmaa}?`;
-  const confirmed = await showConfirmModal(msg, "Eliminar dieta");
-  if (!confirmed) return;
-
+  // Elimina la dieta de la BD
   await deleteDietById(id);
-  showToast("Dieta eliminada correctamente.", "error");
-  await displayDietOptions();
+  showToast("Dieta eliminada correctamente.", "success");
 
+  // NOU: Reseteja l'estat del formulari per permetre auto-save en recrear
+  captureInitialFormState(); // De formService.js
+  resetDirty(); // Ara importat correctament
+
+  // NOU: Sempre elimina l'ítem del DOM amb animació (per mostrar slide/fade)
+  removeDietItemFromList(id);
+
+  // Verifica dietes restants
   const remaining = await getAllDiets();
-  if (remaining.length === 0) closeDietModal();
+  console.log(`Diets restants: ${remaining.length}`); // Log per depuració
+
+  if (remaining.length === 0) {
+    // NOU: Si és l'última, espera l'animació abans de tancar
+    setTimeout(() => {
+      closeDietModal();
+      document.body.classList.remove("modal-open"); // Reset manual
+      console.log("No hi ha dietes - Modal tancat després d'animació"); // Log per depuració
+    }, 500); // Durada de l'animació (ajusta si canvies a removeDietItemFromList)
+  } else {
+    // Si queden, el modal roman obert amb llista actualitzada
+    console.log("Queden dietes - Modal romà obert"); // Log per depuració
+  }
 }
 
 function applyModeToServiceElement(el, mode) {
