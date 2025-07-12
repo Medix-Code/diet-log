@@ -1552,7 +1552,7 @@ button .fa {
 }
 
 .diet-item {
-  height: 80px; /* escull 72 – 96 px segons preferències visuals */
+  min-height: 80px;
   display: flex; /* alineació vertical/horizontal més senzilla */
   align-items: center; /* centra el contingut a l’eix Y */
   position: relative;
