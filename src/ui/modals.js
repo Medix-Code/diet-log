@@ -1,6 +1,6 @@
 /**
  * @file modals.js
- * @description Gestiona modals.
+ * @description Gestiona modals amb swipe i undo per eliminació.
  * @module modals
  */
 
@@ -26,6 +26,7 @@ const CSS_CLASSES = {
   DIET_ITEM_SWIPING: "swiping",
   DIET_DELETE_REVEAL: "delete-reveal",
 };
+
 const DOM_IDS = {
   DIET_MODAL: "diet-modal",
   DIET_OPTIONS_LIST: "diet-options",
@@ -40,6 +41,7 @@ const DOM_IDS = {
   DOTACIO_MODAL: "dotacio-modal",
   CAMERA_GALLERY_MODAL: "camera-gallery-modal",
 };
+
 const SELECTORS = {
   MODAL: ".modal",
   MODAL_CLOSE_BTN: ".close-modal, .close-modal-btn",
@@ -47,6 +49,7 @@ const SELECTORS = {
   FOCUSABLE_ELEMENTS:
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
 };
+
 const DATA_ATTRIBUTES = {
   DIET_ID: "data-diet-id",
   DIET_DATE: "data-diet-date",
@@ -71,7 +74,6 @@ let currentEscapeKeyListener = null;
 // --- Funcions Privades ---
 
 function _openGenericModal(modalElement) {
-  console.log("Obrint modal: " + modalElement.id); // Log per depuració
   if (!modalElement) return;
 
   if (
@@ -93,7 +95,6 @@ function _openGenericModal(modalElement) {
   if (!currentOutsideClickListener) {
     currentOutsideClickListener = (event) => {
       if (event.target === activeModalElement) {
-        console.log("Clic fora del modal: " + activeModalElement.id); // Log per depuració
         if (activeModalElement.id === DOM_IDS.CONFIRM_MODAL) {
           _handleConfirmNo();
         } else {
@@ -107,7 +108,6 @@ function _openGenericModal(modalElement) {
   if (!currentEscapeKeyListener) {
     currentEscapeKeyListener = (event) => {
       if (event.key === "Escape" && activeModalElement) {
-        console.log("Escape premut al modal: " + activeModalElement.id); // Log per depuració
         if (activeModalElement.id === DOM_IDS.CONFIRM_MODAL) {
           _handleConfirmNo();
         } else {
@@ -125,7 +125,6 @@ function _openGenericModal(modalElement) {
 }
 
 function _closeGenericModal() {
-  console.log("Tancant modal: " + activeModalElement?.id); // Log per depuració
   if (!activeModalElement) return;
 
   if (currentOutsideClickListener) {
@@ -141,7 +140,6 @@ function _closeGenericModal() {
 
   const isConfirmModalClosing = activeModalElement.id === DOM_IDS.CONFIRM_MODAL;
 
-  const previousActiveModal = activeModalElement; // Guarda temporalment per logs si cal
   activeModalElement = null;
 
   const anotherModalIsOpen = document.querySelector(
@@ -151,34 +149,7 @@ function _closeGenericModal() {
     document.body.classList.remove(CSS_CLASSES.MODAL_OPEN_BODY);
   }
 
-  // NOU: Si es tanca confirm i hi havia un modal previ, restaura'l com actiu
-  if (isConfirmModalClosing && previousModalElement) {
-    activeModalElement = previousModalElement;
-    // Re-afegeix listeners per al modal previ (ja que es van eliminar)
-    currentOutsideClickListener = (event) => {
-      if (event.target === activeModalElement) {
-        console.log("Clic fora del modal: " + activeModalElement.id);
-        _closeGenericModal();
-      }
-    };
-    document.addEventListener("click", currentOutsideClickListener, true);
-
-    currentEscapeKeyListener = (event) => {
-      if (event.key === "Escape" && activeModalElement) {
-        console.log("Escape premut al modal: " + activeModalElement.id);
-        _closeGenericModal();
-      }
-    };
-    document.addEventListener("keydown", currentEscapeKeyListener, true);
-
-    // Restaura focus al modal previ
-    const firstFocusable = activeModalElement.querySelector(
-      SELECTORS.FOCUSABLE_ELEMENTS
-    );
-    firstFocusable?.focus();
-
-    previousModalElement = null; // Reseteja per següents usos
-  } else if (!isConfirmModalClosing && previousActiveElement) {
+  if (!isConfirmModalClosing && previousActiveElement) {
     previousActiveElement.focus();
     previousActiveElement = null;
   } else if (!anotherModalIsOpen) {
@@ -186,6 +157,7 @@ function _closeGenericModal() {
     previousActiveElement = null;
   }
 }
+
 function _formatTimeFromISO(isoTimestamp) {
   if (!isoTimestamp) return "";
   const date = new Date(isoTimestamp);
@@ -202,11 +174,9 @@ function _createDietListItem(diet) {
   const dietItem = document.createElement("div");
   dietItem.className = CSS_CLASSES.DIET_ITEM;
 
-  // Crea el wrapper per moure contingut durant swipe
   const dietItemContent = document.createElement("div");
   dietItemContent.className = "diet-item-content";
 
-  // Crea el text de la data
   const dateSpan = document.createElement("span");
   dateSpan.className = CSS_CLASSES.DIET_DATE;
   let displayText = ddmmaa;
@@ -214,16 +184,13 @@ function _createDietListItem(diet) {
   displayText += ` - ${capitalizeFirstLetter(franjaText)}`;
   dateSpan.textContent = displayText;
 
-  // Crea el contenidor d'icones
   const iconsContainer = document.createElement("div");
   iconsContainer.className = CSS_CLASSES.DIET_ICONS;
 
-  // Crea el reveal de delete (fora del wrapper)
   const deleteReveal = document.createElement("div");
   deleteReveal.className = "delete-reveal";
   deleteReveal.innerHTML = `<img src="assets/icons/delete.svg" alt="Eliminar" class="icon">`;
 
-  // Botó de Cargar (minimalista, sense listener directe: maneja via bubbling)
   const loadBtn = document.createElement("button");
   loadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} ${CSS_CLASSES.LIST_ITEM_BTN_LOAD} ${CSS_CLASSES.DIET_LOAD_BTN}`;
   loadBtn.setAttribute("aria-label", `Cargar dieta ${ddmmaa}`);
@@ -232,9 +199,8 @@ function _createDietListItem(diet) {
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_DATE, diet.date);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_TYPE, diet.dietType);
 
-  // Botó de Descarregar PDF (minimalista, sense listener directe: maneja via bubbling)
   const downloadBtn = document.createElement("button");
-  downloadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} diet-download`; // Mantinc, però ajustarem CSS
+  downloadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} diet-download`;
   downloadBtn.setAttribute(
     "aria-label",
     `Descarregar PDF de la dieta ${ddmmaa}`
@@ -242,15 +208,12 @@ function _createDietListItem(diet) {
   downloadBtn.innerHTML = `<img src="assets/icons/download_blue.svg" alt="" class="icon"><span class="btn-text visually-hidden">PDF</span>`;
   downloadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, diet.id);
 
-  // Append botons a iconsContainer
   iconsContainer.appendChild(loadBtn);
   iconsContainer.appendChild(downloadBtn);
 
-  // Append text i icons al wrapper
   dietItemContent.appendChild(dateSpan);
   dietItemContent.appendChild(iconsContainer);
 
-  // Append wrapper i reveal a l'ítem principal
   dietItem.appendChild(dietItemContent);
   dietItem.appendChild(deleteReveal);
 
@@ -258,10 +221,8 @@ function _createDietListItem(diet) {
 }
 
 export async function _handleDietListClick(event) {
-  console.log("Clic a llista de dietes"); // Log per depuració
   const target = event.target;
   const loadButton = target.closest(`.${CSS_CLASSES.DIET_LOAD_BTN}`);
-  const deleteButton = target.closest(`.${CSS_CLASSES.DIET_DELETE_BTN}`);
   const downloadButton = target.closest(".diet-download");
 
   if (loadButton) {
@@ -285,15 +246,7 @@ export async function _handleDietListClick(event) {
     try {
       await loadDietById(dietId);
     } catch (error) {
-      // console.error(error);
-    }
-  } else if (deleteButton) {
-    event.stopPropagation();
-    const dietId = deleteButton.getAttribute(DATA_ATTRIBUTES.DIET_ID);
-    const dietDate = deleteButton.getAttribute(DATA_ATTRIBUTES.DIET_DATE);
-    const dietType = deleteButton.getAttribute(DATA_ATTRIBUTES.DIET_TYPE);
-    if (dietId) {
-      deleteDietHandler(dietId, dietDate, dietType);
+      // Maneig silenciós o toast d'error si cal
     }
   } else if (downloadButton) {
     event.stopPropagation();
@@ -304,98 +257,29 @@ export async function _handleDietListClick(event) {
   }
 }
 
-function _trapConfirmFocus(event) {
-  if (
-    !confirmModalElement ||
-    confirmModalElement !== activeModalElement ||
-    event.key !== "Tab"
-  )
-    return;
-  const focusables = Array.from(
-    confirmModalElement.querySelectorAll(SELECTORS.FOCUSABLE_ELEMENTS)
-  ).filter((el) => el.offsetParent !== null);
-  if (focusables.length === 0) return;
-  const firstFocusable = focusables[0];
-  const lastFocusable = focusables[focusables.length - 1];
-  if (event.shiftKey) {
-    if (document.activeElement === firstFocusable) {
-      event.preventDefault();
-      lastFocusable.focus();
-    }
-  } else {
-    if (document.activeElement === lastFocusable) {
-      event.preventDefault();
-      firstFocusable.focus();
-    }
-  }
-}
+// Eliminem _trapConfirmFocus i _cleanupConfirmModalListeners ja que no usem modal per eliminar
 
-// Lògica de confirmació refactoritzada i simplificada
-function _cleanupConfirmModalListeners() {
-  if (confirmNoBtn) confirmNoBtn.removeEventListener("click", _handleConfirmNo);
-  if (confirmYesBtn)
-    confirmYesBtn.removeEventListener("click", _handleConfirmYes);
-  document.removeEventListener("keydown", _trapConfirmFocus);
-}
-
-function _resolveAndClose(value) {
-  console.log(`Resolent confirmació amb valor: ${value}`); // Log per depuració
-  if (currentConfirmResolve) {
-    currentConfirmResolve(value);
-    currentConfirmResolve = null; // Reseteja la promesa
-  }
-  _cleanupConfirmModalListeners();
-  _closeGenericModal(); // Tanca completament
-}
-
-function _handleConfirmYes() {
-  console.log("Botó Sí clicat"); // Log per depuració
-  _resolveAndClose(true);
-}
-
-function _handleConfirmNo() {
-  console.log("Botó No clicat"); // Log per depuració
-  _resolveAndClose(false);
-}
-
-let previousModalElement = null;
-
+// Simplifiquem showConfirmModal per altres usos (no per eliminar dietes)
 export function showConfirmModal(message, title = "Confirmar acció") {
-  console.log("Obrint confirm modal amb missatge: " + message); // Log per depuració
   if (!confirmModalElement) return Promise.resolve(false);
-
-  // Evita obrir un modal de confirmació si ja n'hi ha un d'obert
-  if (currentConfirmResolve) {
-    console.warn("Intent d'obrir un segon modal de confirmació ignorat.");
-    return Promise.resolve(false);
-  }
-
-  // NOU: Guarda el modal actiu previ (per exemple, el de dietes)
-  previousModalElement = activeModalElement;
 
   return new Promise((resolve) => {
     currentConfirmResolve = resolve;
     confirmTitleElement.textContent = title;
     confirmMsgElement.textContent = message;
 
-    // Neteja listeners antics per seguretat
-    _cleanupConfirmModalListeners();
+    confirmYesBtn.addEventListener("click", () => resolve(true));
+    confirmNoBtn.addEventListener("click", () => resolve(false));
 
-    // Afegeix listeners nous
-    confirmYesBtn.addEventListener("click", _handleConfirmYes);
-    confirmNoBtn.addEventListener("click", _handleConfirmNo);
-    document.addEventListener("keydown", _trapConfirmFocus);
-
-    // Utilitza la funció genèrica per obrir el modal
     _openGenericModal(confirmModalElement);
 
-    // Força el focus al botó "Sí"
     confirmYesBtn.focus();
+  }).finally(() => {
+    confirmYesBtn.removeEventListener("click", () => {});
+    confirmNoBtn.removeEventListener("click", () => {});
   });
 }
-// --- Funcions Públiques ---
 
-// NOU: Funció per eliminar un ítem específic de la llista amb animació suau (slide + fade)
 export function removeDietItemFromList(dietId) {
   if (!dietOptionsListElement) return;
 
@@ -404,24 +288,25 @@ export function removeDietItemFromList(dietId) {
     ?.closest(".diet-item");
   if (!itemToRemove) return;
 
-  // NOU: Animació combinada: Slide cap a l'esquerra + fade out
-  itemToRemove.style.transition = "transform 0.5s ease, opacity 0.5s ease"; // Durada més llarga per suavitat
-  itemToRemove.style.transform = "translateX(-100%)"; // Mou completament cap a l'esquerra
-  itemToRemove.style.opacity = "0";
+  itemToRemove.remove(); // Remove immediat
 
-  setTimeout(() => {
-    itemToRemove.remove();
-    // Si no queden ítems, mostra el text de "No hay dietas"
-    if (dietOptionsListElement.children.length === 0) {
-      dietOptionsListElement.classList.add(CSS_CLASSES.HIDDEN);
-      noDietsTextElement.classList.remove(CSS_CLASSES.HIDDEN);
-      noDietsTextElement.textContent = "No hay dietas guardadas.";
-    }
-  }, 500); // Durada de l'animació (ajusta si cal)
+  dietOptionsListElement.style.height =
+    dietOptionsListElement.scrollHeight + "px"; // Set inicial
+  requestAnimationFrame(() => {
+    dietOptionsListElement.style.height =
+      dietOptionsListElement.scrollHeight + "px"; // Recalcula després remove
+  });
+
+  // CORRECCIÓ: Refresca visibilitat immediat per mostrar text si és l'última
+  if (dietOptionsListElement.children.length === 0) {
+    dietOptionsListElement.classList.add(CSS_CLASSES.HIDDEN);
+    noDietsTextElement.classList.remove(CSS_CLASSES.HIDDEN);
+    noDietsTextElement.textContent = "No hay dietas guardadas.";
+  }
+  updateDietListVisibility();
 }
 
 export function setupModalGenerics() {
-  console.log("Setup de modals genèrics"); // Log per depuració
   confirmModalElement = document.getElementById(DOM_IDS.CONFIRM_MODAL);
   if (confirmModalElement) {
     confirmMsgElement = document.getElementById(DOM_IDS.CONFIRM_MESSAGE);
@@ -430,14 +315,6 @@ export function setupModalGenerics() {
     );
     confirmYesBtn = document.getElementById(DOM_IDS.CONFIRM_YES_BTN);
     confirmNoBtn = document.getElementById(DOM_IDS.CONFIRM_NO_BTN);
-    if (
-      !confirmMsgElement ||
-      !confirmTitleElement ||
-      !confirmYesBtn ||
-      !confirmNoBtn
-    ) {
-      confirmModalElement = null;
-    }
   }
 
   const modalTriggers = document.querySelectorAll(SELECTORS.MODAL_TRIGGER);
@@ -447,9 +324,6 @@ export function setupModalGenerics() {
     const targetModal = document.getElementById(modalId);
 
     if (targetModal && targetModal.matches(SELECTORS.MODAL)) {
-      if (trigger.dataset.modalSetup === "true") return;
-      trigger.dataset.modalSetup = "true";
-
       trigger.addEventListener("click", (event) => {
         event.preventDefault();
         _openGenericModal(targetModal);
@@ -459,17 +333,13 @@ export function setupModalGenerics() {
         SELECTORS.MODAL_CLOSE_BTN
       );
       closeButtons.forEach((btn) => {
-        if (btn.dataset.modalCloseSetup === "true") return;
-        btn.dataset.modalCloseSetup = "true";
         btn.addEventListener("click", () => _closeGenericModal());
       });
     }
   });
 }
 
-// En openDietModal, re-bind el botó "Cerrar"
 export function openDietModal() {
-  console.log("Obrint modal de dietes"); // Log per depuració
   if (!dietModalElement) {
     dietModalElement = document.getElementById(DOM_IDS.DIET_MODAL);
     dietOptionsListElement = document.getElementById(DOM_IDS.DIET_OPTIONS_LIST);
@@ -477,15 +347,11 @@ export function openDietModal() {
 
     const closeDietBtn = document.getElementById("close-diet-modal");
     if (closeDietBtn) {
-      closeDietBtn.removeEventListener("click", closeDietModal); // Elimina antic per seguretat
       closeDietBtn.addEventListener("click", closeDietModal);
-      console.log("Listener de Cerrar re-afegit en obertura"); // Log per depuració
     }
 
     if (dietOptionsListElement) {
       dietOptionsListElement.addEventListener("click", _handleDietListClick);
-    } else {
-      dietModalElement = null;
     }
   }
   if (dietModalElement) {
@@ -493,15 +359,14 @@ export function openDietModal() {
     displayDietOptions();
   }
 }
+
 export function closeDietModal() {
-  console.log("Tancant modal de dietes"); // Log per depuració
   if (activeModalElement && activeModalElement.id === DOM_IDS.DIET_MODAL) {
     _closeGenericModal();
   }
 }
 
 export async function displayDietOptions() {
-  console.log("Mostrant opcions de dietes"); // Log per depuració
   if (!dietOptionsListElement || !noDietsTextElement) return;
 
   dietOptionsListElement.innerHTML = "";
@@ -515,14 +380,13 @@ export async function displayDietOptions() {
       dietOptionsListElement.classList.remove(CSS_CLASSES.HIDDEN);
       noDietsTextElement.classList.add(CSS_CLASSES.HIDDEN);
 
-      savedDiets.sort((a, b) => {
-        if (!a.timeStampDiet) return 1;
-        if (!b.timeStampDiet) return -1;
-        return new Date(b.timeStampDiet) - new Date(a.timeStampDiet);
-      });
+      savedDiets.sort(
+        (a, b) => new Date(b.timeStampDiet) - new Date(a.timeStampDiet)
+      );
 
-      savedDiets.forEach((diet) => {
+      savedDiets.forEach((diet, index) => {
         const listItem = _createDietListItem(diet);
+        listItem.setAttribute("data-index", index); // MILLORA: Index per posició original
         dietOptionsListElement.appendChild(listItem);
         initSwipeToDelete(listItem, diet.id, diet.date, diet.dietType);
       });
@@ -532,82 +396,70 @@ export async function displayDietOptions() {
     noDietsTextElement.classList.remove(CSS_CLASSES.HIDDEN);
     noDietsTextElement.textContent = "Error al cargar las dietas.";
   }
-  const closeDietBtn = document.getElementById("close-diet-modal");
-  if (closeDietBtn) {
-    closeDietBtn.removeEventListener("click", closeDietModal); // Elimina antic per evitar duplicitats
-    closeDietBtn.addEventListener("click", closeDietModal); // Re-afegeix
-    console.log("Listener de Cerrar re-afegit després de refresh"); // Log temporal per depuració
+}
+
+// Nova funció auxiliar per actualitzar visibilitat de la llista
+function updateDietListVisibility() {
+  if (dietOptionsListElement.children.length === 0) {
+    dietOptionsListElement.classList.add(CSS_CLASSES.HIDDEN);
+    noDietsTextElement.classList.remove(CSS_CLASSES.HIDDEN);
+    noDietsTextElement.textContent = "No hay dietas guardadas.";
+  } else {
+    dietOptionsListElement.classList.remove(CSS_CLASSES.HIDDEN);
+    noDietsTextElement.classList.add(CSS_CLASSES.HIDDEN);
   }
 }
 
-// Per initMouseSwipeToDelete: Aplica el mateix patró
 function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let startX = 0;
   let currentX = 0;
   let isDragging = false;
-  let isConfirming = false;
 
   dietItem.addEventListener("mousedown", (e) => {
-    console.log("Mousedown al modal - Drag iniciat (PC)"); // Log per depuració
     if (e.target.closest("button") || e.target.closest(".diet-icons")) return;
     startX = e.clientX;
     currentX = startX;
-    isDragging = false; // NOU: No inicis dragging immediat; espera moviment
-    // NOU: No stop/prevent aquí; permet bubbling si no hi ha drag
+    isDragging = false;
   });
 
   document.addEventListener("mousemove", (e) => {
     currentX = e.clientX;
     const diff = startX - currentX;
     if (diff > 10 && !isDragging) {
-      // NOU: Inicia només si hi ha moviment >10px
       isDragging = true;
       dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
     }
     if (isDragging && diff > 10) {
       dietItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
-      e.stopPropagation(); // NOU: Només aquí, quan hi ha drag real
       e.preventDefault();
     }
   });
 
   document.addEventListener("mouseup", async (e) => {
-    console.log("Mouseup al modal - Drag finalitzat (PC)"); // Log per depuració
-    if (!isDragging || isConfirming) {
-      // NOU: Si només clic (sense dragging), permet bubbling (no stop)
-      return;
-    }
+    if (!isDragging) return;
     isDragging = false;
-    isConfirming = true;
     const diff = startX - currentX;
 
     dietItem.classList.remove(CSS_CLASSES.DIET_ITEM_SWIPING);
-    dietItem.style.transition = "transform 0.3s ease";
+    dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
 
     if (diff > 50) {
-      dietItem.style.transform = "translateX(-80px)";
-      const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
-      const msg = `¿Confirmas que quieres eliminar permanentemente la dieta de la ${franjaText} del ${ddmmaa}?`;
+      dietItem.style.transform = "translateX(-100%)";
+      dietItem.style.opacity = "0";
 
-      const confirmed = await showConfirmModal(msg, "Eliminar dieta");
-      console.log(`Confirmació rebuda: ${confirmed}`); // Log per depuració
-
-      if (confirmed) {
+      setTimeout(async () => {
+        dietItem.remove(); // Elimina per tancar gap
+        updateDietListVisibility(); // MILLORA: Actualitza visibilitat immediat (mostra text si última)
         await deleteDietHandler(dietId, dietDate, dietType);
-      } else {
-        dietItem.style.transform = "translateX(0)";
-      }
-      e.stopPropagation(); // NOU: Només aquí per drag complet
-      e.preventDefault();
+      }, 300);
     } else {
       dietItem.style.transform = "translateX(0)";
-      e.stopPropagation(); // Opcional: Si vols bloquejar bubbling en retorns
-      e.preventDefault();
+      dietItem.style.opacity = "1";
     }
 
     setTimeout(() => {
       dietItem.style.transition = "";
-      isConfirming = false;
+      dietItem.style.opacity = "";
     }, 300);
   });
 }
@@ -616,17 +468,15 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let startX = 0;
   let currentX = 0;
   let isSwiping = false;
-  let isConfirming = false;
 
   dietItem.addEventListener(
     "touchstart",
     (e) => {
-      console.log("Touchstart al modal - Swipe iniciat sense propagació"); // Log per depuració
-      if (e.target.closest("button") || e.target.closest(".diet-icons")) return; // Ignora si toc botons
+      if (e.target.closest("button") || e.target.closest(".diet-icons")) return;
       startX = e.touches[0].clientX;
       currentX = startX;
-      isSwiping = false; // Espera moviment
-      // NOU: No stop/prevent aquí; permet bubbling si no hi ha swipe
+      isSwiping = false;
+      e.stopPropagation(); // MILLORA: Prevén propagació per evitar afectar modal/tabs
     },
     { passive: false }
   );
@@ -634,62 +484,85 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   dietItem.addEventListener(
     "touchmove",
     (e) => {
-      console.log("Touchmove al modal - Swipe en curs sense propagació"); // Log per depuració
       currentX = e.touches[0].clientX;
       const diff = startX - currentX;
       if (diff > 10 && !isSwiping) {
-        // Inicia swipe
         isSwiping = true;
         dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
+        dietModalElement.style.overflow = "hidden"; // MILLORA: Bloqueja scroll de modal durant swipe
       }
       if (isSwiping && diff > 10) {
         dietItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
-        e.stopPropagation(); // NOU: Només aquí, quan hi ha swipe real
         e.preventDefault();
+        e.stopPropagation(); // MILLORA: Prevén propagació
       }
     },
     { passive: false }
   );
 
   dietItem.addEventListener("touchend", async (e) => {
-    console.log("Touchend al modal - Swipe finalitzat sense propagació"); // Log per depuració
-    if (!isSwiping || isConfirming) {
-      // Si només clic, permet bubbling (no stop)
-      return; // NOU: Elimina stop/prevent per clics simples
-    }
+    if (!isSwiping) return;
     isSwiping = false;
-    isConfirming = true;
     const diff = startX - currentX;
 
     dietItem.classList.remove(CSS_CLASSES.DIET_ITEM_SWIPING);
-    dietItem.style.transition = "transform 0.3s ease";
+    dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
 
     if (diff > 50) {
-      dietItem.style.transform = "translateX(-80px)";
-      const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
-      const msg = `¿Confirmas que quieres eliminar permanentemente la dieta de la ${franjaText} del ${ddmmaa}?`;
+      dietItem.style.transform = "translateX(-100%)";
+      dietItem.style.opacity = "0";
 
-      const confirmed = await showConfirmModal(msg, "Eliminar dieta");
-      console.log(`Confirmació rebuda: ${confirmed}`); // Log per depuració
-
-      if (confirmed) {
+      setTimeout(async () => {
         await deleteDietHandler(dietId, dietDate, dietType);
-      } else {
-        dietItem.style.transform = "translateX(0)";
-      }
-      e.stopPropagation(); // NOU: Només aquí per swipe complet
-      e.preventDefault();
+        dietItem.remove();
+        dietModalElement.style.overflow = ""; // MILLORA: Restaura scroll de modal
+      }, 300);
     } else {
       dietItem.style.transform = "translateX(0)";
-      e.stopPropagation(); // Opcional: Si vols bloquejar bubbling en retorns
-      e.preventDefault();
+      dietItem.style.opacity = "1";
+      dietModalElement.style.overflow = ""; // MILLORA: Restaura si no elimina
     }
 
     setTimeout(() => {
       dietItem.style.transition = "";
-      isConfirming = false;
+      dietItem.style.opacity = "";
     }, 300);
+
+    e.stopPropagation(); // MILLORA: Prevén propagació en touchend
   });
 
-  initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType); // Aplica canvis similars
+  initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType);
+}
+
+// Afegeix el mateix e.stopPropagation() i gestió d'overflow a initMouseSwipeToDelete si cal per consistència, tot i que mouse rarament bubbla igual.
+
+export function restoreDietItemToList(diet) {
+  if (!dietOptionsListElement || !noDietsTextElement) {
+    displayDietOptions();
+    return;
+  }
+
+  const originalIndex = diet.index || 0; // Recupera index
+  const restoredItem = _createDietListItem(diet);
+  restoredItem.style.opacity = "0";
+  restoredItem.style.transform = "translateX(-100%)"; // MILLORA ANIMACIÓ: Inicia des de l'esquerra (fora de pantalla)
+
+  // Insereix en posició
+  const sibling = dietOptionsListElement.children[originalIndex];
+  if (sibling) {
+    dietOptionsListElement.insertBefore(restoredItem, sibling);
+  } else {
+    dietOptionsListElement.appendChild(restoredItem);
+  }
+
+  requestAnimationFrame(() => {
+    restoredItem.style.transition = "opacity 0.5s ease, transform 0.5s ease"; // MILLORA ANIMACIÓ: Transició per slide-in + fade
+    restoredItem.style.opacity = "1";
+    restoredItem.style.transform = "translateX(0)"; // Slide-in a posició original
+    initSwipeToDelete(restoredItem, diet.id, diet.date, diet.dietType);
+  });
+
+  dietOptionsListElement.classList.remove(CSS_CLASSES.HIDDEN);
+  noDietsTextElement.classList.add(CSS_CLASSES.HIDDEN);
+  updateDietListVisibility();
 }

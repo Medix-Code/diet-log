@@ -142,7 +142,6 @@ class FormService {
    * Guarda amb spinner i errors.
    */
   async triggerAutoSave() {
-    // Sense 'function' – correcte!
     if (!this.isFormReadyForSave() || !this.hasPendingChanges()) return;
 
     try {
@@ -156,7 +155,7 @@ class FormService {
 
       this.initialFormDataStr = JSON.stringify(this.getFormDataObject() || {});
     } catch (err) {
-      console.warn("[Autosave skipped]", err.message || "Error desconegut"); // Maneja err null
+      console.warn("[Autosave skipped]", err.message || "Error desconegut");
       indicateSaveError("Revisa dades de Serveis");
     }
   }
@@ -182,7 +181,7 @@ class FormService {
   }
 
   /**
-   * Maneja canvis al formulari (ara auxiliar per handleInputChange).
+   * Maneja canvis al formulari.
    */
   handleFormChange() {
     this.debouncedAutoSave.cancel();
@@ -203,21 +202,19 @@ class FormService {
   }
 
   /**
-   * Lògica de validació i autoguardat aquí; només s'executa després de 800ms sense tecles.
-   * Crida validació, maneig de canvis i autoguardat si cal.
-   * (Canvi: Integrat com a handler principal per debounce)
+   * Lògica de validació i autoguardat.
    */
   handleInputChange() {
     this.validateForm();
     this.handleFormChange();
     this.autoSaveIfNeeded();
   }
+
   validateForm() {
     console.log("[FormService] Validant formulari...");
   }
 
   autoSaveIfNeeded() {
-    // Exemple: Si hi ha canvis, activa autoguardat
     if (this.hasPendingChanges() && this.isFormReadyForSave()) {
       this.debouncedAutoSave();
     }
@@ -239,7 +236,7 @@ class FormService {
         if (e.target.matches("input, select, textarea")) {
           this.handleFormChange();
           if (this.isFormReadyForSave() && this.hasPendingChanges()) {
-            this.debouncedAutoSave.cancel(); // Cancel·la qualsevol autoguardat pendent per evitar duplicats
+            this.debouncedAutoSave.cancel();
             this.triggerAutoSave();
           }
         }
@@ -250,7 +247,7 @@ class FormService {
     const dateInput = document.getElementById(IDS.DATE);
     dateInput?.addEventListener("change", () => {
       dateInput.blur();
-      this.debouncedHandler(); // Crida el handler debounced per consistència
+      this.debouncedHandler();
     });
 
     window.addEventListener("beforeunload", () => {
@@ -270,7 +267,7 @@ class FormService {
       const v = e.target.value.trim();
       updateServicePanelsForServiceType(v);
       try {
-        localStorage.setItem(LS_SERVICE_TYPE_KEY, v); // Seguretat: No emmagatzemar dades sensibles aquí
+        localStorage.setItem(LS_SERVICE_TYPE_KEY, v);
       } catch (err) {
         console.error("No s’ha pogut desar tipus servei", err);
       }
@@ -300,7 +297,7 @@ class FormService {
   }
 }
 
-// Instància única (singleton-like per escalabilitat)
+// Instància única
 const formService = new FormService();
 
 // Exportar mètodes públics
