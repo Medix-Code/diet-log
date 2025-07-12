@@ -1546,10 +1546,18 @@ button .fa {
 .diet-list {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Més espai entre ítems per claredat */
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+}
+
+.diet-item-content {
+  display: flex;
+  align-items: center;
+  row-gap: 15px;
+  /* millor que space-between:*/
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 /* Cada ítem: Flex column per text a dalt + botons a sota */
@@ -1575,12 +1583,16 @@ button .fa {
 
 /* TEXT DATA · HORA – COMIDA */
 .diet-date {
+  align-self: flex-start;
   font-size: 14px;
   text-align: left;
+  gap: 22px;
   color: #333; /* Ajusta color si cal */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; /* "..." si text llarg */
+  flex: 1 1 auto; /* ➜ ocupa tot el que queda                  */
+  min-width: 0; /* permet l'el·lipsi correctament            */
 }
 
 .delete-reveal {
@@ -1608,13 +1620,12 @@ button .fa {
 
 .diet-icons {
   display: flex;
-  flex-direction: row;
-  gap: 10px;
-  width: 100%;
+  gap: 10px; /* separació entre Cargar i PDF              */
+  flex: 0 0 auto; /* ➜ només l’ample del contingut             */
 }
 
 .diet-icons button {
-  flex: 1; /* NOU: Fa que siguin iguals i ocupin espai equitatiu */
+  flex: 1 1 0;
   padding: 6px 12px; /* Igual que dotaciones */
   border-radius: 8px; /* Igual que dotaciones */
   min-width: 120px; /* Igual que dotaciones, per mida petita */

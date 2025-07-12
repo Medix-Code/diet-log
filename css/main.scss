@@ -1,10 +1,10 @@
 // VARIABLES CSS PER TEMES (LIGHT i DARK)
 :root {
-  --primary-color: #004aad; // Color principal (ex. capçalera)
-  --secondary-color: #004aad; // Color secundari
+  --primary-color: #004aad;
+  --secondary-color: #004aad;
   --secondary-color-hover: #0056b3;
-  --text-color: #333333; // Text Títol
-  --subtext-color: #444444; // Text secundari
+  --text-color: #333333;
+  --subtext-color: #444444;
 
   // TopBar
   --border-bottom-topbar: #f21f1f1; // Borde sota TopBar
@@ -1726,12 +1726,19 @@ button {
 .diet-list {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Més espai entre ítems per claredat */
+
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
 }
-
+.diet-item-content {
+  display: flex;
+  align-items: center;
+  row-gap: 15px;
+  /* millor que space-between:*/
+  flex-direction: column;
+  justify-content: flex-start;
+}
 /* Cada ítem: Flex column per text a dalt + botons a sota */
 .diet-item {
   display: flex;
@@ -1755,12 +1762,16 @@ button {
 
 /* TEXT DATA · HORA – COMIDA */
 .diet-date {
+  align-self: flex-start;
   font-size: 14px;
   text-align: left;
+  gap: 22px;
   color: #333; /* Ajusta color si cal */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; /* "..." si text llarg */
+  flex: 1 1 auto; /* ➜ ocupa tot el que queda                  */
+  min-width: 0; /* permet l'el·lipsi correctament            */
 }
 
 .delete-reveal {
@@ -1788,13 +1799,12 @@ button {
 
 .diet-icons {
   display: flex;
-  flex-direction: row;
-  gap: 10px;
-  width: 100%;
+  gap: 10px; /* separació entre Cargar i PDF              */
+  flex: 0 0 auto; /* ➜ només l’ample del contingut             */
 }
 
 .diet-icons button {
-  flex: 1; /* NOU: Fa que siguin iguals i ocupin espai equitatiu */
+  flex: 1 1 0;
   padding: 6px 12px; /* Igual que dotaciones */
   border-radius: 8px; /* Igual que dotaciones */
   min-width: 120px; /* Igual que dotaciones, per mida petita */
@@ -1900,6 +1910,7 @@ button {
     outline-offset: 2px; /* Millora accessibilitat per teclat */
   }
 }
+
 // MODAL DE FIRMA
 #signature-modal {
   z-index: 9999;
