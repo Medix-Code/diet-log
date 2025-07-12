@@ -8,6 +8,8 @@ import { showToast } from "../ui/toast.js";
 import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
+import { getDiet } from "../db/indexedDbDietRepository.js"; // NOU: Import per carregar dieta de BD
+import { getDietDisplayInfo } from "../utils/utils.js"; // NOU: Per info addicional si cal
 
 // --- Constants ---
 const DOM_IDS = {
@@ -332,6 +334,68 @@ export async function generateAndDownloadPdf() {
     showToast("PDF generado correctamente.", "success");
 
     requestInstallPromptAfterAction();
+  } catch (error) {
+    showToast(
+      `Error al generar el PDF: ${error.message || "Desconocido"}`,
+      "error"
+    );
+  }
+}
+
+// NOU: Funció per descarregar PDF des del gestor, sense carregar al formulari
+export async function downloadDietPDF(dietId) {
+  if (!dietId) {
+    showToast("ID de dieta invàlid.", "error");
+    return;
+  }
+
+  try {
+    showToast("Generando PDF...", "info");
+
+    // Carrega la dieta de la BD
+    const diet = await getDiet(dietId);
+    if (!diet) {
+      showToast("Dieta no trobada.", "error");
+      return;
+    }
+
+    // Adapta les dades al format esperat per fillPdf (generalData i servicesData)
+    const generalData = {
+      date: diet.date || "",
+      dietType: diet.dietType || "",
+      vehicleNumber: diet.vehicleNumber || "",
+      person1: diet.person1 || "",
+      person2: diet.person2 || "",
+      serviceType: diet.serviceType || "TSU",
+      signatureConductor: diet.signatureConductor || "",
+      signatureAjudant: diet.signatureAjudant || "",
+    };
+
+    const servicesData = diet.services.map((service) => ({
+      serviceNumber: service.serviceNumber || "",
+      origin: service.origin || "",
+      originTime: service.originTime || "",
+      destination: service.destination || "",
+      destinationTime: service.destinationTime || "",
+      endTime: service.endTime || "",
+      mode: service.mode || "3.6",
+    }));
+
+    // Genera el PDF amb les dades carregades
+    const pdfBytes = await fillPdf(generalData, servicesData);
+    const fileName = buildPdfFileName(generalData.date, generalData.dietType);
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => URL.revokeObjectURL(url), 500);
+    showToast("PDF generado correctamente.", "success");
   } catch (error) {
     showToast(
       `Error al generar el PDF: ${error.message || "Desconocido"}`,

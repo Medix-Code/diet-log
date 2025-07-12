@@ -63,6 +63,18 @@
   --font-size-base: 15px;
   --transition-speed: 0.3s;
   --icon-size: 24px;
+  --color-pdf-bg: #eceffc; /* Fons blau suau */
+  --color-pdf-bg-hover: #dce0fa;
+  --color-pdf-text: #004aad; /* Text i icona blau fosc */
+  --color-load-bg: rgb(233, 236, 239); /* Fons gris suau */
+  --color-load-bg-hover: rgb(222, 226, 230);
+  --color-load-text: rgb(73, 80, 87);
+  --color-close-bg: #004aad; /* Blau fosc */
+  --color-close-bg-hover: #0056b3;
+  --color-close-text: #fff; /* Blanc per contrast */
+  --color-load-bg: #e9ecef; /* Gris suau */
+  --color-load-bg-hover: #dee2e6;
+  --color-load-text: #6c757d; /* Gris fosc */
 }
 
 .theme-dark {
@@ -308,11 +320,14 @@ main {
   background-color: var(--bg-btn-ajustes);
 }
 .ajustes-panel .big-btn {
+  text-overflow: ellipsis;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
   justify-content: flex-start;
+  white-space: nowrap; /* Evita salts de línia en text llarg */
+  overflow: hidden; /* Si és massa llarg, elipsis */
   padding: 20px 20px;
   font-size: 16px;
   font-weight: 300;
@@ -411,6 +426,32 @@ main {
 
 .save-pill.error .pill-icon {
   background-image: url("../assets/icons/error_red.svg");
+}
+
+.close-button {
+  /* Usa una classe comuna per "Cerrar" en ambdós modals */
+  width: auto;
+  min-width: 120px;
+  height: 40px;
+  background-color: var(--color-close-bg);
+  color: var(--color-close-text);
+  border: none;
+  border-radius: var(--border-radius-base);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+  box-shadow: var(--shadow-base);
+  padding: 10px 20px;
+}
+.close-button:hover {
+  background-color: var(--color-close-bg-hover);
+  transform: scale(1.02);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+.close-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .tabs-container {
@@ -702,11 +743,16 @@ button .fa {
 }
 
 .dotacio-load {
-  background-color: #eceffc;
-  color: #004aad;
+  /* Selector per "Cargar" en dotaciones */
+  background-color: var(--color-load-bg); /* Gris suau */
+  color: var(--color-load-text); /* Gris fosc */
 }
 .dotacio-load:hover {
-  background-color: #dce0fa;
+  background-color: var(--color-load-bg-hover);
+}
+.dotacio-load .icon {
+  /* Icona en gris fosc */
+  filter: grayscale(100%) brightness(0.6);
 }
 
 .dotacio-delete {
@@ -717,33 +763,14 @@ button .fa {
   background-color: #fccac9;
 }
 
+/* Modal footer i botó Cerrar */
 .modal-footer {
+  /* Contenidor per botó "Cerrar" en dotacions i dietes */
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; /* Alinea a la dreta per jerarquia i flux natural */
   padding-top: 10px;
-}
-
-.close-dotacio-button {
-  width: 120px;
-  height: 40px;
-  background-color: var(--primary-color);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 10px auto;
-}
-.close-dotacio-button:hover {
-  background-color: #c78e00;
-}
-.close-dotacio-button:active {
-  transform: scale(0.95);
+  margin-top: 10px;
+  border-top: 1px solid #eee; /* Línia separadora superior, suau per visibilitat sense sobrecarregar */
 }
 
 @keyframes fadeIn {
@@ -1510,50 +1537,121 @@ button .fa {
 }
 
 .diet-icons button:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
   filter: brightness(0.95);
 }
 
 .diet-icons button:active {
-  transform: scale(0.95);
-  filter: brightness(0.9);
+  transform: scale(0.98);
 }
 
 .diet-item {
+  position: relative;
+  background-color: #f9f9f9; /* Mantinc suau, però afegeix gradient opcional: linear-gradient(to bottom, #fff, #f9f9f9) */
+  border: 1px solid #eee; /* NOU: Borde suau per definició */
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* NOU: Ombra lleu per elevació i visibilitat */
+  transition: box-shadow 0.2s ease; /* Suavitat en hover */
+}
+.diet-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Més visible en interacció */
+}
+
+/* Opcional: Striping per llistes llargues (ítems alterns) */
+.diet-list .diet-item:nth-child(even) {
+  background-color: #f5f5f5; /* NOU: Gris més clar i subtil per menys "diferència" visible */
+}
+
+.diet-item-content {
+  transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 12px 16px;
-  background: #f9f9f9;
-  border: 1px solid var(--grey-border);
-  border-radius: 8px;
+  gap: 10px;
 }
 
 .diet-date {
   font-size: 14px;
-  font-weight: 500;
+  width: 100%;
+  text-align: left;
+}
+
+.delete-reveal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80px;
+  background-color: #fdeceb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.swiping .diet-item-content {
+  transform: translateX(-80px);
+}
+
+.swiping .delete-reveal {
+  opacity: 1;
 }
 
 .diet-icons {
   display: flex;
-  justify-content: space-between;
+  gap: 10px; /* Reduït per compacitat */
   align-items: center;
-  width: 100%;
-  gap: 10px;
+  justify-content: center; /* NOU: Centrat horitzontal */
+  width: 100%; /* Assegura que ocupi tot l'ample per centrat real */
 }
+
 .diet-icons button {
-  flex: 1;
+  flex: 1; /* NOU: Fa que siguin iguals i ocupin espai equitatiu */
+  padding: 6px 12px; /* Igual que dotaciones */
+  border-radius: 8px; /* Igual que dotaciones */
+  min-width: 120px; /* Igual que dotaciones, per mida petita */
+  font-size: 14px; /* Igual que dotaciones */
+  font-weight: 500; /* Igual que dotaciones */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 0;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Lleu ombra per profunditat */
+  border: none; /* Sense borde per simplicitat, o afegeix 0.5px solid #d0d0d0 si vols com dotaciones */
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.diet-icons .diet-load {
+  background-color: var(--color-load-bg);
+  color: var(--color-load-text);
+}
+.diet-icons .diet-load:hover {
+  background-color: var(--color-load-bg-hover);
+}
+.diet-icons .diet-load .icon {
+  /* Icona en gris més fosc */
+  filter: grayscale(100%) brightness(0.5);
+}
+
+.diet-icons .diet-download {
+  background-color: var(--color-pdf-bg); /* Fons blau suau */
+  color: var(--color-pdf-text); /* Text blau fosc */
+}
+.diet-icons .diet-download:hover {
+  background-color: var(--color-pdf-bg-hover);
+}
+
+/* Per consistència amb dotaciones, si vols hover/actiu */
+.diet-icons button:hover {
+  transform: scale(1.02);
+}
+
+.diet-icons .icon {
+  width: 18px; /* NOU: Més petit, igual que dotaciones */
+  height: 18px;
 }
 
 .diet-delete {
@@ -1577,27 +1675,38 @@ button .fa {
   height: 20px !important;
 }
 
+.close-dotacio-button,
 .close-diet-button {
-  width: 120px;
+  /* Classes específiques, però estils unificats */
+  width: auto;
+  min-width: 120px;
   height: 40px;
-  background-color: var(--primary-color);
+  background-color: #004aad; /* Blau fosc per consistència */
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 10px auto;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 20px;
 }
+.close-dotacio-button:hover,
 .close-diet-button:hover {
-  background-color: #c78e00;
+  background-color: #0056b3;
+  transform: scale(1.02);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
+.close-dotacio-button:active,
 .close-diet-button:active {
-  transform: scale(0.95);
+  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.close-dotacio-button:focus-visible,
+.close-diet-button:focus-visible {
+  outline: 2px solid #004aad;
+  outline-offset: 2px; /* Millora accessibilitat per teclat */
 }
 
 #signature-modal {

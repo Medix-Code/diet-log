@@ -142,6 +142,7 @@ class FormService {
    * Guarda amb spinner i errors.
    */
   async triggerAutoSave() {
+    // Sense 'function' – correcte!
     if (!this.isFormReadyForSave() || !this.hasPendingChanges()) return;
 
     try {
@@ -155,7 +156,7 @@ class FormService {
 
       this.initialFormDataStr = JSON.stringify(this.getFormDataObject() || {});
     } catch (err) {
-      console.warn("[Autosave skipped]", err.message);
+      console.warn("[Autosave skipped]", err.message || "Error desconegut"); // Maneja err null
       indicateSaveError("Revisa dades de Serveis");
     }
   }
