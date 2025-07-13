@@ -269,7 +269,7 @@ async function performSave(isManual) {
   setSaveButtonState(false);
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Sismulació
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulació
 
     if (!validateFormTabs()) {
       throw new Error("Validació fallida");
