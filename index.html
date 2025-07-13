@@ -18,16 +18,29 @@
       name="description"
       content="Aplicació per gestionar dietes amb formularis accessibles i funcionalitat PWA."
     />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' data:; connect-src 'self' data: https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://dev.misdietas.com https://static.cloudflareinsights.com; script-src 'self' 'nonce-{random}' 'wasm-unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://static.cloudflareinsights.com https://dev.misdietas.com; style-src 'self' 'nonce-{random}' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; worker-src 'self' blob:; img-src 'self' data:;"
+    />
+
     <title>MisDietas</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="assets/images/icons-192.png" type="image/png" />
     <link rel="stylesheet" href="css/main.css" />
     <noscript><link rel="stylesheet" href="css/main.css" /></noscript>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@6.0.0/dist/tesseract.min.js"></script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/tesseract.js@6.0.0/dist/tesseract.min.js"
+      integrity="sha384-{hash-de-tesseract}"
+      crossorigin="anonymous"
+    ></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"
+      integrity="sha384-{hash-de-pdf-lib}"
+      crossorigin="anonymous"
       async
     ></script>
+
     <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker

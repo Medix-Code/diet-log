@@ -3,6 +3,7 @@ Disallow: /admin/          # Bloqueja àrees administratives si en tens
 Disallow: /form-submit/    # Bloqueja enviaments de formularis per evitar bots
 Disallow: /db/             # Bloqueja accés a dades locals si exposades
 Disallow: /private/        # Bloqueja qualsevol carpeta privada
+Disallow: /.git/           # Bloqueja .git per evitar fuites
 Allow: /                   # Permet l'arrel i pàgines principals
 
 # Bloqueig específic per bots d'IA (per evitar ús de dades dels formularis)
