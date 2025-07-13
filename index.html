@@ -769,16 +769,19 @@
       </div>
       <template id="dotacio-template">
         <div class="dotacio-item">
-          <span class="dotacio-info"></span>
-          <div class="button-container">
-            <button class="dotacio-delete" aria-label="Eliminar dotació">
-              <img src="assets/icons/delete.svg" alt="Eliminar" class="icon" />
-              <span class="btn-text">Eliminar</span>
-            </button>
-            <button class="dotacio-load" aria-label="Cargar dotació">
-              <img src="assets/icons/upload2.svg" alt="Cargar" class="icon" />
-              <span class="btn-text">Cargar</span>
-            </button>
+          <div class="dotacio-item-content">
+            <span class="dotacio-info"></span>
+            <div class="button-container">
+              <!-- Només el botó de Cargar -->
+              <button class="dotacio-load" aria-label="Cargar dotació">
+                <img src="assets/icons/upload2.svg" alt="Cargar" class="icon" />
+                <span class="btn-text">Cargar</span>
+              </button>
+            </div>
+          </div>
+          <!-- Element per revelar en swipe (com a dietes) -->
+          <div class="delete-reveal">
+            <img src="assets/icons/delete.svg" alt="Eliminar" class="icon" />
           </div>
         </div>
       </template>

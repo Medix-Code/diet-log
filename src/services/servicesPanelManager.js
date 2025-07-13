@@ -7,6 +7,9 @@
 import { revalidateFormState } from "./formService.js";
 
 // --- Constants ---
+
+const ALLOWED_MODES = ["3.6", "3.22", "3.11"]; // Llista blanca de modes vàlids
+
 const DOM_IDS = {
   CONTAINER: "services-container",
   BUTTONS_CONTAINER: "service-buttons-container",
@@ -46,6 +49,7 @@ let isInitialized = false;
 let currentServiceIndex = 0;
 let servicePanels = [];
 let serviceButtons = [];
+let allServicePanels = [];
 
 let servicesContainerEl = null;
 let serviceButtonsContEl = null;
@@ -142,6 +146,7 @@ function _updatePanelChipsUI(panel, activeMode) {
   );
 }
 
+// Busca aquesta funció al teu codi...
 function _attachPanelChipListeners() {
   servicePanels.forEach((panel, idx) => {
     const chipsInPanel = panel.querySelectorAll(SELECTORS.CHIP);
@@ -149,6 +154,18 @@ function _attachPanelChipListeners() {
     chipsInPanel.forEach((chipButton) => {
       chipButton.addEventListener("click", () => {
         const mode = chipButton.dataset.mode;
+
+        // ==========================================================
+        // 👇 AQUÍ VA LA MODIFICACIÓ 👇
+        // ==========================================================
+
+        // 1. Validar el mode contra la llista blanca.
+        if (!ALLOWED_MODES.includes(mode)) {
+          console.error(
+            `Intent de canviar a un mode invàlid: "${mode}". Acció bloquejada.`
+          );
+          return;
+        }
         if (serviceModes[idx] === mode) return;
 
         serviceModes[idx] = mode;
@@ -169,7 +186,6 @@ function _attachPanelChipListeners() {
     });
   });
 }
-
 function _updateExternalButtonStyles(idx) {
   const colorClass = CSS_CLASSES.SERVICE_COLORS[idx];
   const styleBtn = (el, baseClass) => {
@@ -187,6 +203,7 @@ function _updateExternalButtonStyles(idx) {
 export function initServices() {
   if (isInitialized) return;
 
+  allServicePanels = document.querySelectorAll(SELECTORS.SERVICE_PANEL);
   servicesContainerEl = document.getElementById(DOM_IDS.CONTAINER);
   serviceButtonsContEl = document.getElementById(DOM_IDS.BUTTONS_CONTAINER);
   optionsMenuEl = document.getElementById(DOM_IDS.OPTIONS_MENU);
@@ -300,8 +317,7 @@ export function setModeForService(index, mode) {
 export function updateServicePanelsForServiceType(serviceType) {
   const isTSNU = serviceType === "TSNU";
 
-  const allServicePanels = document.querySelectorAll(SELECTORS.SERVICE_PANEL);
-
+  // Ara 'allServicePanels' és accessible aquí
   allServicePanels.forEach((panel) => {
     TSNU_HIDDEN_ELEMENT_SELECTORS.forEach((selector) => {
       const element = panel.querySelector(selector);

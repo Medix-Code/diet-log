@@ -9,7 +9,7 @@ import { getDietDisplayInfo, capitalizeFirstLetter } from "../utils/utils.js";
 import { getAllDiets } from "../db/indexedDbDietRepository.js";
 import { hasPendingChanges } from "../services/formService.js";
 import { downloadDietPDF } from "../services/pdfService.js";
-
+import { dotacionService } from "../services/dotacion.js";
 // --- Constants ---
 const CSS_CLASSES = {
   MODAL_VISIBLE: "visible",
@@ -465,6 +465,13 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   });
 }
 
+// Exporta les funcions per usar a dotacion.js
+export {
+  initSwipeToDeleteDotacio, // Afegeix aquesta per resoldre l'error (touch swipe)
+  initMouseSwipeToDeleteDotacio, // Ja existent (mouse swipe)
+  updateDotacioListVisibility, // Ja existent (visibilitat)
+};
+
 function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let startX = 0;
   let currentX = 0;
@@ -535,6 +542,128 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType);
 }
 
+// Nova funció per swipe amb mouse en dotacions (adaptada de initMouseSwipeToDelete per dietes)
+function initMouseSwipeToDeleteDotacio(dotacioItem, dotacioId) {
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+
+  dotacioItem.addEventListener("mousedown", (e) => {
+    if (e.target.closest("button") || e.target.closest(".button-container"))
+      return;
+    startX = e.clientX;
+    currentX = startX;
+    isDragging = false;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    currentX = e.clientX;
+    const diff = startX - currentX;
+    if (diff > 10 && !isDragging) {
+      isDragging = true;
+      dotacioItem.classList.add("swiping");
+    }
+    if (isDragging && diff > 10) {
+      dotacioItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener("mouseup", async (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    const diff = startX - currentX;
+
+    dotacioItem.classList.remove("swiping");
+    dotacioItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+
+    if (diff > 50) {
+      dotacioItem.style.transform = "translateX(-100%)";
+      dotacioItem.style.opacity = "0";
+
+      setTimeout(async () => {
+        await dotacionService.handleDeleteById(dotacioId);
+        dotacioItem.remove();
+        updateDotacioListVisibility();
+      }, 300);
+    } else {
+      dotacioItem.style.transform = "translateX(0)";
+      dotacioItem.style.opacity = "1";
+    }
+
+    setTimeout(() => {
+      dotacioItem.style.transition = "";
+      dotacioItem.style.opacity = "";
+    }, 300);
+  });
+}
+
+// Nova funció per inicialitzar swipe en dotacions (adaptada de initSwipeToDelete)
+function initSwipeToDeleteDotacio(dotacioItem, dotacioId) {
+  let startX = 0;
+  let currentX = 0;
+  let isSwiping = false;
+
+  dotacioItem.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.target.closest("button")) return;
+      startX = e.touches[0].clientX;
+      currentX = startX;
+      isSwiping = false;
+      e.stopPropagation();
+    },
+    { passive: false }
+  );
+
+  dotacioItem.addEventListener(
+    "touchmove",
+    (e) => {
+      currentX = e.touches[0].clientX;
+      const diff = startX - currentX;
+      if (diff > 10 && !isSwiping) {
+        isSwiping = true;
+        dotacioItem.classList.add("swiping");
+      }
+      if (isSwiping && diff > 10) {
+        dotacioItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    { passive: false }
+  );
+
+  dotacioItem.addEventListener("touchend", async (e) => {
+    if (!isSwiping) return;
+    isSwiping = false;
+    const diff = startX - currentX;
+
+    dotacioItem.classList.remove("swiping");
+    dotacioItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+
+    if (diff > 50) {
+      dotacioItem.style.transform = "translateX(-100%)";
+      dotacioItem.style.opacity = "0";
+      setTimeout(async () => {
+        await dotacionService.handleDeleteById(dotacioId);
+        dotacioItem.remove();
+        updateDotacioListVisibility();
+      }, 300);
+    } else {
+      dotacioItem.style.transform = "translateX(0)";
+      dotacioItem.style.opacity = "1";
+    }
+
+    setTimeout(() => {
+      dotacioItem.style.transition = "";
+      dotacioItem.style.opacity = "";
+    }, 300);
+
+    e.stopPropagation();
+  });
+}
+
 // Afegeix el mateix e.stopPropagation() i gestió d'overflow a initMouseSwipeToDelete si cal per consistència, tot i que mouse rarament bubbla igual.
 
 export function restoreDietItemToList(diet) {
@@ -565,4 +694,84 @@ export function restoreDietItemToList(diet) {
   updateDietListVisibility();
   dietOptionsListElement.classList.remove(CSS_CLASSES.HIDDEN);
   noDietsTextElement.classList.add(CSS_CLASSES.HIDDEN);
+}
+
+// Nova funció auxiliar per actualitzar visibilitat de la llista de dotacions (adaptada de updateDietListVisibility)
+// A modals.js
+function updateDotacioListVisibility() {
+  const dotacioOptionsList = document.getElementById("dotacio-options");
+  const noDotacioText = document.getElementById("no-dotacio-text");
+
+  // Aquesta comprovació és clau
+  if (dotacioOptionsList.children.length === 0) {
+    dotacioOptionsList.classList.add("hidden");
+    noDotacioText.classList.remove("hidden");
+    // Assegurem que el text és el correcte
+    noDotacioText.innerHTML = `No hay dotaciones, guarde antes: <img src="assets/icons/save_green.svg" alt="Guardar" class="save-icon" />`;
+  } else {
+    dotacioOptionsList.classList.remove("hidden");
+    noDotacioText.classList.add("hidden");
+  }
+}
+
+function _createDotacioListItem(dotacio, index) {
+  const template = document.getElementById("dotacio-template");
+  if (!template) return null;
+
+  const clone = template.content.cloneNode(true);
+  const infoSpan = clone.querySelector(".dotacio-info");
+  const loadBtn = clone.querySelector(".dotacio-load");
+
+  if (infoSpan) {
+    // Aquesta funció hauria d'estar a dotacion.js, però per simplificar, la repliquem aquí
+    // Idealment, dotacionService.formatDisplayText(dotacio)
+    infoSpan.textContent = `${dotacio.numero || "S/N"} - ${
+      dotacio.conductor || "S/D"
+    } / ${dotacio.ajudant || "S/D"}`;
+  }
+  if (loadBtn) {
+    loadBtn.setAttribute("data-index", String(index));
+  }
+
+  return clone.firstElementChild; // Retorna el <div class="dotacio-item">
+}
+
+export function restoreDotacioItemToList(dotacio) {
+  const dotacioOptionsList = document.getElementById("dotacio-options");
+  if (!dotacioOptionsList) {
+    dotacionService._displayDotacioOptions(); // fallback per redibuixar tot
+    return;
+  }
+
+  const originalIndex = dotacio.originalIndex;
+
+  // 1. Creem l'element HTML utilitzant la nostra nova funció
+  const restoredItem = _createDotacioListItem(dotacio, originalIndex);
+  if (!restoredItem) return;
+
+  // 2. Preparem l'animació (exactament com a les dietes)
+  restoredItem.style.opacity = "0";
+  restoredItem.style.transform = "translateX(-100%)";
+
+  // 3. Inserim l'element a la llista a la seva posició original
+  const sibling = dotacioOptionsList.children[originalIndex];
+  if (sibling) {
+    dotacioOptionsList.insertBefore(restoredItem, sibling);
+  } else {
+    dotacioOptionsList.appendChild(restoredItem);
+  }
+
+  // 4. Executem l'animació i tornem a lligar els events de swipe
+  requestAnimationFrame(() => {
+    restoredItem.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+    restoredItem.style.opacity = "1";
+    restoredItem.style.transform = "translateX(0)";
+
+    // Tornem a activar el swipe per a l'element restaurat
+    initSwipeToDeleteDotacio(restoredItem, originalIndex);
+    initMouseSwipeToDeleteDotacio(restoredItem, originalIndex);
+  });
+
+  // 5. Assegurem que la llista sigui visible
+  updateDotacioListVisibility();
 }

@@ -36,8 +36,12 @@ import {
   cancelPendingAutoSave,
   setSaveButtonState,
 } from "./formService.js";
-import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
-import { getDietDisplayInfo } from "../utils/utils.js";
+import {
+  validateDadesTab,
+  validateServeisTab,
+  sanitizeText,
+  isValidTimeFormat,
+} from "../utils/validation.js";
 import {
   setSignatureConductor,
   setSignatureAjudant,
@@ -99,54 +103,69 @@ export class Diet {
   }
 }
 
-// --- Funcions Auxiliars ---
-
 /**
- * Construeix un objecte Diet a partir de dades generals i serveis.
+ * Construeix un objecte Diet a partir de dades del formulari,
+ * aplicant validacions i sanejament per garantir la seguretat i integritat de les dades.
  * @param {Object} generalData - Dades generals del formulari.
  * @param {Array} servicesData - Array de dades de serveis.
- * @param {string} dietId - ID de la dieta.
- * @returns {Promise<Diet>} - Objecte Diet construït.
+ * @param {string} dietId - ID de la dieta a construir.
+ * @returns {Promise<Diet>} - Una promesa que resol amb l'objecte Diet construït.
+ * @throws {Error} Si les dades són incompletes, l'ID és invàlid o el format de l'hora és incorrecte.
  */
 async function buildDietObject(generalData, servicesData, dietId) {
-  if (
-    !generalData ||
-    !Array.isArray(servicesData) ||
-    servicesData.length === 0 ||
-    !dietId
-  ) {
-    throw new Error("Dades incompletes.");
-  }
-  if (!/^\d{9}$/.test(dietId)) {
-    throw new Error("ID invàlid.");
+  // 1. Validació inicial de les dades d'entrada.
+  if (!generalData || !Array.isArray(servicesData) || !dietId) {
+    throw new Error("Datos incompletos para construir la dieta.");
   }
 
+  // 2. Validació del format de l'ID de la dieta.
+  if (!/^\d{9}$/.test(dietId)) {
+    throw new Error("ID de dieta inválido. Debe contener 9 dígitos.");
+  }
+
+  // 3. Validació del format de les hores a tots els serveis.
+  for (const service of servicesData) {
+    if (
+      !isValidTimeFormat(service.originTime) ||
+      !isValidTimeFormat(service.destinationTime) ||
+      !isValidTimeFormat(service.endTime)
+    ) {
+      throw new Error("Formato de hora inválido detectado. Use HH:mm.");
+    }
+  }
+
+  // 4. Obtenim el timestamp: si la dieta ja existeix, el mantenim; si no, en creem un de nou.
   const existingDiet = await getDiet(dietId);
   const timeStampDiet = existingDiet
     ? existingDiet.timeStampDiet
     : new Date().toISOString();
 
-  return new Diet({
+  // 5. Construcció final de l'objecte Diet, aplicant sanejament als camps de text.
+  const dietData = {
     id: dietId,
-    date: generalData.date || "",
-    dietType: generalData.dietType || "",
-    vehicleNumber: generalData.vehicleNumber || "",
-    person1: generalData.person1 || "",
-    person2: generalData.person2 || "",
-    signatureConductor: generalData.signatureConductor || "",
-    signatureAjudant: generalData.signatureAjudant || "",
+    date: sanitizeText(generalData.date),
+    dietType: sanitizeText(generalData.dietType),
+    vehicleNumber: sanitizeText(generalData.vehicleNumber),
+    person1: sanitizeText(generalData.person1),
+    person2: sanitizeText(generalData.person2),
+    signatureConductor: generalData.signatureConductor, // Base64, no necesita saneamiento de texto.
+    signatureAjudant: generalData.signatureAjudant, // Base64, no necesita saneamiento de texto.
     services: servicesData.map((s) => ({
-      serviceNumber: s.serviceNumber || "",
-      origin: s.origin || "",
-      originTime: s.originTime || "",
-      destination: s.destination || "",
-      destinationTime: s.destinationTime || "",
-      endTime: s.endTime || "",
-      mode: s.mode || "3.6",
+      serviceNumber: sanitizeText(s.serviceNumber),
+      origin: sanitizeText(s.origin),
+      destination: sanitizeText(s.destination),
+      // Las horas ya han sido validadas, se guardan directamente.
+      originTime: s.originTime,
+      destinationTime: s.destinationTime,
+      endTime: s.endTime,
+      mode: sanitizeText(s.mode),
     })),
-    serviceType: generalData.serviceType || "TSU",
+    serviceType: sanitizeText(generalData.serviceType),
     timeStampDiet,
-  });
+  };
+
+  // Utilitzem el constructor de la classe Diet per crear la instància final.
+  return new Diet(dietData);
 }
 
 /**
@@ -349,13 +368,16 @@ export async function deleteDietHandler(id, dietDate, dietType) {
     await deleteDietById(id);
 
     showToast("Dieta eliminada", "success", 5000, {
+      priority: 2,
       undoCallback: async () => {
         await addDiet(dietBackup); // Restaura BD
 
         // Crida la funció exportada per restauració visual
         restoreDietItemToList(dietBackup);
 
-        showToast("Dieta restaurada", "success");
+        showToast("Dieta restaurada", "success", 3000, {
+          priority: 0,
+        });
       },
       onExpire: () => {
         removeDietItemFromList(id);

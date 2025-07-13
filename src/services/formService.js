@@ -7,6 +7,7 @@
 // ────────────────────────────────────────────────────────────
 // IMPORTS
 // ────────────────────────────────────────────────────────────
+import { sanitizeText } from "../utils/validation.js";
 import {
   getSignatureConductor,
   getSignatureAjudant,
@@ -106,15 +107,18 @@ class FormService {
   getFormDataObject() {
     try {
       const generalData = {
-        date: document.getElementById(IDS.DATE)?.value.trim() || "",
-        dietType:
-          document.getElementById(IDS.DIET_TYPE)?.value.trim() ||
-          getCurrentDietType(),
-        vehicleNumber: document.getElementById(IDS.VEHICLE)?.value.trim() || "",
-        person1: document.getElementById(IDS.P1)?.value.trim() || "",
-        person2: document.getElementById(IDS.P2)?.value.trim() || "",
-        serviceType:
-          document.getElementById(IDS.SERVICE_TYPE)?.value.trim() || "TSU",
+        date: sanitizeText(document.getElementById(IDS.DATE)?.value),
+        dietType: sanitizeText(
+          document.getElementById(IDS.DIET_TYPE)?.value || getCurrentDietType()
+        ),
+        vehicleNumber: sanitizeText(
+          document.getElementById(IDS.VEHICLE)?.value
+        ),
+        person1: sanitizeText(document.getElementById(IDS.P1)?.value),
+        person2: sanitizeText(document.getElementById(IDS.P2)?.value),
+        serviceType: sanitizeText(
+          document.getElementById(IDS.SERVICE_TYPE)?.value || "TSU"
+        ),
         signatureConductor: getSignatureConductor(),
         signatureAjudant: getSignatureAjudant(),
       };
@@ -124,8 +128,10 @@ class FormService {
       ).map((panel) => {
         const s = {};
         for (const [k, sel] of Object.entries(SERVICE_FIELD_SELECTORS)) {
-          s[k] = panel.querySelector(sel)?.value.trim() || "";
+          // També sanejam aquí els camps de text dels serveis
+          s[k] = sanitizeText(panel.querySelector(sel)?.value);
         }
+        // El mode ve de data-mode, que és segur. No cal sanejar.
         const activeChip = panel.querySelector(`.chip.${CHIP_ACTIVE_CLASS}`);
         s.mode = activeChip?.dataset.mode || "3.6";
         return s;
@@ -194,6 +200,7 @@ class FormService {
 
     if (this.isFormReadyForSave()) {
       this.setSaveButtonState(true);
+      // Dispara l'autoguardat (amb debounce)
       this.debouncedAutoSave();
     } else {
       this.setSaveButtonState(false);
@@ -205,19 +212,7 @@ class FormService {
    * Lògica de validació i autoguardat.
    */
   handleInputChange() {
-    this.validateForm();
     this.handleFormChange();
-    this.autoSaveIfNeeded();
-  }
-
-  validateForm() {
-    console.log("[FormService] Validant formulari...");
-  }
-
-  autoSaveIfNeeded() {
-    if (this.hasPendingChanges() && this.isFormReadyForSave()) {
-      this.debouncedAutoSave();
-    }
   }
 
   /**

@@ -673,11 +673,16 @@ button .fa {
 .dotacio-modal-content {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  max-height: 85vh;
+  max-width: 100%; /* No sobrepassa el viewport */
+  width: auto; /* S'adapta al contingut */
+  overflow-x: hidden; /* Amaga qualsevol desbordament horitzontal */
+  box-sizing: border-box; /* Assegura que padding/margins no afegeixin amplada extra */
 }
 .dotacio-modal-content h3 {
   margin-bottom: 10px;
   text-align: center;
+  flex-shrink: 0;
 }
 .dotacio-modal-content #no-dotacio-text {
   margin-top: 20px;
@@ -686,7 +691,7 @@ button .fa {
   justify-content: center;
   gap: 8px;
 }
-.dotacio-modal-content .save-icon {
+.dotacio-modal-content #no-dotacio-text .save-icon {
   width: 20px;
   height: 20px;
   margin: 0;
@@ -695,84 +700,113 @@ button .fa {
 .dotacio-modal-content .dotacio-list {
   flex: 1;
   overflow-y: auto;
-  margin-top: 10px;
-  padding-right: 5px;
-  padding-left: 5px;
+  margin-top: 20px;
+  padding: 0 10px 10px 5px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  overflow-x: hidden;
+  flex-grow: 1;
+  padding-right: 5px;
 }
-
-#dotacio-options {
-  margin-top: 15px; /* Espai addicional per evitar trepitjar la barra. Ajusta a 10-20px segons proves */
-  padding: 0 10px; /* Opcional: Padding lateral per centrar millor els ítems */
+.dotacio-modal-content .dotacio-list::-webkit-scrollbar {
+  width: 8px;
+}
+.dotacio-modal-content .dotacio-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+.dotacio-modal-content .dotacio-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+.dotacio-modal-content .dotacio-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .dotacio-item {
+  touch-action: pan-y;
+  position: relative;
+  overflow: hidden;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+}
+.dotacio-item .dotacio-item-content {
+  flex-grow: 1;
   padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 15px;
+  transition: transform 0.3s ease;
 }
 .dotacio-item .dotacio-info {
   font-size: 14px;
   text-align: left;
+  word-break: break-word;
 }
 .dotacio-item .button-container {
   display: flex;
   gap: 10px;
+  justify-content: center;
+  width: 100%;
 }
-.dotacio-item .button-container button {
+.dotacio-item .dotacio-load {
   flex: 1;
-}
-
-.dotacio-load,
-.dotacio-delete {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s ease;
 }
-
-.dotacio-load {
-  /* Selector per "Cargar" en dotaciones */
-  background-color: var(--color-load-bg); /* Gris suau */
-  color: var(--color-load-text); /* Gris fosc */
+.dotacio-item .dotacio-load {
+  background-color: var(--color-load-bg, #e9ecef);
+  color: var(--color-load-text, #495057);
 }
-.dotacio-load:hover {
-  background-color: var(--color-load-bg-hover);
+.dotacio-item .dotacio-load:hover {
+  background-color: var(--color-load-bg-hover, #dee2e6);
 }
-.dotacio-load .icon {
-  /* Icona en gris fosc */
+.dotacio-item .dotacio-load .icon {
   filter: grayscale(100%) brightness(0.6);
 }
-
-.dotacio-delete {
+.dotacio-item .delete-reveal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80px;
   background-color: #fdeceb;
-  color: #e03131;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
 }
-.dotacio-delete:hover {
-  background-color: #fccac9;
+.dotacio-item.swiping .dotacio-item-content {
+  transform: translateX(-80px);
+}
+.dotacio-item.swiping .delete-reveal {
+  transform: translateX(0);
 }
 
 /* Modal footer i botó Cerrar */
 .modal-footer {
-  /* Contenidor per botó "Cerrar" en dotacions i dietes */
+  padding-top: 15px;
+  margin-top: auto;
+  border-top: 1px solid var(--grey-border, #eee);
+  flex-shrink: 0;
   display: flex;
-  justify-content: flex-end; /* Alinea a la dreta per jerarquia i flux natural */
-  padding-top: 10px;
-  margin-top: 10px;
-  border-top: 1px solid #eee; /* Línia separadora superior, suau per visibilitat sense sobrecarregar */
+  margin-top: 12px;
+  justify-content: flex-end;
 }
 
 @keyframes fadeIn {
@@ -1423,9 +1457,10 @@ button .fa {
 }
 
 .modal-content {
+  flex-direction: column;
+  overflow: hidden;
   max-height: 80vh;
   text-align: left;
-  overflow-y: auto;
   position: relative;
   margin: 10% auto;
   background-color: var(--bg-color);
@@ -1449,6 +1484,7 @@ button .fa {
   color: var(--text-color);
   border-bottom: 1px solid var(--grey-border);
   padding-bottom: 10px;
+  flex-shrink: 0;
 }
 .modal-content p {
   font-size: 16px;
@@ -1503,6 +1539,9 @@ button .fa {
 }
 
 .diet-modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
   max-width: 100%; /* No sobrepassa el viewport */
   width: auto; /* S'adapta al contingut */
   overflow-x: hidden; /* Amaga qualsevol desbordament horitzontal */
@@ -1550,22 +1589,25 @@ button .fa {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  flex-grow: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 5px;
 }
 
 .diet-item-content {
+  width: 100%; /* Important: que ocupi tot l'ample */
   display: flex;
-  align-items: center;
-  row-gap: 15px;
-  /* millor que space-between:*/
-  flex-direction: column;
-  justify-content: flex-start;
+  flex-direction: column; /* Un element sobre l'altre */
+  gap: 15px; /* Espai entre text i botons */
 }
 
 /* Cada ítem: Flex column per text a dalt + botons a sota */
 .diet-item {
+  touch-action: pan-y;
   display: flex;
   flex-direction: column; /* Text a dalt, icons a sota */
-  align-items: flex-start; /* Alinea text a esquerra, com en dotaciones */
+  align-items: flex-start;
   gap: 12px;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
@@ -1575,6 +1617,7 @@ button .fa {
   width: 100%;
   min-height: auto; /* Automàtic per igualtat basada en contingut */
   overflow: visible; /* Permet veure text si desborda temporalment */
+  flex-shrink: 0;
 }
 
 /* Opcional: Striping per llistes llargues (ítems alterns) */
@@ -1584,16 +1627,15 @@ button .fa {
 
 /* TEXT DATA · HORA – COMIDA */
 .diet-date {
-  align-self: flex-start;
   font-size: 14px;
   text-align: left;
   gap: 22px;
-  color: #333; /* Ajusta color si cal */
+  color: #333;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* "..." si text llarg */
-  flex: 1 1 auto; /* ➜ ocupa tot el que queda                  */
-  min-width: 0; /* permet l'el·lipsi correctament            */
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .delete-reveal {
@@ -1621,25 +1663,25 @@ button .fa {
 
 .diet-icons {
   display: flex;
-  gap: 10px; /* separació entre Cargar i PDF              */
-  flex: 0 0 auto; /* ➜ només l’ample del contingut             */
+  width: 100%;
+  justify-content: center; /* Aquesta propietat centra els botons dins del seu contenidor */
 }
 
 .diet-icons button {
-  flex: 1 1 0;
-  padding: 6px 12px; /* Igual que dotaciones */
-  border-radius: 8px; /* Igual que dotaciones */
-  min-width: 120px; /* Igual que dotaciones, per mida petita */
-  font-size: 14px; /* Igual que dotaciones */
-  font-weight: 500; /* Igual que dotaciones */
+  flex: 1;
+  padding: 8px; /* Una mica més de padding vertical i menys horitzontal per a mòbils */
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Lleu ombra per profunditat */
-  border: none; /* Sense borde per simplicitat, o afegeix 0.5px solid #d0d0d0 si vols com dotaciones */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: none;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.2s ease;
+  white-space: nowrap; /* Evita que el text del botó ("Cargar", "PDF") es trenqui en dues línies */
 }
 
 .diet-icons .diet-load {

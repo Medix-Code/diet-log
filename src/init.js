@@ -23,7 +23,7 @@ import { initSettingsPanel } from "./ui/settingsPanel.js";
 import * as formService from "./services/formService.js";
 import { initPwaInstall } from "./services/pwaInstallHandler.js";
 import { initCameraOcr } from "./services/cameraOcr.js";
-import { initDotacion } from "./services/dotacion.js";
+import { dotacionService } from "./services/dotacion.js";
 import { getAnonymousUserId } from "./services/userService.js";
 import "./ui/keyboardHandler.js";
 import "./ui/focusScrollHandler.js";
@@ -64,7 +64,7 @@ export async function initializeApp() {
     // --- Inicialització de Serveis de Fons ---
     initServices();
     initSignature();
-    initDotacion();
+    dotacionService.init();
     initCameraOcr();
 
     // --- Configuració de la Interfície d'Usuari (UI) ---

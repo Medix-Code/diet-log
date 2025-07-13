@@ -19,6 +19,7 @@ const CONFIG = {
   MAX_QUEUE_SIZE: 10,
   ANIMATION: { ENTER: "toast-enter", EXIT: "toast-exit" },
   UNDO_BTN_CLASS: "toast-undo-btn",
+  DEFAULT_PRIORITY: 1,
 };
 
 // ───────────────────────── Estat Intern ─────────────────────────────────────
@@ -124,6 +125,9 @@ function displayToast({ message, type, duration, options }) {
 function processQueue() {
   if (state.isVisible || state.queue.length === 0) return;
   state.isVisible = true;
+
+  state.queue.sort((a, b) => b.priority - a.priority);
+
   displayToast(state.queue.shift());
 }
 
@@ -135,6 +139,9 @@ export function showToast(
   options = {}
 ) {
   validateParams(message, type, duration);
+
+  const priority = options.priority ?? CONFIG.DEFAULT_PRIORITY; // Assigna prioritat
+  const toastData = { message, type, duration, priority, options };
 
   // «queueable» controla si entrem a la cua o substituïm el toast actual.
   const queueable = options.queueable !== false;
@@ -148,12 +155,25 @@ export function showToast(
     clearCurrentToast();
   }
 
-  if (state.queue.length >= CONFIG.MAX_QUEUE_SIZE) state.queue.shift();
-  // CORRECCIÓ: Eliminat el check de duplicats per permetre toasts idèntics (evita que no es mostri en eliminacions repetides)
-  state.queue.push({ message, type, duration, options });
+  // === CANVI PRINCIPAL: Com inserim a la cua ===
+  if (state.queue.length >= CONFIG.MAX_QUEUE_SIZE) {
+    // Si la cua és plena, eliminem el de menys prioritat, no el primer.
+    state.queue.sort((a, b) => a.priority - b.priority).shift();
+  }
+
+  // Trobem on inserir el nou toast per mantenir la cua ordenada per prioritat.
+  const insertIndex = state.queue.findIndex((t) => t.priority < priority);
+
+  if (insertIndex === -1) {
+    // Si tots tenen prioritat més alta o igual, l'afegim al final.
+    state.queue.push(toastData);
+  } else {
+    // Si trobem un amb menys prioritat, l'inserim just abans.
+    state.queue.splice(insertIndex, 0, toastData);
+  }
 
   injectUndoStyles();
-  processQueue();
+  processQueue(); // Aquesta funció ja agafarà el primer de la cua, que ara serà el de més prioritat.
 }
 
 export function cancelAllToasts() {

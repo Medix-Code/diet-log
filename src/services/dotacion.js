@@ -5,6 +5,12 @@
  */
 
 import {
+  initSwipeToDeleteDotacio,
+  initMouseSwipeToDeleteDotacio,
+  updateDotacioListVisibility,
+  restoreDotacioItemToList,
+} from "../ui/modals.js";
+import {
   getSignatureConductor,
   getSignatureAjudant,
   setSignatureConductor,
@@ -218,24 +224,36 @@ class DotacionService {
 
     if (this.savedDotacions.length === 0) {
       this.noDotacioTextElement?.classList.remove(CSS_CLASSES.HIDDEN);
+      this.optionsContainerElement.classList.add(CSS_CLASSES.HIDDEN);
     } else {
       this.noDotacioTextElement?.classList.add(CSS_CLASSES.HIDDEN);
+      this.optionsContainerElement.classList.remove(CSS_CLASSES.HIDDEN);
       this.savedDotacions.forEach((dotacio, index) => {
         const clone = this.dotacioTemplateElement.content.cloneNode(true);
         const infoSpan = clone.querySelector(SELECTORS.DOTACIO_INFO);
         const loadBtn = clone.querySelector(SELECTORS.LOAD_BTN);
-        const deleteBtn = clone.querySelector(SELECTORS.DELETE_BTN);
+
+        // AFEGIM UN IDENTIFICADOR ÚNIC A L'ÍTEM PRINCIPAL
+        const dotacioItem = clone.firstElementChild; // El .dotacio-item
+        const uniqueId =
+          `${dotacio.numero}-${dotacio.conductor}-${dotacio.ajudant}`.replace(
+            /\s/g,
+            ""
+          ); // Creem un ID simple
+        dotacioItem.setAttribute("data-dotacio-id", uniqueId); // Li posem un atribut
 
         if (infoSpan)
           infoSpan.textContent = this._formatDotacioListText(dotacio);
-        if (loadBtn) loadBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
-        if (deleteBtn) deleteBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
+        if (loadBtn) loadBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index); // Mantenim l'index per carregar, que és segur.
 
         this.optionsContainerElement.appendChild(clone);
+
+        // Ara, passem l'identificador únic en lloc de l'índex per eliminar
+        initSwipeToDeleteDotacio(dotacioItem, uniqueId);
+        initMouseSwipeToDeleteDotacio(dotacioItem, uniqueId);
       });
     }
   }
-
   _formatDotacioListText(dotacio) {
     const unitat = dotacio.numero || "S/N";
     const conductor = dotacio.conductor || "S/D";
@@ -328,30 +346,53 @@ class DotacionService {
     this._closeDotacioModal();
   }
 
-  async _deleteDotacio(index) {
-    if (index < 0 || index >= this.savedDotacions.length) return;
-    const deletedDotacio = this.savedDotacions[index];
-    const confirmed = await showConfirmModal(
-      `Segur que vols eliminar aquesta dotació: ${this._formatDotacioListText(
-        deletedDotacio
-      )}?`,
-      "Eliminar dotació"
-    );
-    if (!confirmed) return;
+  // Aquest és el codi que has de posar a dotacion.js
+  async handleDeleteById(dotacioId) {
+    // 1. Trobem l'índex real de l'element a l'array EN EL MOMENT D'ELIMINAR.
+    const indexToDelete = this.savedDotacions.findIndex((d) => {
+      const currentId = `${d.numero}-${d.conductor}-${d.ajudant}`.replace(
+        /\s/g,
+        ""
+      );
+      return currentId === dotacioId;
+    });
 
-    this.savedDotacions.splice(index, 1);
+    // 2. Comprovem si l'hem trobat. Si no, és que ja s'ha eliminat.
+    if (indexToDelete === -1) {
+      console.warn(
+        "S'ha intentat eliminar una dotació que ja no existeix:",
+        dotacioId
+      );
+      return; // No fem res, l'error queda previngut.
+    }
+
+    // 3. Ara que tenim l'índex correcte i segur, procedim com abans.
+    const dotacioToDelete = this.savedDotacions[indexToDelete];
+    const displayText = this._formatDotacioListText(dotacioToDelete);
+    const dotacioBackup = { ...dotacioToDelete, originalIndex: indexToDelete };
+
+    this.savedDotacions.splice(indexToDelete, 1);
     this._saveDotacionsToStorage();
-    showToast(
-      `Dotació ${this._formatDotacioListText(deletedDotacio)} eliminada.`,
-      "warning"
-    );
-    this._displayDotacioOptions();
+
+    updateDotacioListVisibility();
+
+    showToast(`Dotació ${displayText} eliminada.`, "success", 5000, {
+      undoCallback: async () => {
+        this.savedDotacions.splice(
+          dotacioBackup.originalIndex,
+          0,
+          dotacioBackup
+        );
+        this._saveDotacionsToStorage();
+        restoreDotacioItemToList(dotacioBackup);
+        showToast("Dotació restaurada.", "success");
+      },
+    });
   }
 
   _handleOptionsClick(event) {
     const target = event.target;
     const loadButton = target.closest(SELECTORS.LOAD_BTN);
-    const deleteButton = target.closest(SELECTORS.DELETE_BTN);
 
     if (loadButton) {
       event.stopPropagation();
@@ -360,30 +401,32 @@ class DotacionService {
         10
       );
       if (!isNaN(index)) this._loadDotacio(index);
-    } else if (deleteButton) {
-      event.stopPropagation();
-      const index = parseInt(
-        deleteButton.getAttribute(DATA_ATTRIBUTES.INDEX),
-        10
-      );
-      if (!isNaN(index)) this._deleteDotacio(index);
     }
   }
-
+  /**
+   *
+   * Funció que s'executa quan l'usuari prem el botó de desar.
+   * Decideix si s'ha de crear una nova dotació o actualitzar-ne una d'existent.
+   */
   addDotacioFromMainForm() {
+    // 1. Valida que els camps necessaris (vehicle, conductor/ajudant) estiguin plens.
     const validatedValues = this._validateDotacionInputs();
     if (!validatedValues) return;
 
+    // 2. Recull totes les dades del formulari, incloses les signatures.
     const { vehiculo, conductor, ajudant } = validatedValues;
     const firmaConductor = getSignatureConductor();
     const firmaAjudant = getSignatureAjudant();
 
+    // 3. === PUNT DE DECISIÓ ===
+    // Cerca si ja existeix una dotació amb la MATEIXA combinació de vehicle, conductor i ajudant
     const existingIndex = this._findExistingDotacioIndex(
       vehiculo,
       conductor,
       ajudant
     );
 
+    // 4. Crea un objecte amb les dades actuals del formulari.
     const newDotacioData = {
       numero: vehiculo,
       conductor,
@@ -392,10 +435,13 @@ class DotacionService {
       firmaAjudant,
     };
 
+    // 5. Actua segons si s'ha trobat una coincidència.
     if (existingIndex !== -1) {
+      // === CAS D'ACTUALITZACIÓ ===
       this.savedDotacions[existingIndex] = newDotacioData;
       showToast(`Dotació ${vehiculo} actualitzada.`, "success");
     } else {
+      // === CAS DE CREACIÓ ===
       this.savedDotacions.push(newDotacioData);
       showToast(`Nova dotació ${vehiculo} desada.`, "success");
     }
@@ -419,7 +465,4 @@ class DotacionService {
   }
 }
 
-const dotacionService = new DotacionService();
-export const initDotacion = () => dotacionService.init();
-export const addDotacioFromMainForm = () =>
-  dotacionService.addDotacioFromMainForm();
+export const dotacionService = new DotacionService();

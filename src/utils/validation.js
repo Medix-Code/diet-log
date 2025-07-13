@@ -278,3 +278,41 @@ export function validateForPdf() {
     validateServiceTimesConsistency()
   );
 }
+
+/**
+ * Neteja i saneja una cadena de text.
+ * 1. Elimina espais en blanc a l'inici i al final.
+ * 2. Converteix caràcters HTML perillosos per evitar atacs XSS.
+ * @param {string} input - La cadena de text a processar.
+ * @returns {string} - La cadena de text neta i sanejada.
+ */
+export function sanitizeText(input) {
+  // Comprova si l'entrada és un string. Si no, retorna una cadena buida.
+  if (typeof input !== "string") {
+    return "";
+  }
+
+  // 1. Elimina espais en blanc a l'inici i al final.
+  const trimmedInput = input.trim();
+
+  // 2. Sanejament per a la seguretat XSS.
+  const temp = document.createElement("div");
+  temp.textContent = trimmedInput;
+  return temp.innerHTML;
+}
+
+/**
+ * Valida si una cadena de text té el format d'hora HH:mm (24h).
+ * Permet que la cadena estigui buida (considerat vàlid en aquest context).
+ * @param {string} timeStr - La cadena de text a validar.
+ * @returns {boolean} - True si el format és vàlid o la cadena és buida, false altrament.
+ */
+export function isValidTimeFormat(timeStr) {
+  // Si la cadena és buida o nul·la, la considerem vàlida per no bloquejar camps opcionals.
+  if (!timeStr) {
+    return true;
+  }
+  // L'expressió regular per al format HH:mm
+  const timeRegex = /^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$/;
+  return timeRegex.test(timeStr);
+}
