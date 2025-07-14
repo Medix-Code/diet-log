@@ -277,7 +277,10 @@ main {
 }
 
 .logo-title {
-  text-decoration: none;
+  display: flex;
+  align-items: center; // Alinea verticalment el logo i el títol
+  gap: 12px; // Espai entre el logo i el títol
+  text-decoration: none; // Traiem el subratllat de l'enllaç
 }
 
 .top-bar__title {
