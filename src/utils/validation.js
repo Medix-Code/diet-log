@@ -11,12 +11,23 @@ const DOM_IDS = {
   DATE_INPUT: "date",
   DIET_TYPE_SELECT: "diet-type",
   SERVICE_NUMBER_PREFIX: "service-number-",
+  VEHICLE_INPUT: "vehicle-number",
+  PERSON1_INPUT: "person1",
+  PERSON2_INPUT: "person2",
 };
 const CSS_CLASSES = {
   INPUT_ERROR: "input-error",
 };
 const VALIDATION_RULES = {
   SERVICE_NUMBER_LENGTH: 9,
+  VEHICLE_MAX_LENGTH: 6,
+  PERSON_NAME_MAX_LENGTH: 35,
+  LOCATION_MAX_LENGTH: 35,
+  PERSON_NAME_ALLOWED_CHARS: /^[a-zA-Z\s'’áéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜ]+$/u,
+};
+
+const SELECTORS = {
+  PERSON_INPUT_GROUP: ".input-with-icon",
 };
 
 // --- Funcions Internes d'Ajuda ---
@@ -203,67 +214,13 @@ export function validateServeisTab() {
  * @returns {boolean}
  * @export
  */
-export function validateServiceTimesConsistency() {
-  let isInconsistentFound = false;
-  const allServiceElements = document.querySelectorAll(".service");
-
-  allServiceElements.forEach((serviceElement, i) => {
-    const timeInputs = {
-      origin: serviceElement.querySelector(".origin-time"),
-      destination: serviceElement.querySelector(".destination-time"),
-      end: serviceElement.querySelector(".end-time"),
-    };
-
-    Object.values(timeInputs).forEach((input) => _clearError(input));
-
-    const originTime = timeInputs.origin?.value;
-    const destinationTime = timeInputs.destination?.value;
-    const endTime = timeInputs.end?.value;
-
-    if (originTime && destinationTime && endTime) {
-      const originMinutes = _timeToMinutes(originTime);
-      const destinationMinutes = _timeToMinutes(destinationTime);
-      const endMinutes = _timeToMinutes(endTime);
-
-      if (
-        isNaN(originMinutes) ||
-        isNaN(destinationMinutes) ||
-        isNaN(endMinutes)
-      ) {
-        console.warn(`Servei ${i + 1}: Format d'hora invàlid.`);
-        return;
-      }
-
-      if (
-        originMinutes > destinationMinutes ||
-        destinationMinutes > endMinutes
-      ) {
-        Object.values(timeInputs).forEach((input) => {
-          _markError(input);
-          _addInstantErrorClearListener(input);
-        });
-        isInconsistentFound = true;
-      }
-    }
-  });
-
-  if (isInconsistentFound) {
-    showToast(
-      "Revisa los horarios. El orden debe ser Origen <= Destino <= Final.",
-      "error"
-    );
-    return false;
-  }
-  return true;
-}
-
-/**
- * Validació mínima per guardar.
- * @returns {boolean}
- * @export
- */
 export function validateMinFieldsForSave() {
-  return validateDadesTab() && validateServeisTab();
+  return (
+    validateDadesTab() &&
+    validateServeisTab() &&
+    validateDotacioTab() &&
+    validateLocationFields()
+  );
 }
 
 /**
@@ -275,7 +232,9 @@ export function validateForPdf() {
   return (
     validateDadesTab() &&
     validateServeisTab() &&
-    validateServiceTimesConsistency()
+    validateDotacioTab() &&
+    validateServiceTimesConsistency() &&
+    validateLocationFields()
   );
 }
 
@@ -287,15 +246,12 @@ export function validateForPdf() {
  * @returns {string} - La cadena de text neta i sanejada.
  */
 export function sanitizeText(input) {
-  // Comprova si l'entrada és un string. Si no, retorna una cadena buida.
   if (typeof input !== "string") {
     return "";
   }
 
-  // 1. Elimina espais en blanc a l'inici i al final.
   const trimmedInput = input.trim();
 
-  // 2. Sanejament per a la seguretat XSS.
   const temp = document.createElement("div");
   temp.textContent = trimmedInput;
   return temp.innerHTML;
@@ -315,4 +271,162 @@ export function isValidTimeFormat(timeStr) {
   // L'expressió regular per al format HH:mm
   const timeRegex = /^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$/;
   return timeRegex.test(timeStr);
+}
+
+/**
+ * Valida els camps de la dotació (Vehicle, Conductor, Ajudant).
+ * @returns {boolean} - True si és vàlid, false si hi ha errors.
+ * @export
+ */
+
+export function validateDotacioTab() {
+  const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
+  const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
+  const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
+  const conductorGroup = conductorInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
+  const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
+
+  // Neteja errors previs
+  _clearError(vehicleInput);
+  _clearError(conductorGroup);
+  _clearError(ajudantGroup);
+
+  const vehicleValue = vehicleInput?.value.trim() || "";
+  const conductorValue = conductorInput?.value.trim() || "";
+  const ajudantValue = ajudantInput?.value.trim() || "";
+
+  let isValid = true;
+  const errorMessages = [];
+
+  // 1. Validació del vehicle (es manté igual)
+  if (!vehicleValue) {
+    _markError(vehicleInput);
+    errorMessages.push("El campo Vehículo es obligatorio.");
+    isValid = false;
+  } else if (vehicleValue.length > VALIDATION_RULES.VEHICLE_MAX_LENGTH) {
+    _markError(vehicleInput);
+    errorMessages.push(
+      `El Vehículo no puede tener más de ${VALIDATION_RULES.VEHICLE_MAX_LENGTH} caracteres.`
+    );
+    isValid = false;
+  }
+
+  // 2. Validació del personal (MODIFICADA)
+
+  // Comprovació de caràcters permesos per al conductor
+  if (
+    conductorValue &&
+    !VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS.test(conductorValue)
+  ) {
+    _markError(conductorGroup);
+    errorMessages.push(
+      "El nombre del Conductor solo puede contener letras, espacios, apóstrofos y acentos."
+    );
+    isValid = false;
+  } else if (conductorValue.length > VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+    _markError(conductorGroup);
+    errorMessages.push(
+      `El nombre del Conductor no puede superar los ${VALIDATION_RULES.PERSON_NAME_MAX_LENGTH} caracteres.`
+    );
+    isValid = false;
+  }
+
+  // Comprovació de caràcters permesos per a l'ajudant
+  if (
+    ajudantValue &&
+    !VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS.test(ajudantValue)
+  ) {
+    _markError(ajudantGroup);
+    errorMessages.push(
+      "El nombre del Ayudante solo puede contener letras, espacios, apóstrofos y acentos."
+    );
+    isValid = false;
+  } else if (ajudantValue.length > VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+    _markError(ajudantGroup);
+    errorMessages.push(
+      `El nombre del Ayudante no puede superar los ${VALIDATION_RULES.PERSON_NAME_MAX_LENGTH} caracteres.`
+    );
+    isValid = false;
+  }
+
+  // Comprovació de si almenys un dels dos camps està ple
+  if (!conductorValue && !ajudantValue) {
+    _markError(conductorGroup);
+    _markError(ajudantGroup);
+    if (isValid) {
+      errorMessages.push("Debe indicar al menos un Conductor o Ayudante.");
+    }
+    isValid = false;
+  }
+
+  // 3. Mostra missatges si hi ha errors
+  if (!isValid) {
+    _addInstantErrorClearListener(vehicleInput);
+    _addInstantErrorClearListener(conductorInput);
+    _addInstantErrorClearListener(ajudantInput);
+    showToast(errorMessages.join("\n"), "error");
+  }
+
+  return isValid;
+}
+
+/**
+ * Valida la longitud dels camps de text de localització (origen/destí)
+ * per a tots els serveis.
+ * @returns {boolean} - True si tots els camps són vàlids, false si algun excedeix la longitud.
+ * @export
+ */
+export function validateLocationFields() {
+  let isValid = true;
+  const errorMessages = [];
+  const locationInputs = document.querySelectorAll(
+    ".service .origin, .service .destination"
+  );
+
+  locationInputs.forEach((input) => {
+    _clearError(input);
+    const value = input.value.trim();
+    if (value && value.length > VALIDATION_RULES.LOCATION_MAX_LENGTH) {
+      const serviceContainer = input.closest(".service");
+      const serviceNum = serviceContainer.className.match(/service-(\d)/)[1];
+      const fieldType = input.classList.contains("origin")
+        ? "Origen"
+        : "Destino";
+
+      errorMessages.push(
+        `El campo ${fieldType} del Servicio ${serviceNum} no puede superar los ${VALIDATION_RULES.LOCATION_MAX_LENGTH} caracteres.`
+      );
+      _markError(input);
+      _addInstantErrorClearListener(input);
+      isValid = false;
+    }
+  });
+
+  if (!isValid) {
+    showToast(errorMessages.join("\n"), "error");
+  }
+
+  return isValid;
+}
+
+/**
+ * Afegeix listeners als camps de nom per eliminar caràcters no permesos
+ * a mesura que l'usuari escriu.
+ * @export
+ */
+export function sanitizeNameInputs() {
+  const allowedCharsRegex = /[^a-zA-Z\s'’áéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜ]/g;
+
+  const handleInput = (event) => {
+    const input = event.target;
+    if (input.value.match(allowedCharsRegex)) {
+      input.value = input.value.replace(allowedCharsRegex, "");
+    }
+  };
+
+  const person1Input = document.getElementById("person1");
+  const person2Input = document.getElementById("person2");
+
+  person1Input?.addEventListener("input", handleInput);
+  person2Input?.addEventListener("input", handleInput);
 }

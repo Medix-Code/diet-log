@@ -60,6 +60,30 @@ export function capitalizeFirstLetter(text) {
 }
 
 /**
+ * Posa en majúscula les paraules d'una cadena de text amb regles especials:
+ * - Les paraules normals es capitalitzen (Ex: "maria" -> "Maria").
+ * - Les paraules que contenen un punt (considerades inicials) es posen
+ *   totalment en majúscules (Ex: "l.f." -> "L.F.").
+ * @param {string} str - La cadena a capitalitzar.
+ * @returns {string} - La cadena capitalitzada.
+ * @export
+ */
+export function capitalizeWords(str) {
+  if (!str) return "";
+  return str
+    .split(" ")
+    .map((word) => {
+      // Si la paraula conté un punt, la tractem com una inicial i la posem tota en majúscules.
+      if (word.includes(".")) {
+        return word.toUpperCase();
+      }
+      // Si és una paraula normal, només capitalitzem la primera lletra.
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+}
+
+/**
  * Obté tipus de dieta actual.
  * @returns {'lunch'|'dinner'}
  * @export

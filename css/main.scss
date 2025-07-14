@@ -190,6 +190,41 @@
   --border-btn-service: #747474;
 }
 
+// AFEGEIX AIXÒ AL PRINCIPI DEL TEU main.scss
+
+@mixin custom-scrollbar-style {
+  // Estils per a Firefox
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
+    var(--scrollbar-track, transparent);
+  scrollbar-gutter: stable;
+
+  // Estils per a WebKit (Chrome, Safari, etc.)
+  &::-webkit-scrollbar {
+    width: 6px;
+    background: var(--scrollbar-track, transparent);
+    transition: opacity 0.3s ease;
+    opacity: 0; // Amagat per defecte
+  }
+
+  // Es mostra en fer hover o en interaccionar en dispositius tàctils
+  &:hover::-webkit-scrollbar,
+  &:active::-webkit-scrollbar {
+    opacity: 1;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2));
+    border-radius: 10px;
+    border: 2px solid transparent; // Crea un efecte de "flotant"
+    background-clip: padding-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover, rgba(0, 0, 0, 0.4));
+  }
+}
+
 // ESTILS BASE & GLOBALS
 html {
   font-size: 16px;
@@ -820,7 +855,7 @@ button {
     flex: 1;
     overflow-y: auto;
     margin-top: 20px;
-    padding: 0 10px 10px 5px;
+    padding: 0 0 10px 5px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -829,22 +864,7 @@ button {
     overflow-x: hidden;
     flex-grow: 1;
     padding-right: 5px;
-
-    // (Opcional) Estils per a la barra de scroll
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-    &::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 10px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 10px;
-      &:hover {
-        background: #555;
-      }
-    }
+    @include custom-scrollbar-style;
   }
 }
 
@@ -857,7 +877,6 @@ button {
   border: 1px solid #ddd;
   border-radius: 8px;
   flex-shrink: 0;
-  display: flex;
 
   // Contingut principal de l'ítem (el que es desplaça)
   .dotacio-item-content {
@@ -874,6 +893,11 @@ button {
     font-size: 14px;
     text-align: left;
     word-break: break-word; // Evita que text llarg trenqui el disseny
+    font-variant-numeric: lining-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   // Contenidor dels botons
@@ -2653,54 +2677,16 @@ button .icon {
 
   // MODAL DE GESTIÓ DE DIETES i LLISTA (#diet-options)
   #diet-options {
-    overflow-y: auto; /* Manté scroll automàtic quan la llista creix */
-    transition: height 0.3s ease-out; /* Animació suau per canvis d'alçada */
-    scrollbar-width: thin; /* Per Firefox: Barra estreta */
-    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-      var(--scrollbar-track, transparent); /* Colors custom */
-    scrollbar-gutter: stable; /* Reserva espai per barra */
-    will-change: height; /* Optimitza animacions */
-    height: auto; /* MILLORA: Alçada natural per mostrar tot sense tallades si curt */
-    max-height: none; /* MILLORA: Elimina límit fix, ara calculat en JS per adaptar-se */
+    overflow-y: auto;
+    transition: height 0.3s ease-out;
+    will-change: height;
+    height: auto;
+    max-height: none;
+
+    // Apliquem la nostra plantilla d'estils
+    @include custom-scrollbar-style;
   }
 
-  /* Per WebKit browsers (Chrome, Safari, iOS, Edge) - Custom scrollbar minimalista i estreta */
-  #diet-options::-webkit-scrollbar {
-    width: 6px; /* Amplada estreta (equivalent a thin), segons Google per no intrusiu */
-    background: var(
-      --scrollbar-track,
-      transparent
-    ); /* Fons transparent per integració */
-    transition: opacity 0.3s ease; /* Suau aparició/desaparició, com en guies UX per feedback subtil */
-    opacity: 0; /* Amaga per defecte quan no s'usa */
-  }
-
-  #diet-options:hover::-webkit-scrollbar,
-  #diet-options:active::-webkit-scrollbar {
-    opacity: 1; /* Mostra en hover o touch per interactivitat, segons WCAG per accessibilitat */
-  }
-
-  #diet-options::-webkit-scrollbar-thumb {
-    background: var(
-      --scrollbar-thumb,
-      rgba(0, 0, 0, 0.2)
-    ); /* Color suau del thumb */
-    border-radius: 10px; /* Cantonades arrodonides per estètica moderna, recomanat per Material Design */
-    border: 2px solid transparent; /* Espai interior per evitar solapaments */
-    background-clip: padding-box; /* Millora visual en borders, segons MDN */
-  }
-
-  #diet-options::-webkit-scrollbar-thumb:hover {
-    background: var(
-      --scrollbar-thumb-hover,
-      rgba(0, 0, 0, 0.4)
-    ); /* Més visible en hover per feedback */
-  }
-
-  /* Opcional: Elimina estil natiu en iOS/WebKit per un look més clean */
-  #diet-options::-webkit-scrollbar {
-    -webkit-appearance: none;
-  }
   /* Estils per ítems de la llista (li) - Evita solapaments amb la barra i millora espaiat */
   #diet-options li {
     border-radius: 8px;

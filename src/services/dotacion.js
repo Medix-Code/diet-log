@@ -3,7 +3,8 @@
  * @description Gestiona dotacions amb localStorage.
  * @module dotacionService
  */
-
+import { capitalizeWords } from "../utils/utils.js";
+import { validateDotacioTab } from "../utils/validation.js";
 import {
   initSwipeToDeleteDotacio,
   initMouseSwipeToDeleteDotacio,
@@ -17,7 +18,6 @@ import {
   setSignatureAjudant,
 } from "./signatureService.js";
 import { showToast } from "../ui/toast.js";
-import { showConfirmModal } from "../ui/modals.js";
 
 // --- Constants ---
 const LS_KEY = "dotacions_v2";
@@ -255,12 +255,12 @@ class DotacionService {
   _formatDotacioListText(dotacio) {
     const unitat = dotacio.numero || "S/N";
 
-    let conductor = dotacio.conductor || "";
-    let ajudant = dotacio.ajudant || "";
+    let conductorComplet = capitalizeWords(dotacio.conductor || "");
+    let ajudantComplet = capitalizeWords(dotacio.ajudant || "");
 
-    let textPersonesComplet = `${conductor} / ${ajudant}`;
+    let textPersonesComplet = `${conductorComplet} / ${ajudantComplet}`;
 
-    if (conductor || ajudant) {
+    if (conductorComplet || ajudantComplet) {
       textPersonesComplet = ` - ${textPersonesComplet}`;
     } else {
       textPersonesComplet = "";
@@ -281,12 +281,19 @@ class DotacionService {
     const maxWidth = 180;
 
     if (textWidth > maxWidth) {
-      if (conductor) conductor = this._shortNameAndSurname(conductor);
-      if (ajudant) ajudant = this._shortNameAndSurname(ajudant);
+      let conductorEscurcat = "";
+      let ajudantEscurcat = "";
 
-      let textPersonesEscurcat = `${conductor} / ${ajudant}`;
+      if (dotacio.conductor) {
+        conductorEscurcat = this._shortNameAndSurname(dotacio.conductor);
+      }
+      if (dotacio.ajudant) {
+        ajudantEscurcat = this._shortNameAndSurname(dotacio.ajudant);
+      }
 
-      if (conductor || ajudant) {
+      let textPersonesEscurcat = `${conductorEscurcat} / ${ajudantEscurcat}`;
+
+      if (conductorEscurcat || ajudantEscurcat) {
         textPersonesEscurcat = ` - ${textPersonesEscurcat}`;
       } else {
         textPersonesEscurcat = "";
@@ -298,6 +305,9 @@ class DotacionService {
     return textFinal;
   }
 
+  // A dotacion.js
+  // SUBSTITUEIX la funció _shortNameAndSurname per aquesta
+
   _shortNameAndSurname(fullName) {
     if (!fullName || typeof fullName !== "string") return "S/D";
     const parts = fullName
@@ -306,9 +316,11 @@ class DotacionService {
       .filter((part) => part.length > 0);
 
     if (parts.length === 0) return "S/D";
-    if (parts.length === 1) return parts[0];
+    if (parts.length === 1) {
+      // Si només hi ha una paraula, la capitalitzem
+      return capitalizeWords(parts[0]);
+    }
 
-    // Llista d'articles a ignorar (ampliada)
     const articles = new Set([
       "de",
       "la",
@@ -326,17 +338,25 @@ class DotacionService {
       "y",
     ]);
 
-    // Filtra articles i obté nom + cognoms rellevants
     const filteredParts = parts.filter(
       (part) => !articles.has(part.toLowerCase())
     );
 
-    // Primer nom + inicials dels cognoms
-    const firstName = filteredParts[0];
+    // Si després de filtrar no queda res, tornem la primera paraula capitalitzada
+    if (filteredParts.length === 0) {
+      return capitalizeWords(parts[0]);
+    }
+
+    // === CANVIS CLAU AQUÍ ===
+
+    // 1. Capitalitzem el primer nom
+    const firstName = capitalizeWords(filteredParts[0]);
+
+    // 2. Agafem la resta de parts, les posem en MAJÚSCULA i agafem la primera lletra
     const surnames = filteredParts
       .slice(1)
-      .map((surname) => surname[0] + ".")
-      .join("");
+      .map((surname) => surname.charAt(0).toUpperCase() + ".")
+      .join(" "); // Afegim un espai entre les inicials per a noms com "Maria L. J."
 
     return `${firstName} ${surnames}`;
   }
@@ -414,16 +434,31 @@ class DotacionService {
       if (!isNaN(index)) this._loadDotacio(index);
     }
   }
+
+  // AFEGEIX aquesta nova funció dins la classe DotacionService
+  _getDotacionInputValues() {
+    const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
+    const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
+    const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
+
+    return {
+      vehiculo: vehicleInput?.value.trim() || "",
+      conductor: conductorInput?.value.trim() || "",
+      ajudant: ajudantInput?.value.trim() || "",
+    };
+  }
+
   /**
    *
    * Funció que s'executa quan l'usuari prem el botó de desar.
    * Decideix si s'ha de crear una nova dotació o actualitzar-ne una d'existent.
    */
   addDotacioFromMainForm() {
-    const validatedValues = this._validateDotacionInputs();
-    if (!validatedValues) return;
+    if (!validateDotacioTab()) {
+      return;
+    }
 
-    const { vehiculo, conductor, ajudant } = validatedValues;
+    const { vehiculo, conductor, ajudant } = this._getDotacionInputValues();
     const firmaConductor = getSignatureConductor();
     const firmaAjudant = getSignatureAjudant();
 
