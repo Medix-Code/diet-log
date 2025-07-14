@@ -187,19 +187,35 @@ export function cancelAllToasts() {
   state.isVisible = false;
 }
 
-// ───────────────────────── Estils «Desfés» ──────────────────────────────────
 function injectUndoStyles() {
   const id = "toast-undo-style";
   if (document.getElementById(id)) return;
+
+  const nonce = document.body.getAttribute("data-csp-nonce");
+
   const style = document.createElement("style");
   style.id = id;
+
+  if (nonce) {
+    style.setAttribute("nonce", nonce);
+  }
+
   style.textContent = `
-    .${CONFIG.UNDO_BTN_CLASS}{
-      margin-left:12px;background:none;border:none;padding:0 4px;
-      font-weight:600;cursor:pointer;text-decoration:underline;
-      color:inherit;font-size:0.9em;
+    .${CONFIG.UNDO_BTN_CLASS} {
+      margin-left: 12px;
+      background: none;
+      border: none;
+      padding: 0 4px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      color: inherit;
+      font-size: 0.9em;
     }
-    .${CONFIG.UNDO_BTN_CLASS}:hover{opacity:0.8}
+    .${CONFIG.UNDO_BTN_CLASS}:hover {
+      opacity: 0.8;
+    }
   `;
+
   document.head.appendChild(style);
 }
