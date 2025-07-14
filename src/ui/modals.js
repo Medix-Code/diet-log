@@ -719,27 +719,37 @@ function _createDotacioListItem(dotacio, index) {
   if (!template) return null;
 
   const clone = template.content.cloneNode(true);
+  const dotacioItem = clone.firstElementChild;
+
+  const uniqueId =
+    `${dotacio.numero}-${dotacio.conductor}-${dotacio.ajudant}`.replace(
+      /\s/g,
+      ""
+    );
+  dotacioItem.setAttribute("data-dotacio-id", uniqueId);
+
   const infoSpan = clone.querySelector(".dotacio-info");
   const loadBtn = clone.querySelector(".dotacio-load");
 
   if (infoSpan) {
-    // Aquesta funció hauria d'estar a dotacion.js, però per simplificar, la repliquem aquí
-    // Idealment, dotacionService.formatDisplayText(dotacio)
-    infoSpan.textContent = `${dotacio.numero || "S/N"} - ${
-      dotacio.conductor || "S/D"
-    } / ${dotacio.ajudant || "S/D"}`;
+    const persones = [dotacio.conductor, dotacio.ajudant]
+      .filter(Boolean)
+      .join(" / ");
+    infoSpan.textContent = persones
+      ? `${dotacio.numero} - ${persones}`
+      : dotacio.numero;
   }
   if (loadBtn) {
     loadBtn.setAttribute("data-index", String(index));
   }
 
-  return clone.firstElementChild; // Retorna el <div class="dotacio-item">
+  return dotacioItem;
 }
 
 export function restoreDotacioItemToList(dotacio) {
   const dotacioOptionsList = document.getElementById("dotacio-options");
   if (!dotacioOptionsList) {
-    dotacionService._displayDotacioOptions(); // fallback per redibuixar tot
+    dotacionService._displayDotacioOptions();
     return;
   }
 
@@ -767,9 +777,17 @@ export function restoreDotacioItemToList(dotacio) {
     restoredItem.style.opacity = "1";
     restoredItem.style.transform = "translateX(0)";
 
-    // Tornem a activar el swipe per a l'element restaurat
-    initSwipeToDeleteDotacio(restoredItem, originalIndex);
-    initMouseSwipeToDeleteDotacio(restoredItem, originalIndex);
+    // === CANVI CLAU ===
+    // 1. Reconstruïm l'ID únic a partir de les dades de la dotació restaurada.
+    const uniqueId =
+      `${dotacio.numero}-${dotacio.conductor}-${dotacio.ajudant}`.replace(
+        /\s/g,
+        ""
+      );
+
+    // 2. Passem aquest ID de text a les funcions de swipe.
+    initSwipeToDeleteDotacio(restoredItem, uniqueId);
+    initMouseSwipeToDeleteDotacio(restoredItem, uniqueId);
   });
 
   // 5. Assegurem que la llista sigui visible

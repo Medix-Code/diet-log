@@ -254,33 +254,54 @@ class DotacionService {
       });
     }
   }
+
   _formatDotacioListText(dotacio) {
     const unitat = dotacio.numero || "S/N";
-    const conductor = dotacio.conductor || "S/D";
-    const ajudant = dotacio.ajudant || "S/D";
 
-    let cDisplay = conductor;
-    let aDisplay = ajudant;
+    const conductorOriginal = dotacio.conductor || "";
+    const ajudantOriginal = dotacio.ajudant || "";
 
-    // Crea un element temporal per mesurar amplada amb estils reals
+    const personesArray = [];
+    if (conductorOriginal) personesArray.push(conductorOriginal);
+    if (ajudantOriginal) personesArray.push(ajudantOriginal);
+    const textPersonesComplet = personesArray.join(" / ");
+
+    let textFinal = `${unitat}`;
+    if (textPersonesComplet) {
+      textFinal += ` - ${textPersonesComplet}`;
+    }
+
     const tempEl = document.createElement("span");
     tempEl.style.visibility = "hidden";
     tempEl.style.whiteSpace = "nowrap";
-    tempEl.style.fontSize = getComputedStyle(document.body).fontSize; // Copia font-size
-    tempEl.style.fontFamily = getComputedStyle(document.body).fontFamily; // Copia font-family
-    tempEl.textContent = `${unitat} - ${cDisplay} / ${aDisplay}`;
+    tempEl.style.fontSize = getComputedStyle(document.body).fontSize;
+    tempEl.style.fontFamily = getComputedStyle(document.body).fontFamily;
+    tempEl.textContent = textFinal;
     document.body.appendChild(tempEl);
     const textWidth = tempEl.offsetWidth;
     document.body.removeChild(tempEl);
 
-    const maxWidth = 180; // Reduït per activar truncat en mòbils (ajusta amb DevTools)
+    const maxWidth = 180;
 
     if (textWidth > maxWidth) {
-      cDisplay = this._shortNameAndSurname(conductor);
-      aDisplay = this._shortNameAndSurname(ajudant);
-    }
+      const personesEscurçadesArray = [];
+      if (conductorOriginal)
+        personesEscurçadesArray.push(
+          this._shortNameAndSurname(conductorOriginal)
+        );
+      if (ajudantOriginal)
+        personesEscurçadesArray.push(
+          this._shortNameAndSurname(ajudantOriginal)
+        );
 
-    return `${unitat} - ${cDisplay} / ${aDisplay}`;
+      const textPersonesEscurçat = personesEscurçadesArray.join(" / ");
+
+      textFinal = `${unitat}`;
+      if (textPersonesEscurçat) {
+        textFinal += ` - ${textPersonesEscurçat}`;
+      }
+    }
+    return textFinal;
   }
 
   _shortNameAndSurname(fullName) {
@@ -342,7 +363,7 @@ class DotacionService {
     setSignatureConductor(selected.firmaConductor || "");
     setSignatureAjudant(selected.firmaAjudant || "");
 
-    showToast(`Dotació ${selected.numero} carregada.`, "success");
+    showToast(`Dotación ${selected.numero} cargada.`, "success");
     this._closeDotacioModal();
   }
 
@@ -376,7 +397,7 @@ class DotacionService {
 
     updateDotacioListVisibility();
 
-    showToast(`Dotació ${displayText} eliminada.`, "success", 5000, {
+    showToast(`Dotación eliminada.`, "success", 5000, {
       undoCallback: async () => {
         this.savedDotacions.splice(
           dotacioBackup.originalIndex,
@@ -385,7 +406,7 @@ class DotacionService {
         );
         this._saveDotacionsToStorage();
         restoreDotacioItemToList(dotacioBackup);
-        showToast("Dotació restaurada.", "success");
+        showToast("Dotacion restaurada.", "success");
       },
     });
   }
@@ -439,11 +460,11 @@ class DotacionService {
     if (existingIndex !== -1) {
       // === CAS D'ACTUALITZACIÓ ===
       this.savedDotacions[existingIndex] = newDotacioData;
-      showToast(`Dotació ${vehiculo} actualitzada.`, "success");
+      showToast(`Dotación ${vehiculo} actualizada.`, "success");
     } else {
       // === CAS DE CREACIÓ ===
       this.savedDotacions.push(newDotacioData);
-      showToast(`Nova dotació ${vehiculo} desada.`, "success");
+      showToast(`Dotación ${vehiculo} creada.`, "success");
     }
 
     this._saveDotacionsToStorage();

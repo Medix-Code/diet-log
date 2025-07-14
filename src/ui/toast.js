@@ -24,7 +24,7 @@ const CONFIG = {
 
 // ───────────────────────── Estat Intern ─────────────────────────────────────
 const state = {
-  queue: [], // [{ message, type, duration, options }]
+  queue: [],
   isVisible: false,
   container: null,
   currentTimeout: null,
@@ -56,7 +56,7 @@ function getContainer() {
   if (!state.container) {
     state.container = document.getElementById(CONFIG.CONTAINER_ID);
     if (!state.container) {
-      console.error(`[Toast] Contenidor '#${CONFIG.CONTAINER_ID}' no trobat.`); // CORRECCIÓ: Log per depurar si no es veu el toast
+      console.error(`[Toast] Contenidor '#${CONFIG.CONTAINER_ID}' no trobat.`);
       return null;
     }
   }
@@ -81,23 +81,22 @@ function displayToast({ message, type, duration, options }) {
   if (!container) return;
 
   const toastEl = document.createElement("div");
-  toastEl.className = `${CONFIG.TOAST_CLASS} ${type}`; // Sense enter inicial
+  toastEl.className = `${CONFIG.TOAST_CLASS} ${type}`;
   toastEl.setAttribute("role", "alert");
   toastEl.setAttribute("aria-live", "polite");
   toastEl.setAttribute("aria-atomic", "true");
   toastEl.textContent = sanitize(message);
 
-  let expiredWithoutUndo = true; // Flag per rastrejar si s'ha premut undo
+  let expiredWithoutUndo = true;
 
-  // Botó Desfés
   if (options?.undoCallback instanceof Function) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = CONFIG.UNDO_BTN_CLASS;
-    btn.textContent = "Desfés";
-    btn.setAttribute("aria-label", "Desfer l'acció");
+    btn.textContent = "Deshacer";
+    btn.setAttribute("aria-label", "Deshacer la acción");
     btn.addEventListener("click", () => {
-      expiredWithoutUndo = false; // Marca que s'ha premut undo
+      expiredWithoutUndo = false;
       try {
         options.undoCallback();
       } finally {
@@ -109,14 +108,13 @@ function displayToast({ message, type, duration, options }) {
 
   container.appendChild(toastEl);
 
-  // Animació d'entrada
   requestAnimationFrame(() => {
     toastEl.classList.add(CONFIG.ANIMATION.ENTER);
   });
 
   state.currentTimeout = setTimeout(() => {
     if (expiredWithoutUndo && options?.onExpire instanceof Function) {
-      options.onExpire(); // Executa la callback si no s'ha premut undo
+      options.onExpire();
     }
     clearCurrentToast(toastEl);
   }, duration);
@@ -140,10 +138,9 @@ export function showToast(
 ) {
   validateParams(message, type, duration);
 
-  const priority = options.priority ?? CONFIG.DEFAULT_PRIORITY; // Assigna prioritat
+  const priority = options.priority ?? CONFIG.DEFAULT_PRIORITY;
   const toastData = { message, type, duration, priority, options };
 
-  // «queueable» controla si entrem a la cua o substituïm el toast actual.
   const queueable = options.queueable !== false;
   if (!queueable && state.isVisible) {
     if (state.container) {
@@ -155,25 +152,20 @@ export function showToast(
     clearCurrentToast();
   }
 
-  // === CANVI PRINCIPAL: Com inserim a la cua ===
   if (state.queue.length >= CONFIG.MAX_QUEUE_SIZE) {
-    // Si la cua és plena, eliminem el de menys prioritat, no el primer.
     state.queue.sort((a, b) => a.priority - b.priority).shift();
   }
 
-  // Trobem on inserir el nou toast per mantenir la cua ordenada per prioritat.
   const insertIndex = state.queue.findIndex((t) => t.priority < priority);
 
   if (insertIndex === -1) {
-    // Si tots tenen prioritat més alta o igual, l'afegim al final.
     state.queue.push(toastData);
   } else {
-    // Si trobem un amb menys prioritat, l'inserim just abans.
     state.queue.splice(insertIndex, 0, toastData);
   }
 
   injectUndoStyles();
-  processQueue(); // Aquesta funció ja agafarà el primer de la cua, que ara serà el de més prioritat.
+  processQueue();
 }
 
 export function cancelAllToasts() {
