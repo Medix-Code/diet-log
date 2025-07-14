@@ -48,7 +48,6 @@ const DATA_ATTRIBUTES = {
   INDEX: "data-index",
 };
 
-// --- Classe Principal ---
 class DotacionService {
   constructor() {
     this.savedDotacions = [];
@@ -233,22 +232,20 @@ class DotacionService {
         const infoSpan = clone.querySelector(SELECTORS.DOTACIO_INFO);
         const loadBtn = clone.querySelector(SELECTORS.LOAD_BTN);
 
-        // AFEGIM UN IDENTIFICADOR ÚNIC A L'ÍTEM PRINCIPAL
-        const dotacioItem = clone.firstElementChild; // El .dotacio-item
+        const dotacioItem = clone.firstElementChild;
         const uniqueId =
           `${dotacio.numero}-${dotacio.conductor}-${dotacio.ajudant}`.replace(
             /\s/g,
             ""
-          ); // Creem un ID simple
-        dotacioItem.setAttribute("data-dotacio-id", uniqueId); // Li posem un atribut
+          );
+        dotacioItem.setAttribute("data-dotacio-id", uniqueId);
 
         if (infoSpan)
           infoSpan.textContent = this._formatDotacioListText(dotacio);
-        if (loadBtn) loadBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index); // Mantenim l'index per carregar, que és segur.
+        if (loadBtn) loadBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
 
         this.optionsContainerElement.appendChild(clone);
 
-        // Ara, passem l'identificador únic en lloc de l'índex per eliminar
         initSwipeToDeleteDotacio(dotacioItem, uniqueId);
         initMouseSwipeToDeleteDotacio(dotacioItem, uniqueId);
       });
@@ -258,18 +255,18 @@ class DotacionService {
   _formatDotacioListText(dotacio) {
     const unitat = dotacio.numero || "S/N";
 
-    const conductorOriginal = dotacio.conductor || "";
-    const ajudantOriginal = dotacio.ajudant || "";
+    let conductor = dotacio.conductor || "";
+    let ajudant = dotacio.ajudant || "";
 
-    const personesArray = [];
-    if (conductorOriginal) personesArray.push(conductorOriginal);
-    if (ajudantOriginal) personesArray.push(ajudantOriginal);
-    const textPersonesComplet = personesArray.join(" / ");
+    let textPersonesComplet = `${conductor} / ${ajudant}`;
 
-    let textFinal = `${unitat}`;
-    if (textPersonesComplet) {
-      textFinal += ` - ${textPersonesComplet}`;
+    if (conductor || ajudant) {
+      textPersonesComplet = ` - ${textPersonesComplet}`;
+    } else {
+      textPersonesComplet = "";
     }
+
+    let textFinal = `${unitat}${textPersonesComplet}`;
 
     const tempEl = document.createElement("span");
     tempEl.style.visibility = "hidden";
@@ -284,23 +281,20 @@ class DotacionService {
     const maxWidth = 180;
 
     if (textWidth > maxWidth) {
-      const personesEscurçadesArray = [];
-      if (conductorOriginal)
-        personesEscurçadesArray.push(
-          this._shortNameAndSurname(conductorOriginal)
-        );
-      if (ajudantOriginal)
-        personesEscurçadesArray.push(
-          this._shortNameAndSurname(ajudantOriginal)
-        );
+      if (conductor) conductor = this._shortNameAndSurname(conductor);
+      if (ajudant) ajudant = this._shortNameAndSurname(ajudant);
 
-      const textPersonesEscurçat = personesEscurçadesArray.join(" / ");
+      let textPersonesEscurcat = `${conductor} / ${ajudant}`;
 
-      textFinal = `${unitat}`;
-      if (textPersonesEscurçat) {
-        textFinal += ` - ${textPersonesEscurçat}`;
+      if (conductor || ajudant) {
+        textPersonesEscurcat = ` - ${textPersonesEscurcat}`;
+      } else {
+        textPersonesEscurcat = "";
       }
+
+      textFinal = `${unitat}${textPersonesEscurcat}`;
     }
+
     return textFinal;
   }
 
@@ -367,9 +361,7 @@ class DotacionService {
     this._closeDotacioModal();
   }
 
-  // Aquest és el codi que has de posar a dotacion.js
   async handleDeleteById(dotacioId) {
-    // 1. Trobem l'índex real de l'element a l'array EN EL MOMENT D'ELIMINAR.
     const indexToDelete = this.savedDotacions.findIndex((d) => {
       const currentId = `${d.numero}-${d.conductor}-${d.ajudant}`.replace(
         /\s/g,
@@ -378,16 +370,14 @@ class DotacionService {
       return currentId === dotacioId;
     });
 
-    // 2. Comprovem si l'hem trobat. Si no, és que ja s'ha eliminat.
     if (indexToDelete === -1) {
       console.warn(
         "S'ha intentat eliminar una dotació que ja no existeix:",
         dotacioId
       );
-      return; // No fem res, l'error queda previngut.
+      return;
     }
 
-    // 3. Ara que tenim l'índex correcte i segur, procedim com abans.
     const dotacioToDelete = this.savedDotacions[indexToDelete];
     const displayText = this._formatDotacioListText(dotacioToDelete);
     const dotacioBackup = { ...dotacioToDelete, originalIndex: indexToDelete };
@@ -430,24 +420,19 @@ class DotacionService {
    * Decideix si s'ha de crear una nova dotació o actualitzar-ne una d'existent.
    */
   addDotacioFromMainForm() {
-    // 1. Valida que els camps necessaris (vehicle, conductor/ajudant) estiguin plens.
     const validatedValues = this._validateDotacionInputs();
     if (!validatedValues) return;
 
-    // 2. Recull totes les dades del formulari, incloses les signatures.
     const { vehiculo, conductor, ajudant } = validatedValues;
     const firmaConductor = getSignatureConductor();
     const firmaAjudant = getSignatureAjudant();
 
-    // 3. === PUNT DE DECISIÓ ===
-    // Cerca si ja existeix una dotació amb la MATEIXA combinació de vehicle, conductor i ajudant
     const existingIndex = this._findExistingDotacioIndex(
       vehiculo,
       conductor,
       ajudant
     );
 
-    // 4. Crea un objecte amb les dades actuals del formulari.
     const newDotacioData = {
       numero: vehiculo,
       conductor,
@@ -456,13 +441,10 @@ class DotacionService {
       firmaAjudant,
     };
 
-    // 5. Actua segons si s'ha trobat una coincidència.
     if (existingIndex !== -1) {
-      // === CAS D'ACTUALITZACIÓ ===
       this.savedDotacions[existingIndex] = newDotacioData;
       showToast(`Dotación ${vehiculo} actualizada.`, "success");
     } else {
-      // === CAS DE CREACIÓ ===
       this.savedDotacions.push(newDotacioData);
       showToast(`Dotación ${vehiculo} creada.`, "success");
     }
