@@ -27,7 +27,7 @@ import { dotacionService } from "./services/dotacion.js";
 import { getAnonymousUserId } from "./services/userService.js";
 import "./ui/keyboardHandler.js";
 import "./ui/focusScrollHandler.js";
-import { sanitizeNameInputs } from "./utils/validation.js";
+import { setupNameAndVehicleInputSanitizers } from "./utils/validation.js";
 
 // --- Constants Específiques d'Inicialització ---
 const DONATION_LINK_ID = "openDonation";
@@ -81,7 +81,7 @@ export async function initializeApp() {
 
     // --- Configuració de Lògica de Formulari i Validacions ---
     setupServiceNumberRestrictions();
-    sanitizeNameInputs();
+    setupNameAndVehicleInputSanitizers();
     formService.addInputListeners();
     formService.addServiceTypeListener();
     formService.addDoneBehavior();

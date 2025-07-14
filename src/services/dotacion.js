@@ -1,6 +1,6 @@
 /**
  * @file dotacion.js
- * @description Gestiona dotacions amb localStorage.
+ * @description Gestiona dotaciones con localStorage.
  * @module dotacionService
  */
 import { capitalizeWords } from "../utils/utils.js";
@@ -19,7 +19,7 @@ import {
 } from "./signatureService.js";
 import { showToast } from "../ui/toast.js";
 
-// --- Constants ---
+// --- Constantes ---
 const LS_KEY = "dotacions_v2";
 const DOM_IDS = {
   MODAL: "dotacio-modal",
@@ -47,6 +47,7 @@ const SELECTORS = {
 const DATA_ATTRIBUTES = {
   INDEX: "data-index",
 };
+const MAX_TEXT_WIDTH = 180;
 
 class DotacionService {
   constructor() {
@@ -59,7 +60,7 @@ class DotacionService {
   }
 
   /**
-   * Inicialitza el servei.
+   * Inicializa el servicio.
    * @export
    */
   init() {
@@ -84,36 +85,38 @@ class DotacionService {
       !addDotacioBtn ||
       !openDotacioBtn ||
       !closeDotacioBtn
-    )
+    ) {
       return;
+    }
 
-    this._loadDotacionsFromStorage();
+    this.loadDotacionsFromStorage();
 
     addDotacioBtn.addEventListener(
       "click",
       this.addDotacioFromMainForm.bind(this)
     );
-    openDotacioBtn.addEventListener("click", this._openDotacioModal.bind(this));
+    openDotacioBtn.addEventListener("click", this.openDotacioModal.bind(this));
     closeDotacioBtn.addEventListener(
       "click",
-      this._closeDotacioModal.bind(this)
+      this.closeDotacioModal.bind(this)
     );
 
     this.dotacioModalElement.addEventListener("click", (event) => {
-      if (event.target === this.dotacioModalElement) this._closeDotacioModal();
+      if (event.target === this.dotacioModalElement) this.closeDotacioModal();
     });
 
     document.addEventListener("keydown", (event) => {
       if (
         event.key === "Escape" &&
         this.dotacioModalElement.style.display === "block"
-      )
-        this._closeDotacioModal();
+      ) {
+        this.closeDotacioModal();
+      }
     });
 
     this.optionsContainerElement.addEventListener(
       "click",
-      this._handleOptionsClick.bind(this)
+      this.handleOptionsClick.bind(this)
     );
 
     const inputsToWatch = [
@@ -133,7 +136,10 @@ class DotacionService {
     this.isInitialized = true;
   }
 
-  _loadDotacionsFromStorage() {
+  /**
+   * Carga las dotaciones desde localStorage.
+   */
+  loadDotacionsFromStorage() {
     try {
       const savedJson = localStorage.getItem(LS_KEY);
       this.savedDotacions = savedJson ? JSON.parse(savedJson) : [];
@@ -143,80 +149,41 @@ class DotacionService {
     }
   }
 
-  _saveDotacionsToStorage() {
+  /**
+   * Guarda las dotaciones en localStorage.
+   */
+  saveDotacionsToStorage() {
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(this.savedDotacions));
     } catch (error) {
-      showToast("No s'han pogut desar les dotacions.", "error");
+      showToast("No se han podido guardar las dotaciones.", "error");
     }
   }
 
-  _validateDotacionInputs() {
-    const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
-    const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
-    const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
-    const conductorGroup = conductorInput?.closest(
-      SELECTORS.PERSON_INPUT_GROUP
-    );
-    const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
-
-    vehicleInput?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-    conductorGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-    ajudantGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-
-    const values = {
-      vehiculo: vehicleInput?.value.trim() || "",
-      conductor: conductorInput?.value.trim() || "",
-      ajudant: ajudantInput?.value.trim() || "",
-    };
-
-    const errors = [];
-    if (!values.vehiculo) {
-      vehicleInput?.classList.add(CSS_CLASSES.INPUT_ERROR);
-      errors.push("Vehículo");
-    }
-
-    if (!values.conductor && !values.ajudant) {
-      conductorGroup?.classList.add(CSS_CLASSES.INPUT_ERROR);
-      ajudantGroup?.classList.add(CSS_CLASSES.INPUT_ERROR);
-      errors.push("Conductor o Ayudante");
-    }
-
-    if (errors.length > 0) {
-      showToast(`Faltan campos obligatorios: ${errors.join(", ")}.`, "error");
-      return null;
-    }
-
-    return values;
-  }
-
-  _findExistingDotacioIndex(vehiculo, conductor, ajudant) {
-    const vLower = vehiculo.toLowerCase();
-    const cLower = conductor.toLowerCase();
-    const aLower = ajudant.toLowerCase();
-    return this.savedDotacions.findIndex(
-      (d) =>
-        d.numero.toLowerCase() === vLower &&
-        d.conductor.toLowerCase() === cLower &&
-        d.ajudant.toLowerCase() === aLower
-    );
-  }
-
-  _openDotacioModal() {
+  /**
+   * Abre el modal de dotaciones.
+   */
+  openDotacioModal() {
     if (!this.dotacioModalElement) return;
     this.dotacioModalElement.style.display = "block";
     document.body.classList.add(CSS_CLASSES.MODAL_OPEN);
-    this._displayDotacioOptions();
+    this.displayDotacioOptions();
   }
 
-  _closeDotacioModal() {
+  /**
+   * Cierra el modal de dotaciones.
+   */
+  closeDotacioModal() {
     if (!this.dotacioModalElement) return;
     this.dotacioModalElement.style.display = "none";
     document.body.classList.remove(CSS_CLASSES.MODAL_OPEN);
     document.getElementById(DOM_IDS.OPEN_MODAL_BTN)?.focus();
   }
 
-  _displayDotacioOptions() {
+  /**
+   * Muestra las opciones de dotaciones en el modal.
+   */
+  displayDotacioOptions() {
     if (!this.optionsContainerElement || !this.dotacioTemplateElement) return;
 
     this.optionsContainerElement.innerHTML = "";
@@ -241,7 +208,7 @@ class DotacionService {
         dotacioItem.setAttribute("data-dotacio-id", uniqueId);
 
         if (infoSpan)
-          infoSpan.textContent = this._formatDotacioListText(dotacio);
+          infoSpan.textContent = this.formatDotacioListText(dotacio);
         if (loadBtn) loadBtn.setAttribute(DATA_ATTRIBUTES.INDEX, index);
 
         this.optionsContainerElement.appendChild(clone);
@@ -252,74 +219,62 @@ class DotacionService {
     }
   }
 
-  _formatDotacioListText(dotacio) {
+  /**
+   * Formatea el texto para una dotación en la lista.
+   * @param {Object} dotacio - La dotación a formatear.
+   * @returns {string} El texto formateado.
+   */
+  formatDotacioListText(dotacio) {
     const unitat = dotacio.numero || "S/N";
+    let conductorText = capitalizeWords(dotacio.conductor || "");
+    let ayudanteText = capitalizeWords(dotacio.ajudant || "");
+    let personasText = `${conductorText} / ${ayudanteText}`;
 
-    let conductorComplet = capitalizeWords(dotacio.conductor || "");
-    let ajudantComplet = capitalizeWords(dotacio.ajudant || "");
-
-    let textPersonesComplet = `${conductorComplet} / ${ajudantComplet}`;
-
-    if (conductorComplet || ajudantComplet) {
-      textPersonesComplet = ` - ${textPersonesComplet}`;
+    if (conductorText || ayudanteText) {
+      personasText = ` - ${personasText}`;
     } else {
-      textPersonesComplet = "";
+      personasText = "";
     }
 
-    let textFinal = `${unitat}${textPersonesComplet}`;
+    let finalText = `${unitat}${personasText}`;
 
-    const tempEl = document.createElement("span");
-    tempEl.style.visibility = "hidden";
-    tempEl.style.whiteSpace = "nowrap";
-    tempEl.style.fontSize = getComputedStyle(document.body).fontSize;
-    tempEl.style.fontFamily = getComputedStyle(document.body).fontFamily;
-    tempEl.textContent = textFinal;
-    document.body.appendChild(tempEl);
-    const textWidth = tempEl.offsetWidth;
-    document.body.removeChild(tempEl);
+    const textWidth = this.measureTextWidth(finalText);
 
-    const maxWidth = 180;
+    if (textWidth > MAX_TEXT_WIDTH) {
+      const shortConductor = dotacio.conductor
+        ? this.shortenPersonName(dotacio.conductor)
+        : "";
+      const shortAyudante = dotacio.ajudant
+        ? this.shortenPersonName(dotacio.ajudant)
+        : "";
+      let shortPersonasText = `${shortConductor} / ${shortAyudante}`;
 
-    if (textWidth > maxWidth) {
-      let conductorEscurcat = "";
-      let ajudantEscurcat = "";
-
-      if (dotacio.conductor) {
-        conductorEscurcat = this._shortNameAndSurname(dotacio.conductor);
-      }
-      if (dotacio.ajudant) {
-        ajudantEscurcat = this._shortNameAndSurname(dotacio.ajudant);
-      }
-
-      let textPersonesEscurcat = `${conductorEscurcat} / ${ajudantEscurcat}`;
-
-      if (conductorEscurcat || ajudantEscurcat) {
-        textPersonesEscurcat = ` - ${textPersonesEscurcat}`;
+      if (shortConductor || shortAyudante) {
+        shortPersonasText = ` - ${shortPersonasText}`;
       } else {
-        textPersonesEscurcat = "";
+        shortPersonasText = "";
       }
 
-      textFinal = `${unitat}${textPersonesEscurcat}`;
+      finalText = `${unitat}${shortPersonasText}`;
     }
 
-    return textFinal;
+    return finalText;
   }
 
-  // A dotacion.js
-  // SUBSTITUEIX la funció _shortNameAndSurname per aquesta
-
-  _shortNameAndSurname(fullName) {
-    if (!fullName || typeof fullName !== "string") return "S/D";
+  /**
+   * Acorta un nombre completo a nombre e iniciales de apellidos.
+   * @param {string} fullName - Nombre completo.
+   * @returns {string} Nombre acortado.
+   */
+  shortenPersonName(fullName) {
+    if (!fullName || typeof fullName !== "string") return "";
     const parts = fullName
       .trim()
       .split(/\s+/)
       .filter((part) => part.length > 0);
 
-    if (parts.length === 0) return "S/D";
-    if (parts.length === 1) {
-      // Si només hi ha una paraula, la capitalitzem
-      return capitalizeWords(parts[0]);
-    }
+    if (parts.length === 0) return "";
+    if (parts.length === 1) return capitalizeWords(parts[0]);
 
     const articles = new Set([
       "de",
@@ -342,30 +297,44 @@ class DotacionService {
       (part) => !articles.has(part.toLowerCase())
     );
 
-    // Si després de filtrar no queda res, tornem la primera paraula capitalitzada
-    if (filteredParts.length === 0) {
-      return capitalizeWords(parts[0]);
-    }
+    if (filteredParts.length === 0) return capitalizeWords(parts[0]);
 
-    // === CANVIS CLAU AQUÍ ===
-
-    // 1. Capitalitzem el primer nom
     const firstName = capitalizeWords(filteredParts[0]);
-
-    // 2. Agafem la resta de parts, les posem en MAJÚSCULA i agafem la primera lletra
     const surnames = filteredParts
       .slice(1)
       .map((surname) => surname.charAt(0).toUpperCase() + ".")
-      .join(" "); // Afegim un espai entre les inicials per a noms com "Maria L. J."
+      .join(" ");
 
     return `${firstName} ${surnames}`;
   }
 
-  _loadDotacio(index) {
+  /**
+   * Mide el ancho de un texto usando un elemento temporal.
+   * @param {string} text - Texto a medir.
+   * @returns {number} Ancho en píxeles.
+   */
+  measureTextWidth(text) {
+    const tempEl = document.createElement("span");
+    tempEl.style.visibility = "hidden";
+    tempEl.style.whiteSpace = "nowrap";
+    tempEl.style.fontSize = getComputedStyle(document.body).fontSize;
+    tempEl.style.fontFamily = getComputedStyle(document.body).fontFamily;
+    tempEl.textContent = text;
+    document.body.appendChild(tempEl);
+    const width = tempEl.offsetWidth;
+    document.body.removeChild(tempEl);
+    return width;
+  }
+
+  /**
+   * Carga una dotación por índice.
+   * @param {number} index - Índice de la dotación.
+   */
+  loadDotacionByIndex(index) {
     if (index < 0 || index >= this.savedDotacions.length) return;
     const selected = this.savedDotacions[index];
 
-    this._clearDotacionInputErrors();
+    this.clearDotacionInputErrors();
 
     document.getElementById(DOM_IDS.VEHICLE_INPUT).value =
       selected.numero || "";
@@ -378,9 +347,13 @@ class DotacionService {
     setSignatureAjudant(selected.firmaAjudant || "");
 
     showToast(`Dotación ${selected.numero} cargada.`, "success");
-    this._closeDotacioModal();
+    this.closeDotacioModal();
   }
 
+  /**
+   * Maneja la eliminación de una dotación por ID.
+   * @param {string} dotacioId - ID de la dotación.
+   */
   async handleDeleteById(dotacioId) {
     const indexToDelete = this.savedDotacions.findIndex((d) => {
       const currentId = `${d.numero}-${d.conductor}-${d.ajudant}`.replace(
@@ -392,36 +365,35 @@ class DotacionService {
 
     if (indexToDelete === -1) {
       console.warn(
-        "S'ha intentat eliminar una dotació que ja no existeix:",
+        "Se intentó eliminar una dotación que ya no existe:",
         dotacioId
       );
       return;
     }
 
-    const dotacioToDelete = this.savedDotacions[indexToDelete];
-    const displayText = this._formatDotacioListText(dotacioToDelete);
-    const dotacioBackup = { ...dotacioToDelete, originalIndex: indexToDelete };
+    const dotacionToDelete = this.savedDotacions[indexToDelete];
+    const dotBackup = { ...dotacionToDelete, originalIndex: indexToDelete };
 
     this.savedDotacions.splice(indexToDelete, 1);
-    this._saveDotacionsToStorage();
+    this.saveDotacionsToStorage();
 
     updateDotacioListVisibility();
 
-    showToast(`Dotación eliminada.`, "success", 5000, {
-      undoCallback: async () => {
-        this.savedDotacions.splice(
-          dotacioBackup.originalIndex,
-          0,
-          dotacioBackup
-        );
-        this._saveDotacionsToStorage();
-        restoreDotacioItemToList(dotacioBackup);
-        showToast("Dotacion restaurada.", "success");
+    showToast("Dotación eliminada.", "success", 5000, {
+      undoCallback: () => {
+        this.savedDotacions.splice(dotBackup.originalIndex, 0, dotBackup);
+        this.saveDotacionsToStorage();
+        restoreDotacioItemToList(dotBackup);
+        showToast("Dotación restaurada.", "success");
       },
     });
   }
 
-  _handleOptionsClick(event) {
+  /**
+   * Maneja clics en las opciones del modal.
+   * @param {Event} event - Evento de clic.
+   */
+  handleOptionsClick(event) {
     const target = event.target;
     const loadButton = target.closest(SELECTORS.LOAD_BTN);
 
@@ -431,75 +403,96 @@ class DotacionService {
         loadButton.getAttribute(DATA_ATTRIBUTES.INDEX),
         10
       );
-      if (!isNaN(index)) this._loadDotacio(index);
+      if (!isNaN(index)) this.loadDotacionByIndex(index);
     }
   }
 
-  // AFEGEIX aquesta nova funció dins la classe DotacionService
-  _getDotacionInputValues() {
+  /**
+   * Obtiene los valores de los inputs de dotación.
+   * @returns {Object} Valores de los inputs.
+   */
+  getDotacionInputValues() {
     const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
     const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
-    const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
+    const ayudanteInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
 
     return {
       vehiculo: vehicleInput?.value.trim() || "",
       conductor: conductorInput?.value.trim() || "",
-      ajudant: ajudantInput?.value.trim() || "",
+      ayudante: ayudanteInput?.value.trim() || "",
     };
   }
 
   /**
-   *
-   * Funció que s'executa quan l'usuari prem el botó de desar.
-   * Decideix si s'ha de crear una nova dotació o actualitzar-ne una d'existent.
+   * Encuentra el índice de una dotación existente.
+   * @param {string} vehiculo - Número de vehículo.
+   * @param {string} conductor - Nombre del conductor.
+   * @param {string} ayudante - Nombre del ayudante.
+   * @returns {number} Índice o -1 si no existe.
+   */
+  findExistingDotacionIndex(vehiculo, conductor, ayudante) {
+    const vLower = vehiculo.toLowerCase();
+    const cLower = conductor.toLowerCase();
+    const aLower = ayudante.toLowerCase();
+    return this.savedDotacions.findIndex(
+      (d) =>
+        d.numero.toLowerCase() === vLower &&
+        d.conductor.toLowerCase() === cLower &&
+        d.ajudant.toLowerCase() === aLower
+    );
+  }
+
+  /**
+   * Añade o actualiza una dotación desde el formulario principal.
    */
   addDotacioFromMainForm() {
-    if (!validateDotacioTab()) {
-      return;
-    }
+    if (!validateDotacioTab()) return;
 
-    const { vehiculo, conductor, ajudant } = this._getDotacionInputValues();
+    const { vehiculo, conductor, ayudante } = this.getDotacionInputValues();
     const firmaConductor = getSignatureConductor();
     const firmaAjudant = getSignatureAjudant();
 
-    const existingIndex = this._findExistingDotacioIndex(
+    const existingIndex = this.findExistingDotacionIndex(
       vehiculo,
       conductor,
-      ajudant
+      ayudante
     );
 
-    const newDotacioData = {
+    const newDotacionData = {
       numero: vehiculo,
       conductor,
-      ajudant,
+      ajudant: ayudante,
       firmaConductor,
       firmaAjudant,
     };
 
     if (existingIndex !== -1) {
-      this.savedDotacions[existingIndex] = newDotacioData;
+      this.savedDotacions[existingIndex] = newDotacionData;
       showToast(`Dotación ${vehiculo} actualizada.`, "success");
     } else {
-      this.savedDotacions.push(newDotacioData);
+      this.savedDotacions.push(newDotacionData);
       showToast(`Dotación ${vehiculo} creada.`, "success");
     }
 
-    this._saveDotacionsToStorage();
+    this.saveDotacionsToStorage();
   }
 
-  _clearDotacionInputErrors() {
+  /**
+   * Limpia los errores en los inputs de dotación.
+   */
+  clearDotacionInputErrors() {
     const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
     const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
-    const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
+    const ayudanteInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
 
     const conductorGroup = conductorInput?.closest(
       SELECTORS.PERSON_INPUT_GROUP
     );
-    const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
+    const ayudanteGroup = ayudanteInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
 
     vehicleInput?.classList.remove(CSS_CLASSES.INPUT_ERROR);
     conductorGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
-    ajudantGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+    ayudanteGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
   }
 }
 

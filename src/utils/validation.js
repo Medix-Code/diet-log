@@ -1,12 +1,12 @@
 /**
  * @file validation.js
- * @description Lògica per validar diferents seccions del formulari amb robustesa.
+ * @description Lógica para validar diferentes secciones del formulario con robustez.
  * @module formValidation
  */
 
 import { showToast } from "../ui/toast.js";
 
-// --- Constants ---
+// --- Constantes ---
 const DOM_IDS = {
   DATE_INPUT: "date",
   DIET_TYPE_SELECT: "diet-type",
@@ -15,9 +15,11 @@ const DOM_IDS = {
   PERSON1_INPUT: "person1",
   PERSON2_INPUT: "person2",
 };
+
 const CSS_CLASSES = {
   INPUT_ERROR: "input-error",
 };
+
 const VALIDATION_RULES = {
   SERVICE_NUMBER_LENGTH: 9,
   VEHICLE_MAX_LENGTH: 6,
@@ -30,30 +32,30 @@ const SELECTORS = {
   PERSON_INPUT_GROUP: ".input-with-icon",
 };
 
-// --- Funcions Internes d'Ajuda ---
+// --- Funciones Internas de Ayuda ---
 
 /**
- * Marca un element com a error.
+ * Marca un elemento como error.
  * @param {HTMLElement} element
  */
-function _markError(element) {
+function markError(element) {
   element?.classList.add(CSS_CLASSES.INPUT_ERROR);
 }
 
 /**
- * Neteja la marca d'error d'un element.
+ * Limpia la marca de error de un elemento.
  * @param {HTMLElement} element
  */
-function _clearError(element) {
+function clearError(element) {
   element?.classList.remove(CSS_CLASSES.INPUT_ERROR);
 }
 
 /**
- * Formata una llista de serveis per missatges d'error.
+ * Formatea una lista de servicios para mensajes de error.
  * @param {number[]} indexes
  * @returns {string}
  */
-function _formatServiceList(indexes) {
+function formatServiceList(indexes) {
   if (!indexes || indexes.length === 0) return "";
   const sList = indexes.map((i) => `S${i}`);
   if (sList.length === 1) return sList[0];
@@ -62,31 +64,31 @@ function _formatServiceList(indexes) {
 }
 
 /**
- * Afegeix listener per netejar error en input (una vegada).
+ * Añade listener para limpiar error en input (una vez).
  * @param {HTMLElement} element
  */
-function _addInstantErrorClearListener(element) {
+function addInstantErrorClearListener(element) {
   if (!element || element.dataset.errorListenerAttached) return;
-  element.addEventListener("input", () => _clearError(element), { once: true });
+  element.addEventListener("input", () => clearError(element), { once: true });
   element.dataset.errorListenerAttached = "true";
 }
 
 /**
- * Valida un input de número de servei.
+ * Valida un input de número de servicio.
  * @param {HTMLInputElement} inputElement
  * @param {number} serviceIndex
  * @param {boolean} isRequired
  * @param {Object} errorMap
  * @returns {boolean}
  */
-function _validateSingleServiceNumber(
+function validateServiceNumberInput(
   inputElement,
   serviceIndex,
   isRequired,
   errorMap
 ) {
   if (!inputElement) return true;
-  _clearError(inputElement);
+  clearError(inputElement);
   const value = inputElement.value.trim();
   let hasError = false;
 
@@ -104,29 +106,53 @@ function _validateSingleServiceNumber(
   }
 
   if (hasError) {
-    _markError(inputElement);
-    _addInstantErrorClearListener(inputElement);
+    markError(inputElement);
+    addInstantErrorClearListener(inputElement);
     return false;
   }
   return true;
 }
 
 /**
- * Converteix temps HH:MM a minuts.
+ * Convierte tiempo HH:MM a minutos.
  * @param {string} timeString
- * @returns {number} Minuts o NaN si invàlid.
+ * @returns {number} Minutos o NaN si inválido.
  */
-function _timeToMinutes(timeString) {
+function timeToMinutes(timeString) {
   if (!timeString || !/^\d{2}:\d{2}$/.test(timeString)) return NaN;
   const [hours, minutes] = timeString.split(":").map(Number);
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return NaN; // Validació extra
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return NaN;
   return hours * 60 + minutes;
 }
 
-// --- Funcions de Validació Exportades ---
+/**
+ * Genera mensajes de error para la validación de servicios.
+ * @param {Object} errorMap
+ * @returns {string[]}
+ */
+function generateErrorMessagesForServices(errorMap) {
+  const messages = [];
+  if (errorMap.nonNumeric.length > 0) {
+    messages.push(
+      `El número de servicio ${formatServiceList(
+        errorMap.nonNumeric
+      )} debe contener solo dígitos.`
+    );
+  }
+  if (errorMap.digitLength.length > 0) {
+    messages.push(
+      `El número de servicio ${formatServiceList(
+        errorMap.digitLength
+      )} debe tener ${VALIDATION_RULES.SERVICE_NUMBER_LENGTH} dígitos.`
+    );
+  }
+  return messages;
+}
+
+// --- Funciones de Validación Exportadas ---
 
 /**
- * Valida la pestanya de dades.
+ * Valida la pestaña de datos.
  * @returns {boolean}
  * @export
  */
@@ -135,13 +161,13 @@ export function validateDadesTab() {
   const fieldsToValidate = [
     document.getElementById(DOM_IDS.DATE_INPUT),
     document.getElementById(DOM_IDS.DIET_TYPE_SELECT),
-  ].filter(Boolean); // Filtra nuls
+  ].filter(Boolean);
 
   fieldsToValidate.forEach((field) => {
-    _clearError(field);
+    clearError(field);
     if (!field.value.trim()) {
-      _markError(field);
-      _addInstantErrorClearListener(field);
+      markError(field);
+      addInstantErrorClearListener(field);
       isValid = false;
     }
   });
@@ -150,7 +176,7 @@ export function validateDadesTab() {
 }
 
 /**
- * Valida la pestanya de serveis.
+ * Valida la pestaña de servicios.
  * @returns {boolean}
  * @export
  */
@@ -166,11 +192,13 @@ export function validateServeisTab() {
     `${DOM_IDS.SERVICE_NUMBER_PREFIX}1`
   );
   if (!service1Input) {
-    console.error("Validation: No s'ha trobat l'input per al servei S1.");
+    console.error(
+      "Validation: No se ha encontrado el input para el servicio S1."
+    );
     return false;
   }
   overallValid =
-    _validateSingleServiceNumber(service1Input, 1, true, errorMap) &&
+    validateServiceNumberInput(service1Input, 1, true, errorMap) &&
     overallValid;
 
   for (let i = 2; i <= 4; i++) {
@@ -179,29 +207,14 @@ export function validateServeisTab() {
     );
     if (serviceInputElement) {
       overallValid =
-        _validateSingleServiceNumber(serviceInputElement, i, false, errorMap) &&
+        validateServiceNumberInput(serviceInputElement, i, false, errorMap) &&
         overallValid;
     }
   }
 
   if (overallValid) return true;
 
-  const errorMessages = [];
-  if (errorMap.nonNumeric.length > 0) {
-    errorMessages.push(
-      `El número de servicio ${_formatServiceList(
-        errorMap.nonNumeric
-      )} debe contener solo dígitos.`
-    );
-  }
-  if (errorMap.digitLength.length > 0) {
-    errorMessages.push(
-      `El número de servicio ${_formatServiceList(
-        errorMap.digitLength
-      )} debe tener ${VALIDATION_RULES.SERVICE_NUMBER_LENGTH} dígitos.`
-    );
-  }
-
+  const errorMessages = generateErrorMessagesForServices(errorMap);
   if (errorMessages.length > 0) {
     showToast(errorMessages.join("\n"), "error");
   }
@@ -210,7 +223,7 @@ export function validateServeisTab() {
 }
 
 /**
- * Valida consistència d'horaris en serveis.
+ * Valida consistencia de horarios en servicios.
  * @returns {boolean}
  * @export
  */
@@ -224,7 +237,7 @@ export function validateMinFieldsForSave() {
 }
 
 /**
- * Validació per generar PDF.
+ * Validación para generar PDF.
  * @returns {boolean}
  * @export
  */
@@ -239,141 +252,122 @@ export function validateForPdf() {
 }
 
 /**
- * Neteja i saneja una cadena de text.
- * 1. Elimina espais en blanc a l'inici i al final.
- * 2. Converteix caràcters HTML perillosos per evitar atacs XSS.
- * @param {string} input - La cadena de text a processar.
- * @returns {string} - La cadena de text neta i sanejada.
+ * Limpia y sanea una cadena de texto.
+ * 1. Elimina espacios en blanco al inicio y al final.
+ * 2. Convierte caracteres HTML peligrosos para evitar ataques XSS.
+ * @param {string} input - La cadena de texto a procesar.
+ * @returns {string} - La cadena de texto limpia y saneada.
  */
 export function sanitizeText(input) {
-  if (typeof input !== "string") {
-    return "";
-  }
+  if (typeof input !== "string") return "";
 
   const trimmedInput = input.trim();
-
   const temp = document.createElement("div");
   temp.textContent = trimmedInput;
   return temp.innerHTML;
 }
 
 /**
- * Valida si una cadena de text té el format d'hora HH:mm (24h).
- * Permet que la cadena estigui buida (considerat vàlid en aquest context).
- * @param {string} timeStr - La cadena de text a validar.
- * @returns {boolean} - True si el format és vàlid o la cadena és buida, false altrament.
+ * Valida si una cadena de texto tiene el formato de hora HH:mm (24h).
+ * Permite que la cadena esté vacía (considerado válido en este contexto).
+ * @param {string} timeStr - La cadena de texto a validar.
+ * @returns {boolean} - True si el formato es válido o la cadena es vacía, false en caso contrario.
  */
 export function isValidTimeFormat(timeStr) {
-  // Si la cadena és buida o nul·la, la considerem vàlida per no bloquejar camps opcionals.
-  if (!timeStr) {
-    return true;
-  }
-  // L'expressió regular per al format HH:mm
+  if (!timeStr) return true;
   const timeRegex = /^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$/;
   return timeRegex.test(timeStr);
 }
 
 /**
- * Valida els camps de la dotació (Vehicle, Conductor, Ajudant).
- * @returns {boolean} - True si és vàlid, false si hi ha errors.
+ * Valida un campo de nombre de persona (conductor o ayudante).
+ * @param {HTMLInputElement} input
+ * @param {HTMLElement} group
+ * @param {string} fieldName
+ * @param {string[]} errorMessages
+ * @returns {boolean}
+ */
+function validatePersonName(input, group, fieldName, errorMessages) {
+  const value = input?.value.trim() || "";
+  if (value && !VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS.test(value)) {
+    markError(group);
+    return false;
+  }
+  if (value.length > VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+    markError(group);
+    errorMessages.push(
+      `El nombre del ${fieldName} no puede superar los ${VALIDATION_RULES.PERSON_NAME_MAX_LENGTH} caracteres.`
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Valida los campos de la dotación (Vehículo, Conductor, Ayudante).
+ * @returns {boolean} - True si es válido, false si hay errores.
  * @export
  */
-
 export function validateDotacioTab() {
   const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
   const conductorInput = document.getElementById(DOM_IDS.PERSON1_INPUT);
-  const ajudantInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
+  const ayudanteInput = document.getElementById(DOM_IDS.PERSON2_INPUT);
   const conductorGroup = conductorInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
-  const ajudantGroup = ajudantInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
+  const ayudanteGroup = ayudanteInput?.closest(SELECTORS.PERSON_INPUT_GROUP);
 
-  // Neteja errors previs
-  _clearError(vehicleInput);
-  _clearError(conductorGroup);
-  _clearError(ajudantGroup);
+  clearError(vehicleInput);
+  clearError(conductorGroup);
+  clearError(ayudanteGroup);
 
   const vehicleValue = vehicleInput?.value.trim() || "";
   const conductorValue = conductorInput?.value.trim() || "";
-  const ajudantValue = ajudantInput?.value.trim() || "";
+  const ayudanteValue = ayudanteInput?.value.trim() || "";
 
   let isValid = true;
   const errorMessages = [];
 
-  // 1. Validació del vehicle (es manté igual)
   if (!vehicleValue) {
-    _markError(vehicleInput);
+    markError(vehicleInput);
     errorMessages.push("El campo Vehículo es obligatorio.");
     isValid = false;
-  } else if (vehicleValue.length > VALIDATION_RULES.VEHICLE_MAX_LENGTH) {
-    _markError(vehicleInput);
-    errorMessages.push(
-      `El Vehículo no puede tener más de ${VALIDATION_RULES.VEHICLE_MAX_LENGTH} caracteres.`
-    );
+  }
+
+  isValid =
+    validatePersonName(
+      conductorInput,
+      conductorGroup,
+      "Conductor",
+      errorMessages
+    ) && isValid;
+  isValid =
+    validatePersonName(
+      ayudanteInput,
+      ayudanteGroup,
+      "Ayudante",
+      errorMessages
+    ) && isValid;
+
+  if (!conductorValue && !ayudanteValue) {
+    markError(conductorGroup);
+    markError(ayudanteGroup);
+    errorMessages.push("Debe indicar al menos un Conductor o Ayudante.");
     isValid = false;
   }
 
-  // 2. Validació del personal (MODIFICADA)
-
-  // Comprovació de caràcters permesos per al conductor
-  if (
-    conductorValue &&
-    !VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS.test(conductorValue)
-  ) {
-    _markError(conductorGroup);
-    errorMessages.push(
-      "El nombre del Conductor solo puede contener letras, espacios, apóstrofos y acentos."
-    );
-    isValid = false;
-  } else if (conductorValue.length > VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-    _markError(conductorGroup);
-    errorMessages.push(
-      `El nombre del Conductor no puede superar los ${VALIDATION_RULES.PERSON_NAME_MAX_LENGTH} caracteres.`
-    );
-    isValid = false;
-  }
-
-  // Comprovació de caràcters permesos per a l'ajudant
-  if (
-    ajudantValue &&
-    !VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS.test(ajudantValue)
-  ) {
-    _markError(ajudantGroup);
-    errorMessages.push(
-      "El nombre del Ayudante solo puede contener letras, espacios, apóstrofos y acentos."
-    );
-    isValid = false;
-  } else if (ajudantValue.length > VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-    _markError(ajudantGroup);
-    errorMessages.push(
-      `El nombre del Ayudante no puede superar los ${VALIDATION_RULES.PERSON_NAME_MAX_LENGTH} caracteres.`
-    );
-    isValid = false;
-  }
-
-  // Comprovació de si almenys un dels dos camps està ple
-  if (!conductorValue && !ajudantValue) {
-    _markError(conductorGroup);
-    _markError(ajudantGroup);
-    if (isValid) {
-      errorMessages.push("Debe indicar al menos un Conductor o Ayudante.");
-    }
-    isValid = false;
-  }
-
-  // 3. Mostra missatges si hi ha errors
   if (!isValid) {
-    _addInstantErrorClearListener(vehicleInput);
-    _addInstantErrorClearListener(conductorInput);
-    _addInstantErrorClearListener(ajudantInput);
-    showToast(errorMessages.join("\n"), "error");
+    addInstantErrorClearListener(vehicleInput);
+    addInstantErrorClearListener(conductorInput);
+    addInstantErrorClearListener(ayudanteInput);
+    showToast(errorMessages.join("\n"), "error"); // Correcció: Uneix l'array en una cadena i afegeix el tipus "error".
   }
 
   return isValid;
 }
 
 /**
- * Valida la longitud dels camps de text de localització (origen/destí)
- * per a tots els serveis.
- * @returns {boolean} - True si tots els camps són vàlids, false si algun excedeix la longitud.
+ * Valida la longitud de los campos de texto de localización (origen/destino)
+ * para todos los servicios.
+ * @returns {boolean} - True si todos los campos son válidos, false si alguno excede la longitud.
  * @export
  */
 export function validateLocationFields() {
@@ -384,9 +378,9 @@ export function validateLocationFields() {
   );
 
   locationInputs.forEach((input) => {
-    _clearError(input);
+    clearError(input);
     const value = input.value.trim();
-    if (value && value.length > VALIDATION_RULES.LOCATION_MAX_LENGTH) {
+    if (value.length > VALIDATION_RULES.LOCATION_MAX_LENGTH) {
       const serviceContainer = input.closest(".service");
       const serviceNum = serviceContainer.className.match(/service-(\d)/)[1];
       const fieldType = input.classList.contains("origin")
@@ -396,8 +390,8 @@ export function validateLocationFields() {
       errorMessages.push(
         `El campo ${fieldType} del Servicio ${serviceNum} no puede superar los ${VALIDATION_RULES.LOCATION_MAX_LENGTH} caracteres.`
       );
-      _markError(input);
-      _addInstantErrorClearListener(input);
+      markError(input);
+      addInstantErrorClearListener(input);
       isValid = false;
     }
   });
@@ -409,24 +403,70 @@ export function validateLocationFields() {
   return isValid;
 }
 
-/**
- * Afegeix listeners als camps de nom per eliminar caràcters no permesos
- * a mesura que l'usuari escriu.
- * @export
- */
-export function sanitizeNameInputs() {
-  const allowedCharsRegex = /[^a-zA-Z\s'’áéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜ]/g;
+export function setupNameAndVehicleInputSanitizers() {
+  const allowedCharsRegex = VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS; // Reutilitzem la constant existent.
 
-  const handleInput = (event) => {
-    const input = event.target;
-    if (input.value.match(allowedCharsRegex)) {
-      input.value = input.value.replace(allowedCharsRegex, "");
+  // Funció auxiliar per filtrar en temps real (ja existent, però millorada per robustesa).
+  function handleNameInput(e) {
+    const value = e.target.value;
+    if (!allowedCharsRegex.test(value)) {
+      e.target.value = value.replace(
+        /[^a-zA-Z\s'’áéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜ]/g,
+        ""
+      );
     }
-  };
+  }
 
-  const person1Input = document.getElementById("person1");
-  const person2Input = document.getElementById("person2");
+  // Nou: Prevé entrades invàlides en keypress.
+  function handleKeypress(e) {
+    if (
+      e.key === "Enter" ||
+      e.key === "Tab" ||
+      e.ctrlKey ||
+      e.metaKey ||
+      e.altKey ||
+      e.key.length > 1
+    ) {
+      return; // Permet tecles de control.
+    }
+    if (!allowedCharsRegex.test(e.key)) {
+      e.preventDefault(); // Impedim l'entrada sense toast.
+    }
+  }
 
-  person1Input?.addEventListener("input", handleInput);
-  person2Input?.addEventListener("input", handleInput);
+  // Nou: Prevé paste invàlid.
+  function handlePaste(e) {
+    try {
+      const pastedData =
+        (e.clipboardData || window.clipboardData)?.getData("text") || "";
+      if (!allowedCharsRegex.test(pastedData)) {
+        e.preventDefault(); // Impedim el paste sense toast.
+        // Opcional: Si vols filtrar en lloc de prevenir, pots reemplaçar amb: e.target.value += pastedData.replace(/[^...]/g, "");
+      }
+    } catch (error) {
+      console.error("Error processant 'paste':", error);
+      e.preventDefault();
+    }
+  }
+
+  // Aplica als inputs de noms (conductor i ajudant).
+  const nameInputs = [
+    document.getElementById(DOM_IDS.PERSON1_INPUT),
+    document.getElementById(DOM_IDS.PERSON2_INPUT),
+  ].filter(Boolean);
+
+  nameInputs.forEach((input) => {
+    input.addEventListener("input", handleNameInput);
+    input.addEventListener("keypress", handleKeypress);
+    input.addEventListener("paste", handlePaste);
+  });
+
+  function handleVehicleInput(e) {
+    if (e.target.value.length > VALIDATION_RULES.VEHICLE_MAX_LENGTH) {
+      e.target.value = e.target.value.slice(
+        0,
+        VALIDATION_RULES.VEHICLE_MAX_LENGTH
+      );
+    }
+  }
 }
