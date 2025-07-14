@@ -817,15 +817,15 @@ button {
 }
 
 // DOTACIÓ
-// Contenidor principal del contingut del modal
+
 .dotacio-modal-content {
   display: flex;
   flex-direction: column;
   max-height: 85vh;
-  max-width: 100%; /* No sobrepassa el viewport */
-  width: auto; /* S'adapta al contingut */
-  overflow-x: hidden; /* Amaga qualsevol desbordament horitzontal */
-  box-sizing: border-box; /* Assegura que padding/margins no afegeixin amplada extra */
+  max-width: 100%;
+  width: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 
   // Títol del modal
   h3 {
@@ -881,7 +881,7 @@ button {
   // Contingut principal de l'ítem (el que es desplaça)
   .dotacio-item-content {
     flex-grow: 1; // Ocupa tot l'espai
-    padding: 10px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -920,7 +920,9 @@ button {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .dotacio-load {
@@ -1765,12 +1767,10 @@ button {
   display: flex;
   flex-direction: column;
   max-height: 85vh;
-  max-width: 100%; /* No sobrepassa el viewport */
-  width: auto; /* S'adapta al contingut */
-  overflow-x: hidden; /* Amaga qualsevol desbordament horitzontal */
-  box-sizing: border-box; /* Assegura que padding/margins no afegeixin amplada extra */
-
-  /* Manté els estils heretats o existents, com max-height: 80vh; overflow-y: auto; etc. */
+  max-width: 100%;
+  width: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 #diet-modal {
@@ -1778,79 +1778,53 @@ button {
 }
 
 #diet-modal-title {
+  margin-bottom: 10px;
   text-align: center;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-#no-diets-text {
-  font-size: 1rem;
-  font-weight: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.no-diets-text {
-  margin: 20px 0;
-  text-align: center;
-}
-
-.diet-icons button:hover {
-  transform: scale(1.05);
-  filter: brightness(0.95);
+  flex-shrink: 0; // Important: evita que el títol s'encongeixi
 }
 
 .diet-icons button:active {
-  transform: scale(0.98);
+  transform: scale(2.98);
 }
+
 .diet-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
   max-width: 100%;
+  padding: 0 0 15px 5px;
+
   overflow-x: hidden;
   flex-grow: 1;
   overflow-y: auto;
+  @include custom-scrollbar-style;
   -webkit-overflow-scrolling: touch;
-  padding-right: 5px;
 }
 
-.diet-item-content {
-  width: 100%; /* Important: que ocupi tot l'ample */
-  display: flex;
-  flex-direction: column; /* Un element sobre l'altre */
-
-  gap: 15px; /* Espai entre text i botons */
-}
 /* Cada ítem: Flex column per text a dalt + botons a sota */
 .diet-item {
   touch-action: pan-y;
-  display: flex;
-  flex-direction: column; /* Text a dalt, icons a sota */
-  align-items: flex-start;
-  gap: 12px;
+  position: relative;
+  overflow: hidden;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 10px;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: auto; /* Automàtic per igualtat basada en contingut */
-  overflow: visible; /* Permet veure text si desborda temporalment */
+  border-radius: 8px;
   flex-shrink: 0;
 }
 
-/* Opcional: Striping per llistes llargues (ítems alterns) */
-.diet-list .diet-item:nth-child(even) {
-  background-color: #f5f5f5; /* NOU: Gris més clar i subtil per menys "diferència" visible */
+.diet-item-content {
+  flex-grow: 1; // Ocupa tot l'espai
+  //padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: transform 0.3s ease;
 }
 
-/* TEXT DATA · HORA – COMIDA */
+// Text informatiu
 .diet-date {
-  font-size: 14px;
+  font-size: 15px;
   text-align: left;
   gap: 22px;
   color: #333;
@@ -1887,24 +1861,22 @@ button {
 .diet-icons {
   display: flex;
   width: 100%;
-  justify-content: center; /* Aquesta propietat centra els botons dins del seu contenidor */
 }
 
 .diet-icons button {
   flex: 1;
-  padding: 8px; /* Una mica més de padding vertical i menys horitzontal per a mòbils */
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 14px;
   transition: background-color 0.2s ease, transform 0.2s ease;
-  white-space: nowrap; /* Evita que el text del botó ("Cargar", "PDF") es trenqui en dues línies */
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .diet-icons .diet-load {
@@ -1917,7 +1889,7 @@ button {
 
   .icon {
     /* Icona en gris més fosc */
-    filter: grayscale(100%) brightness(0.5);
+    filter: grayscale(100%) brightness(0.6);
   }
 }
 
@@ -1933,11 +1905,6 @@ button {
 /* Per consistència amb dotaciones, si vols hover/actiu */
 .diet-icons button:hover {
   transform: scale(1.02);
-}
-
-.diet-icons .icon {
-  width: 18px; /* NOU: Més petit, igual que dotaciones */
-  height: 18px;
 }
 
 .diet-delete {
@@ -1956,11 +1923,6 @@ button {
   &:hover {
     background: #dce0fa;
   }
-}
-
-.diet-icons img {
-  width: 20px !important;
-  height: 20px !important;
 }
 
 .close-dotacio-button,
@@ -2494,7 +2456,7 @@ button .icon {
   }
 
   .diet-item {
-    padding: 8px 12px;
+    padding: 8px 2px;
   }
 }
 
@@ -2583,7 +2545,7 @@ button .icon {
   }
 
   .diet-item {
-    padding: 14px 20px;
+    padding: 12px 12px;
   }
 
   .diet-icons {
@@ -2592,11 +2554,6 @@ button .icon {
 
   .diet-date {
     font-size: 15px;
-  }
-
-  .diet-icons img {
-    width: 20px !important;
-    height: 20px !important;
   }
 
   input[type="text"],
@@ -2682,8 +2639,6 @@ button .icon {
     will-change: height;
     height: auto;
     max-height: none;
-
-    // Apliquem la nostra plantilla d'estils
     @include custom-scrollbar-style;
   }
 
