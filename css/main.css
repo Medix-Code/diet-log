@@ -2451,3 +2451,45 @@ button .icon {
 *::after {
   box-sizing: border-box;
 }
+
+/* ======================================== */
+/* == Estils per a la Pàgina 404 General == */
+/* ================================== ===== */
+.body-404 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 20px;
+  background-color: var(--bg-color); /* Verifica que els noms de les variables siguin correctes */
+  color: var(--text-color);
+  font-family: "Roboto Serif", serif;
+}
+
+.title-404 {
+  font-size: clamp(4rem, 15vw, 8rem);
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  color: var(--primary-color);
+}
+
+.message-404 {
+  font-size: clamp(1rem, 4vw, 1.3rem);
+  margin: 10px 0 20px 0;
+  color: var(--subtext-color);
+}
+
+.link-404 {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.link-404:hover,
+.link-404:focus {
+  text-decoration: none;
+  border-bottom-color: var(--primary-color);
+}
