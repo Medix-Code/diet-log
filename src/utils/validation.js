@@ -365,9 +365,9 @@ export function validateDotacioTab() {
 }
 
 /**
- * Valida la longitud de los campos de texto de localización (origen/destino)
- * para todos los servicios.
- * @returns {boolean} - True si todos los campos son válidos, false si alguno excede la longitud.
+ * Valida la longitud dels camps de text de localització (origen/destí)
+ * per a tots els serveis.
+ * @returns {boolean} - True si tots els camps són vàlids, falsse si algun excedeix la longitud.
  * @export
  */
 export function validateLocationFields() {
