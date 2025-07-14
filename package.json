@@ -1,0 +1,16 @@
+{
+  "name": "diet-log",
+  "version": "1.0.0",
+  "description": "Una herramienta para registrar horarios y detalles de servicios, generar informes PDF y agilizar la gestión de dietas.",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "TESHub",
+  "license": "ISC",
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "tesseract.js": "^6.0.1"
+  }
+}
