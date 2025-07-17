@@ -311,14 +311,20 @@ async function fillPdf(generalData, servicesData) {
     }
   });
 
-  // Signatures
   const embedSignature = async (signatureData, coords) => {
-    if (signatureData) {
+    const isValidSignature =
+      typeof signatureData === "string" &&
+      signatureData.startsWith("data:image/png;base64,") &&
+      signatureData.length > "data:image/png;base64,".length;
+
+    if (isValidSignature) {
       try {
         const pngImage = await pdfDoc.embedPng(signatureData);
         page.drawImage(pngImage, { ...coords });
       } catch (error) {
-        // Silent error handling for signatures
+        console.warn(
+          `No s'ha pogut incrustar una signatura. Error: ${error.message}`
+        );
       }
     }
   };
