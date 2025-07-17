@@ -111,63 +111,52 @@ function formatDateForPdf(dateString) {
   return `${dd}/${mm}/${yyyy}`;
 }
 
+// A pdfService.js (substitueix l'antiga funció wrapText per aquesta)
+
 /**
- * Funció ROBUSTA que divideix un text en línies sense tallar paraules,
- * excepte si una paraula és més llarga que l'amplada màxima.
+ * Funció FINAL i ROBUSTA que divideix un text en línies.
+ * Gestiona salts de línia manuals (\n) i ajusta automàticament les línies llargues.
  * @param {string} text - El text a dividir.
  * @param {object} font - L'objecte font de pdf-lib.
  * @param {number} size - La mida de la font.
  * @param {number} maxWidth - L'amplada màxima permesa per línia.
- * @returns {string[]} Un array amb les línies de text.
+ * @returns {string[]} Un array amb les línies de text finals.
  */
 function wrapText(text, font, size, maxWidth) {
-  const lines = [];
-  const words = text.split(" ");
-  let currentLine = "";
+  // 1. Primer, dividim el text pels salts de línia manuals de l'usuari.
+  const manualLines = text.split("\n");
+  const finalLines = [];
 
-  for (const word of words) {
-    // Cas especial: la paraula sola ja és massa llarga
-    const wordWidth = font.widthOfTextAtSize(word, size);
-    if (wordWidth > maxWidth) {
-      // Si teníem una línia a mig fer, la guardem
-      if (currentLine.length > 0) {
-        lines.push(currentLine.trim());
-        currentLine = "";
-      }
-      // Tallem la paraula llarga per força
-      let tempWord = word;
-      while (tempWord.length > 0) {
-        let cutIndex = tempWord.length;
-        while (
-          font.widthOfTextAtSize(tempWord.substring(0, cutIndex), size) >
-          maxWidth
-        ) {
-          cutIndex--;
-        }
-        lines.push(tempWord.substring(0, cutIndex));
-        tempWord = tempWord.substring(cutIndex);
-      }
-      continue; // Passem a la següent paraula del bucle
+  // 2. Processem cada fragment de text (cada línia manual) per separat.
+  manualLines.forEach((lineFragment) => {
+    // Si el fragment està buit, representa un salt de línia, l'afegim i continuem.
+    if (lineFragment.trim() === "") {
+      finalLines.push("");
+      return;
     }
 
-    // Comprovem si la paraula cap a la línia actual
-    const testLine = currentLine.length > 0 ? `${currentLine} ${word}` : word;
-    const testWidth = font.widthOfTextAtSize(testLine, size);
+    // Ara, apliquem la lògica d'ajust automàtic a aquest fragment.
+    const words = lineFragment.split(" ");
+    if (!words.length) return;
 
-    if (testWidth <= maxWidth) {
-      currentLine = testLine;
-    } else {
-      lines.push(currentLine);
-      currentLine = word;
+    let currentLine = words[0];
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      const testLine = `${currentLine} ${word}`;
+      const testWidth = font.widthOfTextAtSize(testLine, size);
+
+      if (testWidth <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        finalLines.push(currentLine);
+        currentLine = word;
+      }
     }
-  }
+    // Afegim l'última part de la línia processada.
+    finalLines.push(currentLine);
+  });
 
-  // Afegim l'última línia que quedava
-  if (currentLine.length > 0) {
-    lines.push(currentLine);
-  }
-
-  return lines;
+  return finalLines;
 }
 
 function getPdfTemplateUrl(generalData) {
