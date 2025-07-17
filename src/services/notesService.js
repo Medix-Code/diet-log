@@ -88,7 +88,9 @@ function openNotesModal(serviceIndex) {
   const scrollY = window.scrollY;
 
   // Actualitzem el títol del modal per saber a quin servei pertany la nota
-  notesTitle.textContent = `Notas del Servicio ${serviceIndex + 1}`;
+  notesTitle.textContent = `${serviceIndex + 1}": Observaciones". ${
+    serviceIndex + 1
+  }`;
 
   // Omplim el textarea amb la nota guardada per a aquest servei
   notesTextarea.value = serviceNotes[serviceIndex] || "";
