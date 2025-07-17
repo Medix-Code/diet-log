@@ -114,7 +114,6 @@ function formatDateForPdf(dateString) {
 // A pdfService.js (substitueix l'antiga funció wrapText per aquesta)
 
 /**
- * Funció FINAL i ROBUSTA que divideix un text en línies.
  * Gestiona salts de línia manuals (\n) i ajusta automàticament les línies llargues.
  * @param {string} text - El text a dividir.
  * @param {object} font - L'objecte font de pdf-lib.
@@ -123,19 +122,14 @@ function formatDateForPdf(dateString) {
  * @returns {string[]} Un array amb les línies de text finals.
  */
 function wrapText(text, font, size, maxWidth) {
-  // 1. Primer, dividim el text pels salts de línia manuals de l'usuari.
   const manualLines = text.split("\n");
   const finalLines = [];
 
-  // 2. Processem cada fragment de text (cada línia manual) per separat.
   manualLines.forEach((lineFragment) => {
-    // Si el fragment està buit, representa un salt de línia, l'afegim i continuem.
     if (lineFragment.trim() === "") {
       finalLines.push("");
       return;
     }
-
-    // Ara, apliquem la lògica d'ajust automàtic a aquest fragment.
     const words = lineFragment.split(" ");
     if (!words.length) return;
 
@@ -152,7 +146,6 @@ function wrapText(text, font, size, maxWidth) {
         currentLine = word;
       }
     }
-    // Afegim l'última part de la línia processada.
     finalLines.push(currentLine);
   });
 
