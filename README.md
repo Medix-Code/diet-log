@@ -7,9 +7,7 @@ Una herramienta para registrar horarios y detalles de servicios, generar informe
 - [Descripción](#descripción)
 - [Características](#características)
 - [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Instalación](#instalación)
 - [Uso](#uso)
-- [Contribuciones](#contribuciones)
 - [Licencia](#licencia)
 - [Contacto](#contacto)
 
@@ -32,28 +30,6 @@ Una herramienta para registrar horarios y detalles de servicios, generar informe
 - **IndexedDB**: Para el almacenamiento local de datos.
 - **PDFLib**: Biblioteca utilizada para la generación de informes en PDF.
 - **HTML & CSS**: Para la estructura y el estilo de la interfaz de usuario.
-
-## Instalación
-
-### Requisitos Previos
-
-- **Navegador Moderno**: La aplicación funciona mejor en navegadores recientes como Chrome, Firefox o Edge.
-- **Servidor Local**: Para servir los archivos de la aplicación. Puedes usar herramientas como [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) en VSCode.
-
-### Pasos de Instalación
-
-1. **Clonar el Repositorio, Navegar al Directorio, Instalar Dependencias e Iniciar el Servidor Local**
-
-```bash
-git clone https://github.com/***/diet-log.git
-cd diet-log
-npm install # o yarn install
-npm start # o yarn start
-```
-
-2. **Acceder a la Aplicación**
-
-Abre tu navegador y navega a http://localhost:3000 (o el puerto especificado).
 
 ## Uso
 
@@ -78,16 +54,6 @@ Abre tu navegador y navega a http://localhost:3000 (o el puerto especificado).
 ### Validaciones
 
 - La aplicación validará automáticamente los datos introducidos para asegurar que cumplen con el formato y la coherencia temporal requeridos.
-
-## Contribuciones
-
-¡Las contribuciones son bienvenidas! Si deseas contribuir a Diet Log, sigue estos pasos:
-
-- Haz un _fork_ del repositorio.
-- Crea una rama para tu _feature_ o _bugfix_ (`git checkout -b feature/nueva-funcionalidad`).
-- Haz _commit_ de tus cambios (`git commit -m 'Agregar nueva funcionalidad'`).
-- Haz _push_ a la rama (`git push origin feature/nueva-funcionalidad`).
-- Abre un _Pull Request_ describiendo tus cambios.
 
 Por favor, asegúrate de seguir las normas de codificación y realizar pruebas antes de enviar tus contribuciones.
 

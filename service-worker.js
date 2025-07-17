@@ -76,7 +76,7 @@ self.addEventListener("install", (event) => {
       console.log(
         "[ServiceWorker-DEBUG] Tots els fitxers de l'App Shell s'han cachejat correctament."
       );
-      return self.skipWaiting();
+      return self.skipWaiting(); // Força activació immediata
     })
   );
 });
@@ -99,7 +99,7 @@ self.addEventListener("activate", (event) => {
           })
         );
       })
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()) // Reclama clients immediatament per actualitzar
   );
 });
 
@@ -135,12 +135,20 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
       return cache.match(request).then((cachedResponse) => {
-        const fetchPromise = fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(request, networkResponse.clone());
-          }
-          return networkResponse;
-        });
+        const fetchPromise = fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch((error) => {
+            console.error(
+              `[ServiceWorker-DEBUG] Error en fetch: ${error.message} per a ${request.url}`
+            );
+            // Opcional: Retorna cachedResponse si hi ha error de xarxa
+            return cachedResponse;
+          });
 
         return cachedResponse || fetchPromise;
       });
@@ -151,4 +159,9 @@ self.addEventListener("fetch", (event) => {
 // --- GESTOR D'ERRORS GLOBAL ---
 self.addEventListener("error", (event) => {
   console.error("[ServiceWorker] Error global capturat:", event.error);
+});
+
+// --- Nou: Event per manejar actualitzacions explícites ---
+self.addEventListener("controllerchange", () => {
+  console.log("[ServiceWorker] Nou controlador actiu - Actualització forçada.");
 });
