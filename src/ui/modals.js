@@ -234,15 +234,6 @@ export async function _handleDietListClick(event) {
 
     const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
 
-    if (hasPendingChanges()) {
-      const confirmed = await showConfirmModal(
-        `¿Quieres cargar la dieta de la ${franjaText} del ${ddmmaa}? Los datos no guardados del formulario actual se perderán.`,
-        "Cargar dieta"
-      );
-
-      if (!confirmed) return;
-    }
-
     try {
       await loadDietById(dietId);
     } catch (error) {
