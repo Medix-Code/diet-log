@@ -86,7 +86,7 @@ export function indicateUnsaved(delay = DELAY_UNSAVED) {
 }
 
 /**
- * Indica que s'està guardant, amb missatge personalitzat opcional.
+ * Indica que s'està guardant, amb missatge personalitzat.
  * @param {string} [msg="Guardando…"] - Missatge a mostrar.
  */
 export function indicateSaving(msg = "Guardando…") {

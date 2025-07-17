@@ -36,7 +36,7 @@ const LS_SERVICE_TYPE_KEY = "userSelectedServiceType"; // Clau per a localStorag
 // --- Funcions Privades d'Inicialització ---
 
 /**
- * Modifica l'enllaç de donació per incloure l'ID anònim de l'usuari.
+ * enllaç de donació per incloure l'ID anònim de l'usuari.
  */
 function setupDonationLink() {
   const donationLink = document.getElementById(DONATION_LINK_ID);
@@ -111,6 +111,5 @@ export async function initializeApp() {
     console.log("initializeApp() completada.");
   } catch (error) {
     console.error("Error en la inicialització de l'app:", error);
-    // Opcional: Mostra un toast o modal d'error a l'usuari, ex.: showToast("Error en la inicialització. Prova de recarregar la pàgina.", 'error');
   }
 }

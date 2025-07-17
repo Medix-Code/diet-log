@@ -777,7 +777,6 @@ export function restoreDotacioItemToList(dotacio) {
     restoredItem.style.opacity = "1";
     restoredItem.style.transform = "translateX(0)";
 
-    // === CANVI CLAU ===
     // 1. Reconstruïm l'ID únic a partir de les dades de la dotació restaurada.
     const uniqueId =
       `${dotacio.numero}-${dotacio.conductor}-${dotacio.ajudant}`.replace(

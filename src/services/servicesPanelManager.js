@@ -155,10 +155,6 @@ function _attachPanelChipListeners() {
       chipButton.addEventListener("click", () => {
         const mode = chipButton.dataset.mode;
 
-        // ==========================================================
-        // 👇 AQUÍ VA LA MODIFICACIÓ 👇
-        // ==========================================================
-
         // 1. Validar el mode contra la llista blanca.
         if (!ALLOWED_MODES.includes(mode)) {
           console.error(

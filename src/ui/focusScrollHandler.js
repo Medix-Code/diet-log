@@ -54,24 +54,20 @@ function scrollToFocusedElement(element, anticipat = false) {
 
 // Funció per manejar focus amb dues passades (la teva proposta refinada)
 function handleFocus(el) {
-  // 1a passada immediata: Posiciona aproximadament (anticipat = true)
   scrollToFocusedElement(el, true);
-
-  // 2a passada amb delay curt: Ajusta amb dades del teclat
-  setTimeout(() => scrollToFocusedElement(el), 50); // 50ms per sincronitzar amb resize/geometrychange
+  setTimeout(() => scrollToFocusedElement(el), 50);
 }
 
 // Afegeix listener de focus a tots els elements editables
 formElements.forEach((el) => {
-  el.addEventListener("focus", () => handleFocus(el)); // Usa la nova funció
+  el.addEventListener("focus", () => handleFocus(el));
 });
 
-// Opcional: Escolta keydown per fletxa "següent"
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" || e.key === "Tab") {
     const focused = document.activeElement;
     if (focused && focused.tagName === "INPUT") {
-      handleFocus(document.activeElement); // Usa handleFocus per canvis de camp
+      handleFocus(document.activeElement);
     }
   }
 });

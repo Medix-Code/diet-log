@@ -629,7 +629,7 @@ button {
   padding: 20px;
   overflow-y: auto; /* Permet scroll vertical */
   transition: padding-bottom 0.3s ease; /* Transició suau per padding-bottom, evitant salts */
-  scroll-behavior: smooth; /* Opcional: Scroll suau global */
+  scroll-behavior: smooth;
 }
 
 .tab-content {
@@ -1777,7 +1777,7 @@ button {
 }
 
 #diet-modal {
-  transition: overflow 0.2s ease; /* Opcional: Suau canvi d'overflow per no bruscos */
+  transition: overflow 0.2s ease;
 }
 
 #diet-modal-title {
@@ -2668,7 +2668,7 @@ button .icon {
     margin-left: 8px; /* Espai entre botons si n'hi ha múltiples */
   }
 
-  /* Responsivitat: Ajusta en pantalles petites (opcional, per mòbils) */
+  /* Responsivitat: Ajusta en pantalles petites  */
   @media (max-width: 600px) {
     #diet-options {
       height: auto; /* Manté flexible en mòbils */

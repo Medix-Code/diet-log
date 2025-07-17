@@ -1,5 +1,5 @@
 // toast.js – Sistema de notificacions Toast amb cua, accessibilitat, animacions
-// i botó «Desfés» opcional (versió neta, sense duplicats)
+// i botó «Desfés»
 // -----------------------------------------------------------------------------
 //  API
 //    showToast(message, type = "info", duration = 3000, options = {})

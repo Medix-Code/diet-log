@@ -68,7 +68,7 @@ class FormService {
       AUTOSAVE_DELAY_MS
     );
     this.debouncedHandler = debounce(
-      this.handleInputChange.bind(this), // Canvi: Apunta a handleInputChange per centralitzar validació/autoguardat
+      this.handleInputChange.bind(this),
       INPUT_CHANGE_DEBOUNCE_MS
     );
   }
