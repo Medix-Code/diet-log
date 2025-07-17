@@ -37,7 +37,6 @@ export class Diet {
     serviceType = "TSU", // <-- AFEGIM AQUEST
     timeStampDiet = new Date().toISOString(),
   } = {}) {
-    // Afegeix valor per defecte per a l'objecte options
     /** @property {string} id - ID únic de la dieta. */
     this.id = String(id); // Assegura que és string
 

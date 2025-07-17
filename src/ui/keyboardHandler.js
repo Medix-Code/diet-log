@@ -69,4 +69,4 @@ document.addEventListener("focusout", () => {
   setTimeout(adjustPillPosition, 100);
 });
 
-export { keyboardHeight, isKeyboardOpen }; // Afegeix isKeyboardOpen aquí
+export { keyboardHeight, isKeyboardOpen };

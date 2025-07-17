@@ -58,7 +58,6 @@ function handleFocus(el) {
   setTimeout(() => scrollToFocusedElement(el), 50);
 }
 
-// Afegeix listener de focus a tots els elements editables
 formElements.forEach((el) => {
   el.addEventListener("focus", () => handleFocus(el));
 });

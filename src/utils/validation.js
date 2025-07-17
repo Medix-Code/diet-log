@@ -359,7 +359,7 @@ export function validateDotacioTab() {
     addInstantErrorClearListener(vehicleInput);
     addInstantErrorClearListener(conductorInput);
     addInstantErrorClearListener(ayudanteInput);
-    showToast(errorMessages.join("\n"), "error"); // Correcció: Uneix l'array en una cadena i afegeix el tipus "error".
+    showToast(errorMessages.join("\n"), "error");
   }
 
   return isValid;
@@ -407,7 +407,7 @@ export function validateLocationFields() {
 export function setupNameAndVehicleInputSanitizers() {
   const allowedCharsRegex = VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS;
 
-  // Funció auxiliar per filtrar en temps real (ja existent, però millorada per robustesa).
+  // Funció auxiliar per filtrar en temps real
   function handleNameInput(e) {
     const value = e.target.value;
     if (!allowedCharsRegex.test(value)) {
@@ -418,7 +418,7 @@ export function setupNameAndVehicleInputSanitizers() {
     }
   }
 
-  // Nou: Prevé entrades invàlides en keypress.
+  // Prevé entrades invàlides en keypress.
   function handleKeypress(e) {
     if (
       e.key === "Enter" ||
@@ -428,20 +428,20 @@ export function setupNameAndVehicleInputSanitizers() {
       e.altKey ||
       e.key.length > 1
     ) {
-      return; // Permet tecles de control.
+      return;
     }
     if (!allowedCharsRegex.test(e.key)) {
-      e.preventDefault(); // Impedim l'entrada sense toast.
+      e.preventDefault();
     }
   }
 
-  // Nou: Prevé paste invàlid.
+  // Prevé paste invàlid.
   function handlePaste(e) {
     try {
       const pastedData =
         (e.clipboardData || window.clipboardData)?.getData("text") || "";
       if (!allowedCharsRegex.test(pastedData)) {
-        e.preventDefault(); // Impedim el paste sense toast.
+        e.preventDefault();
       }
     } catch (error) {
       console.error("Error processant 'paste':", error);
