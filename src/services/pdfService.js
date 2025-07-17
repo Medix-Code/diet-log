@@ -334,7 +334,7 @@ async function fillPdf(generalData, servicesData) {
     ),
   ]);
 
-  // ----------------- NOTES SECTION (VERSIÓ FINAL I ROBUSTA) -----------------
+  // ----------------- NOTES SECTION -----------------
   const notesWithContent = servicesData
     .map((service) => ({
       text: (service.notes || "").trim(),
@@ -343,27 +343,22 @@ async function fillPdf(generalData, servicesData) {
     .filter((note) => note.text !== "" && note.serviceNumber !== "");
 
   if (notesWithContent.length > 0) {
-    // >> LÒGICA PER AL TÍTOL DEL PDF (SINGULAR/PLURAL) <<
     const titleText = notesWithContent.length === 1 ? "Nota" : "NOTAS";
 
-    // Dibuixa el títol que correspongui
     page.drawText(titleText, {
       ...FIELD_COORDINATES.notesSection.title,
       font: helveticaFont,
       color: rgbFromHex(FIELD_COORDINATES.notesSection.title.color),
     });
 
-    // Posició vertical inicial
     let currentY = FIELD_COORDINATES.notesSection.start.y;
     const noteStyle = FIELD_COORDINATES.notesSection.start;
     const noteMaxWidth = FIELD_COORDINATES.notesSection.maxWidth;
     const lineHeight = FIELD_COORDINATES.notesSection.lineHeight;
 
-    // >> LÒGICA PER AL TEXT DE CADA NOTA AL PDF <<
     notesWithContent.forEach((note) => {
       if (currentY < 40) return;
 
-      // El prefix és el número de servei real
       const fullText = `${note.serviceNumber}: ${note.text}`;
 
       const lines = wrapText(
