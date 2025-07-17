@@ -33,8 +33,8 @@ let currentInputHandler = null; // Per al listener del comptador de caràcters
  * @export
  */
 export function setupNotesSelectedService() {
-  const notesButton = document.getElementById(NOTES_BUTTON_ID);
-  if (!notesButton) {
+  notesTitle = document.getElementById(NOTES_TITLE_ID);
+  if (!notesModal || !notesTitle) {
     console.warn(`Notes Service: Botó amb ID '${NOTES_BUTTON_ID}' no trobat.`);
     return;
   }
@@ -82,7 +82,7 @@ function openNotesModal(serviceIndex) {
   if (!notesModal) return;
 
   // 1. Omplim el textarea amb la nota correcta
-  notesTextarea.value = serviceNotes[serviceIndex] || "";
+  notesTitle.textContent = `Notas del Servicio ${serviceIndex + 1}`;
 
   // 2. Funció per actualitzar el comptador de caràcters
   const updateCounter = () => {
