@@ -336,25 +336,15 @@ async function fillPdf(generalData, servicesData) {
 
   // ----------------- NOTES SECTION (VERSIÓ FINAL I ROBUSTA) -----------------
   const notesWithContent = servicesData
-    .map((service, index) => ({
-      // >> Necessitem l'index per al títol del modal <<
+    .map((service) => ({
       text: (service.notes || "").trim(),
       serviceNumber: service.serviceNumber || "",
-      serviceIndex: index + 1, // Guardem l'índex del servei (1, 2, 3, 4)
     }))
-    .filter((note) => note.text !== "" && note.serviceNumber !== ""); // Assegurem que tenim nota I número de servei
+    .filter((note) => note.text !== "" && note.serviceNumber !== "");
 
   if (notesWithContent.length > 0) {
-    let titleText;
-
-    // >> LÒGICA PER AL TÍTOL <<
-    // Si només hi ha UNA nota, posem el títol en singular amb el número de posició
-    if (notesWithContent.length === 1) {
-      titleText = `Nota del Servicio ${notesWithContent[0].serviceIndex}`;
-    } else {
-      // Si n'hi ha més d'una, posem el títol en plural
-      titleText = "NOTAS";
-    }
+    // >> LÒGICA PER AL TÍTOL DEL PDF (SINGULAR/PLURAL) <<
+    const titleText = notesWithContent.length === 1 ? "Nota" : "NOTAS";
 
     // Dibuixa el títol que correspongui
     page.drawText(titleText, {
@@ -369,11 +359,11 @@ async function fillPdf(generalData, servicesData) {
     const noteMaxWidth = FIELD_COORDINATES.notesSection.maxWidth;
     const lineHeight = FIELD_COORDINATES.notesSection.lineHeight;
 
-    // >> LÒGICA PER AL TEXT DE CADA NOTA <<
+    // >> LÒGICA PER AL TEXT DE CADA NOTA AL PDF <<
     notesWithContent.forEach((note) => {
       if (currentY < 40) return;
 
-      // El prefix ara és el número de servei real
+      // El prefix és el número de servei real
       const fullText = `${note.serviceNumber}: ${note.text}`;
 
       const lines = wrapText(
