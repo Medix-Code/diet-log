@@ -63,10 +63,10 @@ const FIELD_COORDINATES = {
     ayudante: { x: 380, y: 295, width: 100, height: 50 },
   },
   notesSection: {
-    title: { x: 65, y: 270, size: 14, color: "#000000" },
+    title: { x: 65, y: 250, size: 14, color: "#000000" },
     lineHeight: 15,
-    maxWidth: 465, // Amplada màxima per al text de les notes
-    start: { x: 65, y: 250, size: 10, color: "#333333" },
+    maxWidth: 465,
+    start: { x: 65, y: 230, size: 10, color: "#333333" },
   },
   fixedText: {
     website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
@@ -343,6 +343,14 @@ async function fillPdf(generalData, servicesData) {
     .filter((note) => note.text !== "" && note.serviceNumber !== "");
 
   if (notesWithContent.length > 0) {
+    const lineY = 275;
+    page.drawLine({
+      start: { x: 55, y: lineY },
+      end: { x: 540, y: lineY },
+      thickness: 0.5,
+      color: rgb(0.8, 0.8, 0.8),
+    });
+
     const titleText = notesWithContent.length === 1 ? "Nota" : "NOTAS";
 
     page.drawText(titleText, {
