@@ -62,25 +62,24 @@ const FIELD_COORDINATES = {
     conductor: { x: 125, y: 295, width: 100, height: 50 },
     ayudante: { x: 380, y: 295, width: 100, height: 50 },
   },
-
   notesSection: {
-    title: { x: 65, y: 270, size: 14, color: "#000000" }, // Coordenades per al títol "NOTAS"
-    lineHeight: 15, // Espai vertical entre línies de notes
-    maxCharsPerLine: 70, // Caràcters màxims abans de tallar la línia (per evitar que se surti del full)
-    start: { x: 65, y: 250, size: 10, color: "#333333" }, // On començarà a escriure la primera nota (S1:)
+    title: { x: 65, y: 270, size: 14, color: "#000000" },
+    lineHeight: 15,
+    maxWidth: 465, // Amplada màxima per al text de les notes
+    start: { x: 65, y: 250, size: 10, color: "#333333" },
   },
-
   fixedText: {
     website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
   },
 };
 
 // --- Utility Functions ---
+
 function toTitleCase(str) {
   if (!str || typeof str !== "string" || str.trim() === "") return "";
   return str
     .split(/\s+/)
-    .filter((word) => word)
+    .filter(Boolean)
     .map((word) =>
       word.includes("-")
         ? word
@@ -103,17 +102,45 @@ function hexToRgb(hex) {
   const bigint = parseInt(sanitizedHex, 16);
   return isNaN(bigint)
     ? { r: 0, g: 0, b: 0 }
-    : {
-        r: (bigint >> 16) & 255,
-        g: (bigint >> 8) & 255,
-        b: bigint & 255,
-      };
+    : { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
 function formatDateForPdf(dateString) {
   if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return "";
   const [yyyy, mm, dd] = dateString.split("-");
   return `${dd}/${mm}/${yyyy}`;
+}
+
+// >> FUNCIÓ wrapText AFEGIDA AQUÍ <<
+/**
+ * Funció que divideix un text en línies sense tallar paraules,
+ * basant-se en una amplada màxima.
+ * @param {string} text - El text a dividir.
+ * @param {object} font - L'objecte font de pdf-lib.
+ * @param {number} size - La mida de la font.
+ * @param {number} maxWidth - L'amplada màxima permesa per línia.
+ * @returns {string[]} Un array amb les línies de text.
+ */
+function wrapText(text, font, size, maxWidth) {
+  const words = text.split(" ");
+  const lines = [];
+  if (!words.length || (words.length === 1 && words[0] === "")) return lines;
+
+  let currentLine = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
+    const width = font.widthOfTextAtSize(currentLine + " " + word, size);
+
+    if (width < maxWidth) {
+      currentLine += " " + word;
+    } else {
+      lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+  lines.push(currentLine);
+  return lines;
 }
 
 function getPdfTemplateUrl(generalData) {
@@ -134,7 +161,8 @@ function handleValidationUIErrors(isDadesValid, isServeisValid) {
   } else if (!isDadesValid) {
     message = "Completa els camps obligatoris a Dades.";
     dadesTab?.classList.add(CSS_CLASSES.ERROR_TAB);
-  } else if (!isServeisValid) {
+  } else {
+    // if (!isServeisValid)
     message = "Completa els camps obligatoris a Serveis.";
     serveisTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   }
@@ -279,13 +307,13 @@ async function fillPdf(generalData, servicesData) {
     ),
   ]);
 
-  // ----------------- NOTES SECTION -----------------
+  // ----------------- NOTES SECTION (VERSIÓ FINAL I ROBUSTA) -----------------
   const notesWithContent = servicesData
     .map((service, index) => ({
-      text: service.notes || "",
+      text: (service.notes || "").trim(),
       prefix: `S${index + 1}: `,
     }))
-    .filter((note) => note.text.trim() !== "");
+    .filter((note) => note.text !== "");
 
   if (notesWithContent.length > 0) {
     // Dibuixa el títol "NOTAS" només si hi ha alguna nota
@@ -295,32 +323,44 @@ async function fillPdf(generalData, servicesData) {
       color: rgbFromHex(FIELD_COORDINATES.notesSection.title.color),
     });
 
+    // Posició vertical inicial
     let currentY = FIELD_COORDINATES.notesSection.start.y;
+    const noteStyle = FIELD_COORDINATES.notesSection.start;
+    const noteMaxWidth = FIELD_COORDINATES.notesSection.maxWidth;
+    const lineHeight = FIELD_COORDINATES.notesSection.lineHeight;
 
-    // Dibuixa cada nota que tingui contingut
+    // Dibuixa cada nota que tingui contingut, una darrere l'altra
     notesWithContent.forEach((note) => {
+      // Evita que s'escrigui a sobre del peu de pàgina
+      if (currentY < 40) return;
+
       const fullText = note.prefix + note.text;
 
-      // Lògica per dividir el text en múltiples línies si és molt llarg
-      const maxChars = FIELD_COORDINATES.notesSection.maxCharsPerLine;
-      const lines = [];
-      for (let i = 0; i < fullText.length; i += maxChars) {
-        lines.push(fullText.substring(i, i + maxChars));
-      }
+      // Utilitzem la funció wrapText per dividir el text en línies
+      const lines = wrapText(
+        fullText,
+        helveticaFont,
+        noteStyle.size,
+        noteMaxWidth
+      );
 
+      // Dibuixem cada línia de la nota actual
       lines.forEach((line) => {
-        if (currentY < 40) return; // Evita escriure a sobre del peu de pàgina
+        // Tornem a comprovar la 'Y' per a cada línia individual
+        if (currentY < 40) return;
 
         page.drawText(line, {
-          x: FIELD_COORDINATES.notesSection.start.x,
+          x: noteStyle.x,
           y: currentY,
-          size: FIELD_COORDINATES.notesSection.start.size,
+          size: noteStyle.size,
           font: helveticaFont,
-          color: rgbFromHex(FIELD_COORDINATES.notesSection.start.color),
+          color: rgbFromHex(noteStyle.color),
         });
-        currentY -= FIELD_COORDINATES.notesSection.lineHeight; // Mou la Y per a la següent línia
+
+        // >> CLAU: Actualitzem la 'Y' DESPRÉS d'escriure cada línia <<
+        currentY -= lineHeight;
       });
-    });
+    }); // <<-- AQUEST ERA EL '}' QUE FALTAVA
   }
   // ----------------- END NOTES SECTION -----------------
 
