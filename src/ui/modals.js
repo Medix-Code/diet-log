@@ -194,7 +194,7 @@ function _createDietListItem(diet) {
   const loadBtn = document.createElement("button");
   loadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} ${CSS_CLASSES.LIST_ITEM_BTN_LOAD} ${CSS_CLASSES.DIET_LOAD_BTN}`;
   loadBtn.setAttribute("aria-label", `Editar dieta ${ddmmaa}`);
-  loadBtn.innerHTML = `<img src="assets/icons/upload2.svg" alt="" class="icon"><span class="btn-text visually-hidden">Editar</span>`;
+  loadBtn.innerHTML = `<img src="assets/icons/ic_edit.svg" alt="" class="icon"><span class="btn-text visually-hidden">Editar</span>`;
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, diet.id);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_DATE, diet.date);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_TYPE, diet.dietType);
