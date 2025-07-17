@@ -1343,7 +1343,7 @@ button .fa {
   font-size: 1rem;
   color: var(--text-color);
   resize: vertical; /* Permet a l'usuari canviar l'alçada */
-  min-height: 220px; /* Alçada mínima */
+  min-height: 190px; /* Alçada mínima */
   transition: border-color 0.2s ease;
 }
 
