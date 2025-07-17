@@ -1211,6 +1211,40 @@ button .fa {
   filter: brightness(0.9);
 }
 
+/* Estils originals del clear button (ja els tens, no canviïs) */
+/* Estils per notes button */
+.notes-btn {
+  margin-left: auto;
+  width: clamp(40px, 5vw, 50px);
+  height: clamp(40px, 5vw, 50px);
+  border-radius: 8px;
+  border: none;
+  font-size: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: var(--bg-tab-active);
+  transition: background-color 0.3s ease, filter 0.3s ease;
+}
+.notes-btn.service-1 {
+  background-color: var(--service-1-border);
+}
+.notes-btn.service-2 {
+  background-color: var(--service-2-border);
+}
+.notes-btn.service-3 {
+  background-color: var(--service-3-border);
+}
+.notes-btn.service-4 {
+  background-color: var(--service-4-border);
+}
+.notes-btn:active {
+  filter: brightness(0.9);
+}
+
 .camera-btn {
   margin-left: auto;
   width: clamp(40px, 5vw, 50px);
@@ -1241,6 +1275,102 @@ button .fa {
 }
 .camera-btn:active {
   filter: brightness(0.9);
+}
+
+.notes-btn {
+  margin-left: auto;
+  width: clamp(40px, 5vw, 50px);
+  height: clamp(40px, 5vw, 50px);
+  border-radius: 8px;
+  border: none;
+  font-size: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: var(--bg-tab-active);
+  transition: background-color 0.3s ease, filter 0.3s ease;
+}
+.notes-btn.service-1 {
+  background-color: var(--service-1-border);
+}
+.notes-btn.service-2 {
+  background-color: var(--service-2-border);
+}
+.notes-btn.service-3 {
+  background-color: var(--service-3-border);
+}
+.notes-btn.service-4 {
+  background-color: var(--service-4-border);
+}
+.notes-btn:active {
+  filter: brightness(0.9);
+}
+
+/* ======================================== */
+/* == Estils per al Textarea de Notes    == */
+/* ======================================== */
+/* Contenidor que permetrà posicionar l'etiqueta correctament */
+.notes-textarea-container {
+  position: relative;
+  margin-top: 25px; /* Espai respecte al títol del modal */
+}
+
+/* Etiqueta que actuarà com a placeholder flotant */
+.notes-label {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: var(--subtext-color);
+  background-color: var(--bg-color); /* Truc per "tallar" la vora quan flota */
+  padding: 0 4px;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+  /* Evita que l'etiqueta bloquegi el clic al textarea */
+  pointer-events: none;
+}
+
+/* Estils del propi textarea */
+#notes-textarea {
+  width: 100%;
+  padding: 16px; /* Padding intern per al text */
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  background-color: var(--textfield);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text-color);
+  resize: vertical; /* Permet a l'usuari canviar l'alçada */
+  min-height: 220px; /* Alçada mínima */
+  transition: border-color 0.2s ease;
+}
+
+/* Estil quan el textarea té el focus (està actiu) */
+#notes-textarea:focus {
+  outline: none; /* Traiem la vora per defecte del navegador */
+  border-color: var(--primary-color); /* Canviem el color a blau */
+  border-width: 2px;
+  padding: 15px; /* Ajustem el padding per compensar la vora més gruixuda */
+}
+
+/* Quan el textarea té focus O quan no està buit... */
+#notes-textarea:focus + .notes-label,
+#notes-textarea:not(:placeholder-shown) + .notes-label {
+  top: -10px; /* ...mou l'etiqueta cap amunt */
+  font-size: 0.8rem; /* ...redueix la seva mida */
+  color: var(--primary-color); /* ...canvia el seu color a blau */
+}
+
+/* Estils per al comptador de caràcters */
+.char-counter {
+  text-align: right; /* Alineat a la dreta */
+  font-size: 0.75rem; /* Mida petita */
+  color: var(--subtext-color);
+  opacity: 0.7; /* Una mica transparent */
+  margin-top: 4px; /* Petit espai superior */
+  padding-right: 4px;
 }
 
 .modal-bottom {

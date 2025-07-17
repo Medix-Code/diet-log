@@ -8,7 +8,7 @@ import { revalidateFormState } from "./formService.js";
 
 // --- Constants ---
 
-const ALLOWED_MODES = ["3.6", "3.22", "3.11"]; // Llista blanca de modes vàlids
+const ALLOWED_MODES = ["3.6", "3.22", "3.11"];
 
 const DOM_IDS = {
   CONTAINER: "services-container",
@@ -59,6 +59,7 @@ let globalChipBarEl = null;
 let globalChipButtons = [];
 
 export let serviceModes = [];
+export let serviceNotes = ["", "", "", ""]; // Export afegit per permetre import des d'altres mòduls (resolt l'error de sintaxi)
 
 // --- Helpers ---
 
@@ -155,7 +156,6 @@ function _attachPanelChipListeners() {
       chipButton.addEventListener("click", () => {
         const mode = chipButton.dataset.mode;
 
-        // 1. Validar el mode contra la llista blanca.
         if (!ALLOWED_MODES.includes(mode)) {
           console.error(
             `Intent de canviar a un mode invàlid: "${mode}". Acció bloquejada.`
@@ -182,6 +182,7 @@ function _attachPanelChipListeners() {
     });
   });
 }
+// Dins de servicesPanelManager.js
 function _updateExternalButtonStyles(idx) {
   const colorClass = CSS_CLASSES.SERVICE_COLORS[idx];
   const styleBtn = (el, baseClass) => {
@@ -191,6 +192,8 @@ function _updateExternalButtonStyles(idx) {
   };
   styleBtn(document.getElementById(DOM_IDS.CLEAR_BTN), "clear-selected-btn");
   styleBtn(document.getElementById(DOM_IDS.CAMERA_BTN), "camera-btn");
+  // AFEGEIX AQUESTA LÍNIA:
+  styleBtn(document.getElementById("notes-selected-service"), "notes-btn");
   styleBtn(optionsToggleBtnEl, "options-btn");
 }
 

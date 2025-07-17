@@ -7,13 +7,17 @@
 // ────────────────────────────────────────────────────────────
 // IMPORTS
 // ────────────────────────────────────────────────────────────
+
 import { sanitizeText } from "../utils/validation.js";
 import {
   getSignatureConductor,
   getSignatureAjudant,
 } from "./signatureService.js";
 import { getCurrentDietType, debounce } from "../utils/utils.js";
-import { updateServicePanelsForServiceType } from "./servicesPanelManager.js";
+import {
+  updateServicePanelsForServiceType,
+  serviceNotes,
+} from "./servicesPanelManager.js";
 import { autoSaveDiet } from "./dietService.js";
 import {
   resetDirty,
@@ -125,15 +129,16 @@ class FormService {
 
       const servicesData = Array.from(
         document.querySelectorAll(SERVICE_CONTAINER_SELECTOR)
-      ).map((panel) => {
+      ).map((panel, index) => {
         const s = {};
         for (const [k, sel] of Object.entries(SERVICE_FIELD_SELECTORS)) {
-          // També sanejam aquí els camps de text dels serveis
           s[k] = sanitizeText(panel.querySelector(sel)?.value);
         }
-        // El mode ve de data-mode, que és segur. No cal sanejar.
         const activeChip = panel.querySelector(`.chip.${CHIP_ACTIVE_CLASS}`);
         s.mode = activeChip?.dataset.mode || "3.6";
+
+        s.notes = serviceNotes[index] || "";
+
         return s;
       });
 
@@ -215,6 +220,9 @@ class FormService {
     this.handleFormChange();
   }
 
+  /**
+   * Afegeix listeners d'input.
+   */
   addInputListeners() {
     const container = document.getElementById(FORM_CONTAINER_ID);
     if (!container) return;
