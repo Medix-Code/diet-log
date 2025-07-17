@@ -243,6 +243,6 @@ export function debounce(func, delay) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), delay);
   };
-  debounced.cancel = () => clearTimeout(timeout); // Afegeix això: permet cancel·lar timeouts pendents
+  debounced.cancel = () => clearTimeout(timeout);
   return debounced;
 }

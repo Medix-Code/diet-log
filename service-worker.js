@@ -161,7 +161,6 @@ self.addEventListener("error", (event) => {
   console.error("[ServiceWorker] Error global capturat:", event.error);
 });
 
-// --- Nou: Event per manejar actualitzacions explícites ---
 self.addEventListener("controllerchange", () => {
   console.log("[ServiceWorker] Nou controlador actiu - Actualització forçada.");
 });

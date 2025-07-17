@@ -57,7 +57,7 @@ const AUTOSAVE_DELAY_MS = 1000;
 const MIN_SPINNER_VISIBLE_MS = 300;
 
 // ────────────────────────────────────────────────────────────
-// CLASSE PRINCIPAL (millora encapsulació i mantenibilitat)
+// CLASSE PRINCIPAL
 // ────────────────────────────────────────────────────────────
 class FormService {
   constructor() {
@@ -215,9 +215,6 @@ class FormService {
     this.handleFormChange();
   }
 
-  /**
-   * Afegeix listeners d'input.
-   */
   addInputListeners() {
     const container = document.getElementById(FORM_CONTAINER_ID);
     if (!container) return;

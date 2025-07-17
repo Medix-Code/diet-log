@@ -190,8 +190,6 @@
   --border-btn-service: #747474;
 }
 
-// AFEGEIX AIXÒ AL PRINCIPI DEL TEU main.scss
-
 @mixin custom-scrollbar-style {
   // Estils per a Firefox
   scrollbar-width: thin;
@@ -1674,11 +1672,8 @@ button {
 }
 
 .modal-content {
-  // Nou
   flex-direction: column;
   overflow: hidden;
-  //Eliminat
-  //overflow-y: auto;
   max-height: 80vh;
   text-align: left;
   position: relative;
@@ -1959,7 +1954,7 @@ button {
 
   &:focus-visible {
     outline: 2px solid #004aad;
-    outline-offset: 2px; /* Millora accessibilitat per teclat */
+    outline-offset: 2px;
   }
 }
 
@@ -2144,7 +2139,7 @@ button {
 .toast-undo-btn:hover,
 .toast-undo-btn:focus {
   opacity: 0.7; /* Efecte hover/focus subtil */
-  outline: none; /* Elimina outline per defecte, però afegeix accessibilitat si cal */
+  outline: none; /* Elimina outline per defecte */
 }
 
 /* Animacions d'entrada i sortida */
@@ -2645,7 +2640,7 @@ button .icon {
     @include custom-scrollbar-style;
   }
 
-  /* Estils per ítems de la llista (li) - Evita solapaments amb la barra i millora espaiat */
+  /* Estils per ítems de la llista (li) */
   #diet-options li {
     border-radius: 8px;
     padding: 12px 20px 12px 12px; /* Padding-right extra per espai de barra, segons Google per padding en llistes (16dp mínim) */
@@ -2653,13 +2648,13 @@ button .icon {
     align-items: center;
     white-space: nowrap; /* Evita salts de línia en text */
     overflow: hidden; /* Amaga contingut extra si cal */
-    text-overflow: ellipsis; /* "..." per text llarg, millora en pantalles petites */
+    text-overflow: ellipsis;
   }
 
   #diet-options li span {
     font-size: 1rem;
     font-weight: 200;
-    margin-right: 10px; /* MILLORA: Més espai entre text i botons per claredat */
+    margin-right: 10px;
     flex: 1; /* Ocupa espai flexible per evitar compressió */
   }
 

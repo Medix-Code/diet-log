@@ -358,7 +358,7 @@ export async function deleteDietHandler(id, dietDate, dietType) {
       return;
     }
 
-    // Millora: Recuperem totes les dietes i ordenem com a displayDietOptions per calcular l'índex visual correcte
+    // Recuperem totes les dietes i ordenem com a displayDietOptions per calcular l'índex visual correcte
     const allDiets = await getAllDiets();
     const sortedDiets = allDiets.sort(
       (a, b) => new Date(b.timeStampDiet) - new Date(a.timeStampDiet)

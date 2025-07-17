@@ -237,7 +237,7 @@ export async function _handleDietListClick(event) {
     try {
       await loadDietById(dietId);
     } catch (error) {
-      // Maneig silenciós o toast d'error si cal
+      // Maneig silenciós o toast d'error
     }
   } else if (downloadButton) {
     event.stopPropagation();
@@ -248,9 +248,6 @@ export async function _handleDietListClick(event) {
   }
 }
 
-// Eliminem _trapConfirmFocus i _cleanupConfirmModalListeners ja que no usem modal per eliminar
-
-// Simplifiquem showConfirmModal per altres usos (no per eliminar dietes)
 export function showConfirmModal(message, title = "Confirmar acció") {
   if (!confirmModalElement) return Promise.resolve(false);
 
@@ -279,7 +276,6 @@ export function removeDietItemFromList(dietId) {
     ?.closest(".diet-item");
   if (!itemToRemove) return;
 
-  // MILLORA: Anima l'alçada de la llista per una transició suau quan puja
   const currentHeight = dietOptionsListElement.scrollHeight + "px";
   dietOptionsListElement.style.height = currentHeight;
 
@@ -374,7 +370,7 @@ export async function displayDietOptions() {
 
       savedDiets.forEach((diet, index) => {
         const listItem = _createDietListItem(diet);
-        listItem.setAttribute("data-index", index); // MILLORA: Index per posició original
+        listItem.setAttribute("data-index", index);
         dietOptionsListElement.appendChild(listItem);
         initSwipeToDelete(listItem, diet.id, diet.date, diet.dietType);
       });
@@ -458,9 +454,9 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
 
 // Exporta les funcions per usar a dotacion.js
 export {
-  initSwipeToDeleteDotacio, // Afegeix aquesta per resoldre l'error (touch swipe)
-  initMouseSwipeToDeleteDotacio, // Ja existent (mouse swipe)
-  updateDotacioListVisibility, // Ja existent (visibilitat)
+  initSwipeToDeleteDotacio,
+  initMouseSwipeToDeleteDotacio,
+  updateDotacioListVisibility,
 };
 
 function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
@@ -475,7 +471,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       startX = e.touches[0].clientX;
       currentX = startX;
       isSwiping = false;
-      e.stopPropagation(); // MILLORA: Prevén propagació per evitar afectar modal/tabs
+      e.stopPropagation();
     },
     { passive: false }
   );
@@ -488,12 +484,12 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       if (diff > 10 && !isSwiping) {
         isSwiping = true;
         dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
-        dietModalElement.style.overflow = "hidden"; // MILLORA: Bloqueja scroll de modal durant swipe
+        dietModalElement.style.overflow = "hidden";
       }
       if (isSwiping && diff > 10) {
         dietItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
         e.preventDefault();
-        e.stopPropagation(); // MILLORA: Prevén propagació
+        e.stopPropagation();
       }
     },
     { passive: false }
@@ -519,7 +515,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     } else {
       dietItem.style.transform = "translateX(0)";
       dietItem.style.opacity = "1";
-      dietModalElement.style.overflow = ""; // MILLORA: Restaura si no elimina
+      dietModalElement.style.overflow = "";
     }
 
     setTimeout(() => {
@@ -527,7 +523,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       dietItem.style.opacity = "";
     }, 300);
 
-    e.stopPropagation(); // MILLORA: Prevén propagació en touchend
+    e.stopPropagation();
   });
 
   initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType);
@@ -589,7 +585,7 @@ function initMouseSwipeToDeleteDotacio(dotacioItem, dotacioId) {
   });
 }
 
-// Nova funció per inicialitzar swipe en dotacions (adaptada de initSwipeToDelete)
+// Funció per inicialitzar swipe en dotacions
 function initSwipeToDeleteDotacio(dotacioItem, dotacioId) {
   let startX = 0;
   let currentX = 0;
@@ -655,20 +651,17 @@ function initSwipeToDeleteDotacio(dotacioItem, dotacioId) {
   });
 }
 
-// Afegeix el mateix e.stopPropagation() i gestió d'overflow a initMouseSwipeToDelete si cal per consistència, tot i que mouse rarament bubbla igual.
-
 export function restoreDietItemToList(diet) {
   if (!dietOptionsListElement || !noDietsTextElement) {
     displayDietOptions();
     return;
   }
 
-  const originalIndex = diet.index || 0; // Recupera index
+  const originalIndex = diet.index || 0;
   const restoredItem = _createDietListItem(diet);
   restoredItem.style.opacity = "0";
-  restoredItem.style.transform = "translateX(-100%)"; // MILLORA ANIMACIÓ: Inicia des de l'esquerra (fora de pantalla)
+  restoredItem.style.transform = "translateX(-100%)";
 
-  // Insereix en posició
   const sibling = dietOptionsListElement.children[originalIndex];
   if (sibling) {
     dietOptionsListElement.insertBefore(restoredItem, sibling);
@@ -677,7 +670,7 @@ export function restoreDietItemToList(diet) {
   }
 
   requestAnimationFrame(() => {
-    restoredItem.style.transition = "opacity 0.5s ease, transform 0.5s ease"; // MILLORA ANIMACIÓ: Transició per slide-in + fade
+    restoredItem.style.transition = "opacity 0.5s ease, transform 0.5s ease";
     restoredItem.style.opacity = "1";
     restoredItem.style.transform = "translateX(0)"; // Slide-in a posició original
     initSwipeToDelete(restoredItem, diet.id, diet.date, diet.dietType);

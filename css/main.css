@@ -321,8 +321,7 @@ main {
   pointer-events: auto;
   max-height: 300px;
 }
-.ajustes-panel:hover,
-.ajustes-panel:active {
+.ajustes-panel:hover, .ajustes-panel:active {
   background-color: var(--bg-btn-ajustes);
 }
 .ajustes-panel .big-btn {
@@ -446,8 +445,7 @@ main {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color var(--transition-base),
-    transform var(--transition-base), box-shadow var(--transition-base);
+  transition: background-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
   box-shadow: var(--shadow-base);
   padding: 10px 20px;
 }
@@ -510,8 +508,8 @@ button .fa {
 .tab-content-container {
   margin-top: 120px;
   padding: 20px;
-  overflow-y: auto;
-  transition: padding-bottom 0.3s ease;
+  overflow-y: auto; /* Permet scroll vertical */
+  transition: padding-bottom 0.3s ease; /* Transició suau per padding-bottom, evitant salts */
   scroll-behavior: smooth;
 }
 
@@ -544,9 +542,9 @@ button .fa {
   font-weight: 400;
   margin-bottom: 10px;
 }
-.form-group input[type="text"],
-.form-group input[type="date"],
-.form-group input[type="time"],
+.form-group input[type=text],
+.form-group input[type=date],
+.form-group input[type=time],
 .form-group select {
   height: 40px;
   width: 100%;
@@ -565,8 +563,8 @@ button .fa {
   font-family: "Roboto Serif", serif;
   font-size: 15px;
 }
-.form-group input[type="date"],
-.form-group input[type="time"] {
+.form-group input[type=date],
+.form-group input[type=time] {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -576,20 +574,20 @@ button .fa {
   padding-left: 10px;
   padding-right: 10px;
 }
-.form-group input[type="date"]:focus,
-.form-group input[type="time"]:focus,
+.form-group input[type=date]:focus,
+.form-group input[type=time]:focus,
 .form-group select:focus {
   outline: none;
   border: 2px solid var(--border-textfield-focus);
 }
 @supports (-webkit-touch-callout: none) {
-  .form-group input[type="date"],
-  .form-group input[type="time"] {
+  .form-group input[type=date],
+  .form-group input[type=time] {
     height: 40px !important;
     font-size: 16px !important;
   }
 }
-.form-group input[type="text"]:not(.txt-person1):not(.txt-person2):focus {
+.form-group input[type=text]:not(.txt-person1):not(.txt-person2):focus {
   outline: none;
   border: 2px solid var(--border-textfield-focus);
 }
@@ -716,8 +714,7 @@ button .fa {
   flex-grow: 1;
   padding-right: 5px;
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-    var(--scrollbar-track, transparent);
+  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
   scrollbar-gutter: stable;
 }
 .dotacio-modal-content .dotacio-list::-webkit-scrollbar {
@@ -726,8 +723,7 @@ button .fa {
   transition: opacity 0.3s ease;
   opacity: 0;
 }
-.dotacio-modal-content .dotacio-list:hover::-webkit-scrollbar,
-.dotacio-modal-content .dotacio-list:active::-webkit-scrollbar {
+.dotacio-modal-content .dotacio-list:hover::-webkit-scrollbar, .dotacio-modal-content .dotacio-list:active::-webkit-scrollbar {
   opacity: 1;
 }
 .dotacio-modal-content .dotacio-list::-webkit-scrollbar-thumb {
@@ -991,8 +987,7 @@ button .fa {
 .btn-ocr-scan .icon {
   width: 20px;
   height: 20px;
-  filter: invert(79%) sepia(57%) saturate(1477%) hue-rotate(334deg)
-    brightness(102%) contrast(101%);
+  filter: invert(79%) sepia(57%) saturate(1477%) hue-rotate(334deg) brightness(102%) contrast(101%);
 }
 .btn-ocr-scan:hover {
   background-color: var(--textfield-warning-bg);
@@ -1002,11 +997,7 @@ button .fa {
 }
 .btn-ocr-scan:active {
   transform: translateY(0) scale(0.98);
-  background-color: color-mix(
-    in srgb,
-    var(--textfield-warning-bg) 80%,
-    black 10%
-  );
+  background-color: color-mix(in srgb, var(--textfield-warning-bg) 80%, black 10%);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -1598,8 +1589,7 @@ button .fa {
   flex-grow: 1;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-    var(--scrollbar-track, transparent);
+  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
   scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
 }
@@ -1609,8 +1599,7 @@ button .fa {
   transition: opacity 0.3s ease;
   opacity: 0;
 }
-.diet-list:hover::-webkit-scrollbar,
-.diet-list:active::-webkit-scrollbar {
+.diet-list:hover::-webkit-scrollbar, .diet-list:active::-webkit-scrollbar {
   opacity: 1;
 }
 .diet-list::-webkit-scrollbar-thumb {
@@ -1752,8 +1741,7 @@ button .fa {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 10px 20px;
 }
@@ -1771,7 +1759,7 @@ button .fa {
 .close-dotacio-button:focus-visible,
 .close-diet-button:focus-visible {
   outline: 2px solid #004aad;
-  outline-offset: 2px; /* Millora accessibilitat per teclat */
+  outline-offset: 2px;
 }
 
 #signature-modal {
@@ -1840,12 +1828,10 @@ button .fa {
 .modal-button.yes:hover {
   background-color: var(--bg-confirm);
 }
-.modal-button.no,
-.modal-button.cancel {
+.modal-button.no, .modal-button.cancel {
   background-color: var(--bg-confirm-no);
 }
-.modal-button.no:hover,
-.modal-button.cancel:hover {
+.modal-button.no:hover, .modal-button.cancel:hover {
   background-color: var(--bg-confirm-no-hover);
 }
 .modal-button.accept {
@@ -1886,22 +1872,17 @@ button .fa {
 /* Estils base per als toasts */
 .toast {
   width: 100%; /* Amplada completa dins del contenidor */
-  background-color: var(
-    --toast-info-bg,
-    #323232
-  ); /* Fons fosc per defecte, com Google dark mode */
+  background-color: var(--toast-info-bg, #323232); /* Fons fosc per defecte, com Google dark mode */
   color: var(--toast-text-color, #ffffff); /* Text clar per contrast */
   padding: 16px 24px; /* Padding més ample per comoditat */
   border-radius: 4px; /* Corners suau, com Material Design */
-  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2),
-    0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12); /* Shadow elevat */
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12); /* Shadow elevat */
   font-size: 14px; /* Font més petit i llegible */
   line-height: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animació suau */
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animació suau */
   opacity: 0;
   transform: translateY(100%); /* Inici des de baix per slide-up */
   pointer-events: auto;
@@ -1945,7 +1926,7 @@ button .fa {
 .toast-undo-btn:hover,
 .toast-undo-btn:focus {
   opacity: 0.7; /* Efecte hover/focus subtil */
-  outline: none; /* Elimina outline per defecte, però afegeix accessibilitat si cal */
+  outline: none; /* Elimina outline per defecte */
 }
 
 /* Animacions d'entrada i sortida */
@@ -2301,9 +2282,9 @@ button .icon {
   .diet-date {
     font-size: 15px;
   }
-  input[type="text"],
-  input[type="date"],
-  input[type="time"],
+  input[type=text],
+  input[type=date],
+  input[type=time],
   select {
     height: 36px;
     font-size: 11px;
@@ -2371,8 +2352,7 @@ button .icon {
     height: auto;
     max-height: none;
     scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-      var(--scrollbar-track, transparent);
+    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
     scrollbar-gutter: stable;
   }
   #diet-options::-webkit-scrollbar {
@@ -2381,8 +2361,7 @@ button .icon {
     transition: opacity 0.3s ease;
     opacity: 0;
   }
-  #diet-options:hover::-webkit-scrollbar,
-  #diet-options:active::-webkit-scrollbar {
+  #diet-options:hover::-webkit-scrollbar, #diet-options:active::-webkit-scrollbar {
     opacity: 1;
   }
   #diet-options::-webkit-scrollbar-thumb {
@@ -2394,7 +2373,7 @@ button .icon {
   #diet-options::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover, rgba(0, 0, 0, 0.4));
   }
-  /* Estils per ítems de la llista (li) - Evita solapaments amb la barra i millora espaiat */
+  /* Estils per ítems de la llista (li) */
   #diet-options li {
     border-radius: 8px;
     padding: 12px 20px 12px 12px; /* Padding-right extra per espai de barra, segons Google per padding en llistes (16dp mínim) */
@@ -2402,19 +2381,19 @@ button .icon {
     align-items: center;
     white-space: nowrap; /* Evita salts de línia en text */
     overflow: hidden; /* Amaga contingut extra si cal */
-    text-overflow: ellipsis; /* "..." per text llarg, millora en pantalles petites */
+    text-overflow: ellipsis;
   }
   #diet-options li span {
     font-size: 1rem;
     font-weight: 200;
-    margin-right: 10px; /* MILLORA: Més espai entre text i botons per claredat */
+    margin-right: 10px;
     flex: 1; /* Ocupa espai flexible per evitar compressió */
   }
   #diet-options li button {
     flex-shrink: 0; /* Botons mantenen mida fixa */
     margin-left: 8px; /* Espai entre botons si n'hi ha múltiples */
   }
-  /* Responsivitat: Ajusta en pantalles petites */
+  /* Responsivitat: Ajusta en pantalles petites  */
 }
 @media (max-width: 768px) and (max-width: 600px) {
   #diet-options {
@@ -2466,9 +2445,7 @@ button .icon {
   min-height: 100vh;
   text-align: center;
   padding: 20px;
-  background-color: var(
-    --bg-color
-  ); /* Verifica que els noms de les variables siguin correctes */
+  background-color: var(--bg-color); /* Verifica que els noms de les variables siguin correctes */
   color: var(--text-color);
   font-family: "Roboto Serif", serif;
 }
