@@ -1,0 +1,42 @@
+name: Desplegar en GitHub Pages (PROD)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy (PROD)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del codi
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Actualizar versió del Service Worker
+        run: |
+          VERSION=$(date +'%Y%m%d%H%M%S')
+          echo "Nova versió del Service Worker: $VERSION"
+          sed -i "s/const VERSION = \"[^\"]*\"/const VERSION = \"$VERSION\"/g" service-worker.js
+          echo "Service Worker actualitzat."
+
+      - name: Desplegar a GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          exclude_assets: ".github,README.md,.gitignore"
+          cname: www.misdietas.com

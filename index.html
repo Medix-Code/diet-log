@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Serif:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#004aad" />
+    <meta name="author" content="TESHub" />
+    <meta
+      name="description"
+      content="Aplicació per gestionar dietes amb formularis accessibles i funcionalitat PWA."
+    />
+
+    <title>MisDietas</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/images/icons-192.png" type="image/png" />
+    <link rel="stylesheet" href="css/main.css" />
+    <noscript><link rel="stylesheet" href="css/main.css" /></noscript>
+
+    <script src="./node_modules/tesseract.js/dist/tesseract.min.js"></script>
+    <script src="./node_modules/pdf-lib/dist/pdf-lib.min.js" async></script>
+
+    <script src="./sw-register.js" type="module"></script>
+  </head>
+  <body>
+    <div id="install-prompt" class="hidden">
+      <p>¿Quieres instalarla como aplicación?</p>
+      <div class="install-buttons">
+        <button id="dismiss-button">No, gracias</button>
+        <button id="install-button">Instalar</button>
+      </div>
+    </div>
+
+    <header class="top-bar">
+      <div class="top-bar__left">
+        <a class="logo-title" href="https://misdietas.com" title="MisDietas">
+          <h1 class="top-bar__title">MisDietas</h1>
+        </a>
+      </div>
+      <div class="button-group">
+        <button id="settings" class="ajustes-btn" aria-label="Ajustes">
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+        <div
+          class="ajustes-panel"
+          id="settings-panel"
+          role="menu"
+          aria-labelledby="ajustes"
+        >
+          <button
+            type="button"
+            class="big-btn"
+            id="save-diet"
+            aria-label="Guardar dieta"
+            role="menuitem"
+            disabled
+          >
+            <img src="assets/icons/save.svg" alt="" class="icon" />
+            <span>Guardar</span>
+            <span id="last-saved" class="last-saved-info"></span>
+          </button>
+          <button
+            type="button"
+            class="big-btn generate-pdf"
+            aria-label="Descargar la dieta actual en formato PDF"
+            role="menuitem"
+          >
+            <img src="assets/icons/download_blue.svg" alt="" class="icon" />
+            Descargar dieta actual
+          </button>
+          <button
+            type="button"
+            class="big-btn"
+            id="manage-diets"
+            aria-label="Gestionar dietes"
+            role="menuitem"
+          >
+            <img src="assets/icons/gear.svg" alt="" class="icon" /> Gestor de
+            dietas
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <nav
+      class="tabs-container"
+      role="tablist"
+      aria-label="Pestañas del formulario"
+    >
+      <button
+        id="tab-dades"
+        class="tab active"
+        role="tab"
+        aria-controls="dades-tab-content"
+        aria-selected="true"
+      >
+        Datos
+      </button>
+      <button
+        id="tab-serveis"
+        class="tab"
+        role="tab"
+        aria-controls="serveis-tab-content"
+        aria-selected="false"
+      >
+        Servicios
+      </button>
+    </nav>
+
+    <main id="main-content" class="tab-content-container">
+      <section
+        id="dades-tab-content"
+        class="tab-content active"
+        role="tabpanel"
+        aria-labelledby="tab-dades"
+      >
+        <div class="form-group">
+          <label for="date">Fecha</label>
+          <input type="date" id="date" name="date" />
+        </div>
+        <div class="form-group">
+          <label for="diet-type">Franja horaria</label>
+          <select id="diet-type" name="diet-type">
+            <option value="" disabled selected hidden></option>
+            <option value="lunch">Comida</option>
+            <option value="dinner">Cena</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="service-type">Tipus de servicio</label>
+          <select id="service-type" name="service-type">
+            <option value="TSU" selected>TSU</option>
+            <option value="TSNU">TSNU</option>
+          </select>
+        </div>
+        <div class="group-header">
+          <h2 class="group-title">Dotación</h2>
+          <div class="group-btns">
+            <button
+              type="button"
+              class="group-btn btn-save"
+              id="add-dotacio"
+              aria-label="Nueva dotación"
+            >
+              <img src="assets/icons/save_white.svg" alt="Nueva dotación" />
+            </button>
+            <button
+              type="button"
+              class="group-btn btn-options"
+              id="open-dotacio-modal"
+              aria-label="Opciones"
+            >
+              <img src="assets/icons/id_card.svg" alt="Opciones" />
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="vehicle-number">Vehículo</label>
+          <input
+            type="text"
+            id="vehicle-number"
+            name="vehicle-number"
+            autocomplete="off"
+            maxlength="6"
+          />
+        </div>
+        <div class="form-group signature-group">
+          <label for="person1">Conductor</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="person1"
+              name="person1"
+              class="txt-person1"
+              autocomplete="off"
+              maxlength="28"
+            />
+            <button
+              type="button"
+              class="signature-btn"
+              id="sign-person1"
+              aria-label="Firma del conductor"
+            >
+              <img src="assets/icons/signature.svg" alt="" class="icon" />
+            </button>
+          </div>
+        </div>
+        <div class="form-group signature-group">
+          <label for="person2">Ayudante</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="person2"
+              name="person2"
+              class="txt-person2"
+              enterkeyhint="done"
+              inputmode="text"
+              autocomplete="off"
+              maxlength="28"
+            />
+            <button
+              type="button"
+              class="signature-btn"
+              id="sign-person2"
+              aria-label="Firma del ayudante"
+            >
+              <img src="assets/icons/signature.svg" alt="" class="icon" />
+            </button>
+          </div>
+        </div>
+      </section>
+      <section
+        id="serveis-tab-content"
+        class="tab-content"
+        role="tabpanel"
+        aria-labelledby="tab-serveis"
+      >
+        <div class="service-controls">
+          <div id="service-buttons-container"></div>
+          <div class="options-container">
+            <button
+              class="options-btn"
+              id="options-toggle"
+              aria-label="Más opciones"
+            >
+              <img src="assets/icons/submenu.svg" alt="Opciones" class="icon" />
+            </button>
+            <div class="options-dropdown hidden" id="options-menu">
+              <button
+                type="button"
+                class="option-btn clear-selected-btn"
+                id="clear-selected-service"
+                aria-label="Borrar datos"
+              >
+                <img src="assets/icons/eraser.svg" alt="Borrar" class="icon" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="services-container">
+          <!-- SERVEI 1 -->
+          <div
+            class="service service-1"
+            aria-labelledby="servei-1"
+            tabindex="-1"
+          >
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-1">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-1"
+                name="service-number-1"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-1">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-1"
+                name="origin-1"
+                class="origin"
+                maxlength="35"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-1">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-1"
+                name="destination-1"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                maxlength="35"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-1">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-1"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-1"
+                  name="origin-time-1"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="destination-time-1">Hora de destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-1"
+                  name="destination-time-1"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-1">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-1"
+                  name="end-time-1"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 2 -->
+          <div class="service service-2" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-2">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-2"
+                name="service-number-2"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-2">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-2"
+                name="origin-2"
+                class="origin"
+                maxlength="35"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-2">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-2"
+                name="destination-2"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-2">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-2"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-2"
+                  name="origin-time-2"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-2">Hora de destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-2"
+                  name="destination-time-2"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-2">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-2"
+                  name="end-time-2"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 3 -->
+          <div class="service service-3" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-3">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-3"
+                name="service-number-3"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-3">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-3"
+                name="origin-3"
+                class="origin"
+                maxlength="35"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-3">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-3"
+                name="destination-3"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-3">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-3"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-3"
+                  name="origin-time-3"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-3">Hora de destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-3"
+                  name="destination-time-3"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-3">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-3"
+                  name="end-time-3"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 4 -->
+          <div class="service service-4" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-4">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-4"
+                name="service-number-4"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-4">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-4"
+                name="origin-4"
+                class="origin"
+                maxlength="35"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-4">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-4"
+                name="destination-4"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-4">Hora de origen</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-4"
+                  aria-label="Escanear Horas"
+                >
+                  <img src="assets/icons/ic_ocr.svg" class="icon" />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-4"
+                  name="origin-time-4"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-4">Hora de destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-4"
+                  name="destination-time-4"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-4">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-4"
+                  name="end-time-4"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div
+        id="diet-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="diet-modal-title"
+      >
+        <div class="modal-content diet-modal-content">
+          <h3 id="diet-modal-title">Gestor de dietas</h3>
+          <p id="no-diets-text" class="no-diets-text hidden">
+            No hay dietas guardadas.
+          </p>
+          <div
+            id="diet-options"
+            class="diet-list"
+            aria-label="Opciones de dietas"
+          ></div>
+          <div class="modal-footer">
+            <button id="close-diet-modal" class="close-diet-button">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="signature-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="signature-title"
+      >
+        <div class="modal-content signature-modal-content">
+          <h2 id="signature-title">Firma</h2>
+          <p class="signature-instruction">
+            Firma en el recuadro. Para borrarla, haz doble clic en el área.
+          </p>
+          <div class="signature-canvas-container">
+            <canvas id="signature-canvas"></canvas>
+          </div>
+          <div class="modal-buttons">
+            <button id="signature-cancel" class="modal-button cancel">
+              Cancelar
+            </button>
+            <button id="signature-accept" class="modal-button accept">
+              Aceptar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="toast-container"></div>
+      <div
+        id="dotacio-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dotacio-modal-title"
+      >
+        <div class="modal-content dotacio-modal-content">
+          <h3 id="dotacio-modal-title">Gestor de dotaciones</h3>
+          <div id="no-dotacio-text" class="hidden">
+            No hay dotaciones, guarde antes:
+            <img
+              src="assets/icons/save_green.svg"
+              alt="Guardar"
+              class="save-icon"
+            />
+          </div>
+          <div
+            id="dotacio-options"
+            class="dotacio-list"
+            aria-label="Opciones de dotaciones"
+          ></div>
+          <div class="modal-footer">
+            <button id="close-dotacio-modal" class="close-dotacio-button">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="about-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="about-title"
+        tabindex="-1"
+      >
+        <div class="modal-content">
+          <h2 id="about-title">Sobre este herramienta</h2>
+          <p>
+            Esta herramienta te permite generar justificantes de dietas en
+            formato PDF de manera rápida y sencilla. Tan fácil como rellenar el
+            formulario y descargarlo de inmediato.
+          </p>
+          <p>
+            Los datos guardados se almacenan localmente en tu navegador para
+            garantizar su seguridad y privacidad. Ten en cuenta que, si los
+            eliminas, no podrás recuperarlos.
+          </p>
+          <button class="close-modal-btn">Entendido</button>
+        </div>
+      </div>
+      <div
+        id="confirm-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-message"
+      >
+        <div class="modal-content">
+          <h3 class="modal-title"></h3>
+          <p id="confirm-message"></p>
+          <div class="modal-buttons">
+            <button id="confirm-no" class="modal-button no">No</button>
+            <button id="confirm-yes" class="modal-button yes">Sí</button>
+          </div>
+        </div>
+      </div>
+      <div id="camera-gallery-modal" class="modal-bottom hidden">
+        <div class="modal-bottom-content">
+          <div class="modal-title-container">
+            <h3 class="modal-bottom-title">Escanear horas</h3>
+            <span class="beta-tag">BETA</span>
+          </div>
+          <p class="modal-bottom-description">
+            Para una mejor detección, asegúrate de que la foto
+            <b>encuadre de cerca la fila completa de cada estado</b> (mensaje y
+            fecha).
+          </p>
+          <div class="modal-bottom-row">
+            <button id="option-gallery" class="modal-bottom-btn">
+              <img src="assets/icons/gallery.svg" alt="Galería" />
+              <span class="modal-bottom-text">Galería</span>
+            </button>
+            <button id="option-camera" class="modal-bottom-btn">
+              <img src="assets/icons/camera.svg" alt="Cámara" />
+              <span class="modal-bottom-text">Cámara</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <template id="dotacio-template">
+        <div class="dotacio-item">
+          <div class="dotacio-item-content">
+            <span class="dotacio-info"></span>
+            <div class="button-container">
+              <!-- Només el botó de Cargar -->
+              <button class="dotacio-load" aria-label="Cargar dotació">
+                <img src="assets/icons/upload2.svg" alt="Cargar" class="icon" />
+                <span class="btn-text">Cargar</span>
+              </button>
+            </div>
+          </div>
+          <!-- Element per revelar en swipe (com a dietes) -->
+          <div class="delete-reveal">
+            <img src="assets/icons/delete.svg" alt="Eliminar" class="icon" />
+          </div>
+        </div>
+      </template>
+      <div id="save-pill" class="save-pill" role="status" aria-live="polite">
+        <span class="pill-icon" aria-hidden="true"></span>
+        <span class="pill-text"></span>
+      </div>
+      <script type="module" src="./src/app.js"></script>
+      <input type="file" accept="image/*" id="camera-input" class="hidden" />
+    </main>
+    <footer class="footer">
+      <div class="footer__content">
+        <div class="footer__icons">
+          <button
+            id="theme-toggle-btn"
+            class="footer-btn"
+            aria-label="Canviar tema"
+          >
+            <img
+              id="theme-icon"
+              src="assets/icons/moon.svg"
+              alt="Icona de tema"
+              class="icon"
+            />
+          </button>
+          <a
+            href="#about-modal"
+            class="footer-btn"
+            role="button"
+            aria-label="Información acerca de la aplicación"
+          >
+            <img src="assets/icons/info.svg" alt="" class="icon" />
+          </a>
+          <a
+            href="https://www.paypal.com/donate/?hosted_button_id=XPFGNJ33CECHJ"
+            id="openDonation"
+            class="footer-btn"
+            aria-label="Donacions"
+          >
+            <img
+              src="assets/icons/donation.svg"
+              alt="Icona de donacions"
+              class="icon"
+            />
+          </a>
+        </div>
+        <div class="footer__text">
+          <p>©2025 TesHub</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
