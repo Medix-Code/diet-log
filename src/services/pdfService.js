@@ -111,10 +111,9 @@ function formatDateForPdf(dateString) {
   return `${dd}/${mm}/${yyyy}`;
 }
 
-// >> FUNCIÓ wrapText AFEGIDA AQUÍ <<
 /**
- * Funció que divideix un text en línies sense tallar paraules,
- * basant-se en una amplada màxima.
+ * Funció ROBUSTA que divideix un text en línies sense tallar paraules,
+ * excepte si una paraula és més llarga que l'amplada màxima.
  * @param {string} text - El text a dividir.
  * @param {object} font - L'objecte font de pdf-lib.
  * @param {number} size - La mida de la font.
@@ -122,24 +121,52 @@ function formatDateForPdf(dateString) {
  * @returns {string[]} Un array amb les línies de text.
  */
 function wrapText(text, font, size, maxWidth) {
-  const words = text.split(" ");
   const lines = [];
-  if (!words.length || (words.length === 1 && words[0] === "")) return lines;
+  const words = text.split(" ");
+  let currentLine = "";
 
-  let currentLine = words[0];
+  for (const word of words) {
+    // Cas especial: la paraula sola ja és massa llarga
+    const wordWidth = font.widthOfTextAtSize(word, size);
+    if (wordWidth > maxWidth) {
+      // Si teníem una línia a mig fer, la guardem
+      if (currentLine.length > 0) {
+        lines.push(currentLine.trim());
+        currentLine = "";
+      }
+      // Tallem la paraula llarga per força
+      let tempWord = word;
+      while (tempWord.length > 0) {
+        let cutIndex = tempWord.length;
+        while (
+          font.widthOfTextAtSize(tempWord.substring(0, cutIndex), size) >
+          maxWidth
+        ) {
+          cutIndex--;
+        }
+        lines.push(tempWord.substring(0, cutIndex));
+        tempWord = tempWord.substring(cutIndex);
+      }
+      continue; // Passem a la següent paraula del bucle
+    }
 
-  for (let i = 1; i < words.length; i++) {
-    const word = words[i];
-    const width = font.widthOfTextAtSize(currentLine + " " + word, size);
+    // Comprovem si la paraula cap a la línia actual
+    const testLine = currentLine.length > 0 ? `${currentLine} ${word}` : word;
+    const testWidth = font.widthOfTextAtSize(testLine, size);
 
-    if (width < maxWidth) {
-      currentLine += " " + word;
+    if (testWidth <= maxWidth) {
+      currentLine = testLine;
     } else {
       lines.push(currentLine);
       currentLine = word;
     }
   }
-  lines.push(currentLine);
+
+  // Afegim l'última línia que quedava
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
+
   return lines;
 }
 
@@ -310,14 +337,27 @@ async function fillPdf(generalData, servicesData) {
   // ----------------- NOTES SECTION (VERSIÓ FINAL I ROBUSTA) -----------------
   const notesWithContent = servicesData
     .map((service, index) => ({
+      // >> Necessitem l'index per al títol del modal <<
       text: (service.notes || "").trim(),
-      prefix: `S${index + 1}: `,
+      serviceNumber: service.serviceNumber || "",
+      serviceIndex: index + 1, // Guardem l'índex del servei (1, 2, 3, 4)
     }))
-    .filter((note) => note.text !== "");
+    .filter((note) => note.text !== "" && note.serviceNumber !== ""); // Assegurem que tenim nota I número de servei
 
   if (notesWithContent.length > 0) {
-    // Dibuixa el títol "NOTAS" només si hi ha alguna nota
-    page.drawText("NOTAS", {
+    let titleText;
+
+    // >> LÒGICA PER AL TÍTOL <<
+    // Si només hi ha UNA nota, posem el títol en singular amb el número de posició
+    if (notesWithContent.length === 1) {
+      titleText = `Nota del Servicio ${notesWithContent[0].serviceIndex}`;
+    } else {
+      // Si n'hi ha més d'una, posem el títol en plural
+      titleText = "NOTAS";
+    }
+
+    // Dibuixa el títol que correspongui
+    page.drawText(titleText, {
       ...FIELD_COORDINATES.notesSection.title,
       font: helveticaFont,
       color: rgbFromHex(FIELD_COORDINATES.notesSection.title.color),
@@ -329,14 +369,13 @@ async function fillPdf(generalData, servicesData) {
     const noteMaxWidth = FIELD_COORDINATES.notesSection.maxWidth;
     const lineHeight = FIELD_COORDINATES.notesSection.lineHeight;
 
-    // Dibuixa cada nota que tingui contingut, una darrere l'altra
+    // >> LÒGICA PER AL TEXT DE CADA NOTA <<
     notesWithContent.forEach((note) => {
-      // Evita que s'escrigui a sobre del peu de pàgina
       if (currentY < 40) return;
 
-      const fullText = note.prefix + note.text;
+      // El prefix ara és el número de servei real
+      const fullText = `${note.serviceNumber}: ${note.text}`;
 
-      // Utilitzem la funció wrapText per dividir el text en línies
       const lines = wrapText(
         fullText,
         helveticaFont,
@@ -344,9 +383,7 @@ async function fillPdf(generalData, servicesData) {
         noteMaxWidth
       );
 
-      // Dibuixem cada línia de la nota actual
       lines.forEach((line) => {
-        // Tornem a comprovar la 'Y' per a cada línia individual
         if (currentY < 40) return;
 
         page.drawText(line, {
@@ -357,10 +394,9 @@ async function fillPdf(generalData, servicesData) {
           color: rgbFromHex(noteStyle.color),
         });
 
-        // >> CLAU: Actualitzem la 'Y' DESPRÉS d'escriure cada línia <<
         currentY -= lineHeight;
       });
-    }); // <<-- AQUEST ERA EL '}' QUE FALTAVA
+    });
   }
   // ----------------- END NOTES SECTION -----------------
 
