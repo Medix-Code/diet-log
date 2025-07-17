@@ -25,7 +25,8 @@ const VALIDATION_RULES = {
   VEHICLE_MAX_LENGTH: 6,
   PERSON_NAME_MAX_LENGTH: 28,
   LOCATION_MAX_LENGTH: 35,
-  PERSON_NAME_ALLOWED_CHARS: /^[a-zA-Z\s'’áéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜ]+$/u,
+  PERSON_NAME_ALLOWED_CHARS:
+    /^[a-zA-Z\s'’áéíóúàèìòùäëïöüñçÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÑÇ]+$/u,
 };
 
 const SELECTORS = {
@@ -404,14 +405,14 @@ export function validateLocationFields() {
 }
 
 export function setupNameAndVehicleInputSanitizers() {
-  const allowedCharsRegex = VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS; // Reutilitzem la constant existent.
+  const allowedCharsRegex = VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS;
 
   // Funció auxiliar per filtrar en temps real (ja existent, però millorada per robustesa).
   function handleNameInput(e) {
     const value = e.target.value;
     if (!allowedCharsRegex.test(value)) {
       e.target.value = value.replace(
-        /[^a-zA-Z\s'’áéíóúàèìòùäëïöüÁÉÍÓÚÀÈÌÒÙÄËÏÖÜ]/g,
+        /[^a-zA-Z\s'’áéíóúàèìòùäëïöüñçÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÑÇ.]/g,
         ""
       );
     }
@@ -441,7 +442,6 @@ export function setupNameAndVehicleInputSanitizers() {
         (e.clipboardData || window.clipboardData)?.getData("text") || "";
       if (!allowedCharsRegex.test(pastedData)) {
         e.preventDefault(); // Impedim el paste sense toast.
-        // Opcional: Si vols filtrar en lloc de prevenir, pots reemplaçar amb: e.target.value += pastedData.replace(/[^...]/g, "");
       }
     } catch (error) {
       console.error("Error processant 'paste':", error);
