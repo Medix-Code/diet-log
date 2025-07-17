@@ -14,6 +14,7 @@ import {
 } from "../db/indexedDbDietRepository.js";
 import {
   setModeForService,
+  serviceNotes,
   updateServicePanelsForServiceType,
   removeErrorClassesFromService,
 } from "./servicesPanelManager.js";
@@ -150,7 +151,7 @@ async function buildDietObject(generalData, servicesData, dietId) {
     person2: sanitizeText(generalData.person2),
     signatureConductor: generalData.signatureConductor, // Base64, no necesita saneamiento de texto.
     signatureAjudant: generalData.signatureAjudant, // Base64, no necesita saneamiento de texto.
-    services: servicesData.map((s) => ({
+    services: servicesData.map((s, index) => ({
       serviceNumber: sanitizeText(s.serviceNumber),
       origin: sanitizeText(s.origin),
       destination: sanitizeText(s.destination),
@@ -159,6 +160,7 @@ async function buildDietObject(generalData, servicesData, dietId) {
       destinationTime: s.destinationTime,
       endTime: s.endTime,
       mode: sanitizeText(s.mode),
+      notes: sanitizeText(s.notes) || "",
     })),
     serviceType: sanitizeText(generalData.serviceType),
     timeStampDiet,
@@ -236,6 +238,8 @@ function populateFormWithDietData(diet) {
 
     setModeForService(index, serviceData.mode || "3.6");
     removeErrorClassesFromService(element);
+
+    serviceNotes[index] = serviceData.notes || "";
   });
 
   // Neteja serveis excedents
@@ -247,6 +251,8 @@ function populateFormWithDietData(diet) {
       if (input) input.value = "";
     });
     removeErrorClassesFromService(element);
+
+    serviceNotes[i] = "";
   }
 }
 

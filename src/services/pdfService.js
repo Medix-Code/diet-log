@@ -62,6 +62,14 @@ const FIELD_COORDINATES = {
     conductor: { x: 125, y: 295, width: 100, height: 50 },
     ayudante: { x: 380, y: 295, width: 100, height: 50 },
   },
+
+  notesSection: {
+    title: { x: 65, y: 270, size: 14, color: "#000000" }, // Coordenades per al títol "NOTAS"
+    lineHeight: 15, // Espai vertical entre línies de notes
+    maxCharsPerLine: 70, // Caràcters màxims abans de tallar la línia (per evitar que se surti del full)
+    start: { x: 65, y: 250, size: 10, color: "#333333" }, // On començarà a escriure la primera nota (S1:)
+  },
+
   fixedText: {
     website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
   },
@@ -271,6 +279,51 @@ async function fillPdf(generalData, servicesData) {
     ),
   ]);
 
+  // ----------------- NOTES SECTION -----------------
+  const notesWithContent = servicesData
+    .map((service, index) => ({
+      text: service.notes || "",
+      prefix: `S${index + 1}: `,
+    }))
+    .filter((note) => note.text.trim() !== "");
+
+  if (notesWithContent.length > 0) {
+    // Dibuixa el títol "NOTAS" només si hi ha alguna nota
+    page.drawText("NOTAS", {
+      ...FIELD_COORDINATES.notesSection.title,
+      font: helveticaFont,
+      color: rgbFromHex(FIELD_COORDINATES.notesSection.title.color),
+    });
+
+    let currentY = FIELD_COORDINATES.notesSection.start.y;
+
+    // Dibuixa cada nota que tingui contingut
+    notesWithContent.forEach((note) => {
+      const fullText = note.prefix + note.text;
+
+      // Lògica per dividir el text en múltiples línies si és molt llarg
+      const maxChars = FIELD_COORDINATES.notesSection.maxCharsPerLine;
+      const lines = [];
+      for (let i = 0; i < fullText.length; i += maxChars) {
+        lines.push(fullText.substring(i, i + maxChars));
+      }
+
+      lines.forEach((line) => {
+        if (currentY < 40) return; // Evita escriure a sobre del peu de pàgina
+
+        page.drawText(line, {
+          x: FIELD_COORDINATES.notesSection.start.x,
+          y: currentY,
+          size: FIELD_COORDINATES.notesSection.start.size,
+          font: helveticaFont,
+          color: rgbFromHex(FIELD_COORDINATES.notesSection.start.color),
+        });
+        currentY -= FIELD_COORDINATES.notesSection.lineHeight; // Mou la Y per a la següent línia
+      });
+    });
+  }
+  // ----------------- END NOTES SECTION -----------------
+
   // Watermark
   const watermarkText = PDF_SETTINGS.WATERMARK_TEXT;
   const textSize = FIELD_COORDINATES.fixedText.website.size;
@@ -362,6 +415,7 @@ export async function downloadDietPDF(dietId) {
       destinationTime: service.destinationTime || "",
       endTime: service.endTime || "",
       mode: service.mode || "3.6",
+      notes: service.notes || "",
     }));
 
     const pdfBytes = await fillPdf(generalData, servicesData);

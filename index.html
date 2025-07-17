@@ -240,6 +240,14 @@
             <div class="options-dropdown hidden" id="options-menu">
               <button
                 type="button"
+                class="option-btn clear-selected-btn notes-btn"
+                id="notes-selected-service"
+                aria-label="Añadir notas"
+              >
+                <img src="assets/icons/ic_note.svg" alt="Notas" class="icon" />
+              </button>
+              <button
+                type="button"
                 class="option-btn clear-selected-btn"
                 id="clear-selected-service"
                 aria-label="Borrar datos"
@@ -765,6 +773,37 @@
           </div>
         </div>
       </div>
+      <!-- Modal per notes -->
+      <div
+        id="notes-modal"
+        class="modal"
+        role="dialog"
+        aria-labelledby="notes-title"
+      >
+        <div class="modal-content">
+          <h2 id="notes-title">Notas del Servicio</h2>
+
+          <div class="notes-textarea-container">
+            <textarea
+              id="notes-textarea"
+              placeholder=" "
+              maxlength="200"
+            ></textarea>
+            <label for="notes-textarea" class="notes-label"
+              >Escribe tus notas aquí...</label
+            >
+            <div id="notes-char-counter" class="char-counter">0 / 200</div>
+          </div>
+
+          <div class="modal-buttons">
+            <button id="notes-cancel" class="modal-button cancel">
+              Cancelar
+            </button>
+            <button id="notes-save" class="modal-button accept">Guardar</button>
+          </div>
+        </div>
+      </div>
+
       <div id="camera-gallery-modal" class="modal-bottom hidden">
         <div class="modal-bottom-content">
           <div class="modal-title-container">

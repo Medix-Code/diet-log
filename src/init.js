@@ -15,7 +15,7 @@ import { initSignature } from "./services/signatureService.js";
 import { setupTabs } from "./ui/tabs.js";
 import { initThemeSwitcher } from "./ui/theme.js";
 import { setupMainButtons } from "./ui/mainButtons.js";
-import { setupClearSelectedService } from "./ui/clearService.js";
+import { setupClearSelectedService } from "./ui/clearService.js"; // Eliminat el duplicat
 import { setupModalGenerics } from "./ui/modals.js";
 import { setupDatePickers, setupTimePickers } from "./ui/pickers.js";
 import { setupServiceNumberRestrictions } from "./utils/restrictions.js";
@@ -28,6 +28,7 @@ import { getAnonymousUserId } from "./services/userService.js";
 import "./ui/keyboardHandler.js";
 import "./ui/focusScrollHandler.js";
 import { setupNameAndVehicleInputSanitizers } from "./utils/validation.js";
+import { setupNotesSelectedService } from "./services/notesService.js";
 
 // --- Constants Específiques d'Inicialització ---
 const DONATION_LINK_ID = "openDonation";
@@ -72,6 +73,7 @@ export async function initializeApp() {
     setupTabs();
     setupMainButtons();
     setupClearSelectedService();
+    setupNotesSelectedService(); // Ja definit gràcies a l'import nou
     setupModalGenerics();
     setupDatePickers();
     setupTimePickers();
