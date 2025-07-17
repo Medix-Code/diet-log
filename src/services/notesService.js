@@ -129,9 +129,9 @@ function openNotesModal(serviceIndex) {
 
     // Mostrem el missatge només si la nova nota no és buida
     if (newNote !== "") {
-      showToast("Notes guardades.", "success");
+      showToast("Observación guardada.", "success");
     } else {
-      showToast("Nota eliminada.", "info"); // Missatge opcional quan es buida
+      showToast("Observación eliminada.", "info"); // Missatge opcional quan es buida
     }
 
     closeNotesModal();
