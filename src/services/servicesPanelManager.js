@@ -8,7 +8,7 @@ import { revalidateFormState } from "./formService.js";
 
 // --- Constants ---
 
-const ALLOWED_MODES = ["3.6", "3.22", "3.11", "3.51"];
+const ALLOWED_MODES = ["3.6", "3.51", "3.22", "3.11"];
 
 const DOM_IDS = {
   CONTAINER: "services-container",
