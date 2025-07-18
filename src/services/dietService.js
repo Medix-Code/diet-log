@@ -145,7 +145,7 @@ async function buildDietObject(generalData, servicesData, dietId) {
   // Hashjar cada serviceNumber en paral·lel
   const hashedServices = await Promise.all(
     servicesData.map(async (s) => ({
-      serviceNumber: s.serviceNumber ? await pseudoId(s.serviceNumber) : "", // Hash si existeix; altrament, buit
+      serviceNumber: s.serviceNumber ? await pseudoId(s.serviceNumber) : "",
       origin: sanitizeText(s.origin),
       destination: sanitizeText(s.destination),
       originTime: s.originTime,
