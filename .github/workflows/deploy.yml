@@ -26,12 +26,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Actualizar versió del Service Worker
-        run: |
-          VERSION=$(date +'%Y%m%d%H%M%S')
-          echo "Nova versió del Service Worker: $VERSION"
-          sed -i "s/const VERSION = \"[^\"]*\"/const VERSION = \"$VERSION\"/g" service-worker.js
-          echo "Service Worker actualitzat."
+      - name: Inject App Version
+        run: node inject-version.js
 
       - name: Desplegar a GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
