@@ -108,12 +108,6 @@ export class Diet {
 
 // dietService.js (fragment)
 
-/**
- * Construeix un objecte Diet aplicant:
- *   1) validacions bàsiques
- *   2) pseudonimització (hash + salt) de l’ID de dieta i dels números de servei
- *   3) sanejament de camps textuals
- */
 async function buildDietObject(generalData, servicesData, dietId) {
   /* ---------- 1. Validacions bàsiques ---------- */
   if (!generalData || !Array.isArray(servicesData) || !dietId) {
@@ -151,7 +145,8 @@ async function buildDietObject(generalData, servicesData, dietId) {
     person2: sanitizeText(generalData.person2),
     signatureConductor: generalData.signatureConductor,
     signatureAjudant: generalData.signatureAjudant,
-    services: servicesKept.map((s) => ({
+    services: servicesData.map((s) => ({
+      // <--- Canvi aquí: servicesData en lloc de servicesKept
       serviceNumber: sanitizeText(s.serviceNumber),
       origin: sanitizeText(s.origin),
       destination: sanitizeText(s.destination),
@@ -254,10 +249,6 @@ function populateFormWithDietData(diet) {
   }
 }
 
-/**
- * Realitza el guardat de la dieta.
- * @param {boolean} isManual - Si és un guardat manual.
- */
 async function performSave(isManual) {
   const { generalData, servicesData } = gatherAllData();
   const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
@@ -274,7 +265,7 @@ async function performSave(isManual) {
   setSaveButtonState(false);
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulació
+    await new Promise((resolve) => setTimeout(resolve, 500)); 
 
     if (!validateFormTabs()) {
       throw new Error("Validació fallida");
@@ -302,13 +293,15 @@ async function performSave(isManual) {
 
     await displayDietOptions();
   } catch (error) {
-    indicateSaveError(error.message || "No se pudo guardar");
+    console.error("Error en performSave:", error); /
+    indicateSaveError(error.message || "No se pudo guardar"); 
     if (isManual) {
-      showToast(`Error al guardar: ${error.message}`, "error");
+      showToast(`Error al guardar: ${error.message}`, "error"); 
     }
-    setSaveButtonState(true);
+    setSaveButtonState(true); 
   }
 }
+
 
 // --- Funcions Exportades ---
 
