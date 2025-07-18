@@ -4,7 +4,7 @@
  * @module pdfService
  */
 
-mport { pseudoId } from "../utils/pseudoId.js";
+import { pseudoId } from "../utils/pseudoId.js";
 import { showToast } from "../ui/toast.js";
 import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
