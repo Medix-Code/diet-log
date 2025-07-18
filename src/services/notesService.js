@@ -26,6 +26,7 @@ const NOTES_COUNTER_ID = "notes-char-counter";
 let notesModal, notesTitle, notesTextarea, notesSave, notesCancel, notesCounter;
 let currentSaveHandler = null;
 let currentInputHandler = null;
+let currentEnterKeyHandler = null;
 
 // --- Funció Principal ---
 
@@ -95,9 +96,20 @@ function openNotesModal(serviceIndex) {
   };
   updateCounter();
 
+  // Listener per al comptador de caràcters
   currentInputHandler = () => updateCounter();
   notesTextarea.addEventListener("input", currentInputHandler);
 
+  // NOU: Listener per a la tecla Enter al textarea
+  currentEnterKeyHandler = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // <-- MOLT IMPORTANT: Evita el salt de línia per defecte
+      notesSave.click(); // <-- Simula el clic al botó Guardar
+    }
+  };
+  notesTextarea.addEventListener("keydown", currentEnterKeyHandler); // Atent als keydown
+
+  // Listener per al botó Guardar
   currentSaveHandler = () => {
     const newNote = notesTextarea.value.trim();
     const oldNote = serviceNotes[serviceIndex] || "";
@@ -142,6 +154,11 @@ function closeNotesModal() {
   if (currentInputHandler) {
     notesTextarea.removeEventListener("input", currentInputHandler);
     currentInputHandler = null;
+  }
+  if (currentEnterKeyHandler) {
+    // <-- NOU: Neteja també el listener de la tecla Enter
+    notesTextarea.removeEventListener("keydown", currentEnterKeyHandler);
+    currentEnterKeyHandler = null;
   }
 
   // Amaguem el modal i desbloquegem el body
