@@ -133,7 +133,9 @@ async function buildDietObject(generalData, servicesData, dietId) {
   }
 
   /* ---------- 2. Pseudonimització ---------- */
-  const hashedDietId = await pseudoId(dietId); // hash global
+  const hashedDietId = await pseudoId(dietId);
+  const servicesKept = servicesData;
+
   const servicesHashed = await Promise.all(
     // hash per servei
     servicesData.map(async (s) => ({
@@ -158,8 +160,8 @@ async function buildDietObject(generalData, servicesData, dietId) {
     person2: sanitizeText(generalData.person2),
     signatureConductor: generalData.signatureConductor,
     signatureAjudant: generalData.signatureAjudant,
-    services: servicesHashed.map((s) => ({
-      serviceNumber: s.serviceNumber,
+    services: servicesKept.map((s) => ({
+      serviceNumber: sanitizeText(s.serviceNumber),
       origin: sanitizeText(s.origin),
       destination: sanitizeText(s.destination),
       originTime: s.originTime,
@@ -271,6 +273,7 @@ async function performSave(isManual) {
   if (!dietId || !/^\d{9}$/.test(dietId)) {
     throw new Error("ID invàlid");
   }
+
   const hashedId = await pseudoId(dietId);
   const existingDiet = await getDiet(hashedId);
   const isNewDiet = !existingDiet;
@@ -341,7 +344,7 @@ export async function loadDietById(dietId) {
   if (!dietId || typeof dietId !== "string") {
     throw new Error("ID invàlid");
   }
-  const hashedId = await pseudoId(rawId);
+  const hashedId = await pseudoId(dietId);
   const diet = await getDiet(hashedId);
   if (!diet) {
     throw new Error(`Dieta no trobada: ${dietId}`);
