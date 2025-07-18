@@ -4,6 +4,8 @@
  * @module dietService
  */
 
+import { pseudoId } from "../utils/pseudoId.js";
+
 import { timeAgo } from "../utils/relativeTime.js";
 import {
   addDiet,
@@ -104,58 +106,62 @@ export class Diet {
   }
 }
 
+// dietService.js (fragment)
+
 /**
- * Construeix un objecte Diet a partir de dades del formulari,
- * aplicant validacions i sanejament per garantir la seguretat i integritat de les dades.
- * @param {Object} generalData - Dades generals del formulari.
- * @param {Array} servicesData - Array de dades de serveis.
- * @param {string} dietId - ID de la dieta a construir.
- * @returns {Promise<Diet>} - Una promesa que resol amb l'objecte Diet construït.
- * @throws {Error} Si les dades són incompletes, l'ID és invàlid o el format de l'hora és incorrecte.
+ * Construeix un objecte Diet aplicant:
+ *   1) validacions bàsiques
+ *   2) pseudonimització (hash + salt) de l’ID de dieta i dels números de servei
+ *   3) sanejament de camps textuals
  */
 async function buildDietObject(generalData, servicesData, dietId) {
-  // 1. Validació inicial de les dades d'entrada.
+  /* ---------- 1. Validacions bàsiques ---------- */
   if (!generalData || !Array.isArray(servicesData) || !dietId) {
     throw new Error("Datos incompletos para construir la dieta.");
   }
-
-  // 2. Validació del format de l'ID de la dieta.
   if (!/^\d{9}$/.test(dietId)) {
     throw new Error("ID de dieta inválido. Debe contener 9 dígitos.");
   }
-
-  // 3. Validació del format de les hores a tots els serveis.
-  for (const service of servicesData) {
+  for (const s of servicesData) {
     if (
-      !isValidTimeFormat(service.originTime) ||
-      !isValidTimeFormat(service.destinationTime) ||
-      !isValidTimeFormat(service.endTime)
+      !isValidTimeFormat(s.originTime) ||
+      !isValidTimeFormat(s.destinationTime) ||
+      !isValidTimeFormat(s.endTime)
     ) {
       throw new Error("Formato de hora inválido detectado. Use HH:mm.");
     }
   }
 
-  // 4. Obtenim el timestamp: si la dieta ja existeix, el mantenim; si no, en creem un de nou.
-  const existingDiet = await getDiet(dietId);
+  /* ---------- 2. Pseudonimització ---------- */
+  const hashedDietId = await pseudoId(dietId); // hash global
+  const servicesHashed = await Promise.all(
+    // hash per servei
+    servicesData.map(async (s) => ({
+      ...s,
+      serviceNumber: await pseudoId(s.serviceNumber ?? ""),
+    }))
+  );
+
+  /* ---------- 3. Timestamp ---------- */
+  const existingDiet = await getDiet(hashedDietId);
   const timeStampDiet = existingDiet
     ? existingDiet.timeStampDiet
     : new Date().toISOString();
 
-  // 5. Construcció final de l'objecte Diet, aplicant sanejament als camps de text.
+  /* ---------- 4. Construcció segura ---------- */
   const dietData = {
-    id: dietId,
+    id: hashedDietId,
     date: sanitizeText(generalData.date),
     dietType: sanitizeText(generalData.dietType),
     vehicleNumber: sanitizeText(generalData.vehicleNumber),
     person1: sanitizeText(generalData.person1),
     person2: sanitizeText(generalData.person2),
-    signatureConductor: generalData.signatureConductor, // Base64, no necesita saneamiento de texto.
-    signatureAjudant: generalData.signatureAjudant, // Base64, no necesita saneamiento de texto.
-    services: servicesData.map((s, index) => ({
-      serviceNumber: sanitizeText(s.serviceNumber),
+    signatureConductor: generalData.signatureConductor,
+    signatureAjudant: generalData.signatureAjudant,
+    services: servicesHashed.map((s) => ({
+      serviceNumber: s.serviceNumber,
       origin: sanitizeText(s.origin),
       destination: sanitizeText(s.destination),
-      // Las horas ya han sido validadas, se guardan directamente.
       originTime: s.originTime,
       destinationTime: s.destinationTime,
       endTime: s.endTime,
@@ -166,7 +172,6 @@ async function buildDietObject(generalData, servicesData, dietId) {
     timeStampDiet,
   };
 
-  // Utilitzem el constructor de la classe Diet per crear la instància final.
   return new Diet(dietData);
 }
 
@@ -266,8 +271,8 @@ async function performSave(isManual) {
   if (!dietId || !/^\d{9}$/.test(dietId)) {
     throw new Error("ID invàlid");
   }
-
-  const existingDiet = await getDiet(dietId);
+  const hashedId = await pseudoId(dietId);
+  const existingDiet = await getDiet(hashedId);
   const isNewDiet = !existingDiet;
   const saveMessage = isNewDiet ? "Guardando nueva dieta…" : "Guardando…";
   indicateSaving(saveMessage);
@@ -336,8 +341,8 @@ export async function loadDietById(dietId) {
   if (!dietId || typeof dietId !== "string") {
     throw new Error("ID invàlid");
   }
-
-  const diet = await getDiet(dietId);
+  const hashedId = await pseudoId(rawId);
+  const diet = await getDiet(hashedId);
   if (!diet) {
     throw new Error(`Dieta no trobada: ${dietId}`);
   }
