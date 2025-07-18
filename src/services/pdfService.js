@@ -568,7 +568,7 @@ export async function downloadDietPDF(dietId) {
 
     showToast("Descàrrega iniciada correctament.", "success");
   } catch (error) {
-    console.error("Error en downloadDietPDF:", error); /
+    console.error("Error en downloadDietPDF:", error);
     showToast(
       `Error en la generació del PDF: ${error.message || "Desconegut"}`,
       "error"
