@@ -79,7 +79,7 @@ const FIELD_COORDINATES = {
     title: { x: 65, y: 250, size: 16, color: "#000000" },
     lineHeight: 18,
     maxWidth: 465, // Mantingut per compatibilitat; serà sobreescrit a fillPdf
-    start: { x: 65, y: 230, size: 14, color: "#333333" },
+    start: { x: 65, y: 230, size: 16, color: "#333333" },
   },
   fixedText: {
     website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
