@@ -569,12 +569,10 @@ export async function downloadDietPDF(dietId) {
 
     showToast("Descarga iniciada correctamente.", "success");
   } catch (error) {
-  console.error("Error en downloadDietPDF:", error);
-  let errorMsg = error.message || "Desconocido";
-  if (error instanceof ReferenceError) {
-    errorMsg = "Función pseudoId no definida. Verifica las importaciones.";
-  }
-  showToast(`Error en la generación del PDF: ${errorMsg}`, "error");
-
+    console.error("Error en downloadDietPDF:", error);
+    showToast(
+      `Error en la generación del PDF: ${error.message || "Desconocido"}`,
+      "error"
+    );
   }
 }
