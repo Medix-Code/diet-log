@@ -1,13 +1,14 @@
 {
   "name": "diet-log",
   "version": "1.0.0",
-  "description": "Una herramienta para registrar horarios y detalles de servicios, generar informes PDF y agilizar la gestión de dietas.",
+  "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
   "main": "index.html",
   "scripts": {
+    "inject-version": "node inject-version.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "TESHub",
+  "author": "MisDietas",
   "license": "ISC",
   "dependencies": {
     "pdf-lib": "^1.17.1",
