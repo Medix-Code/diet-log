@@ -817,12 +817,11 @@ button .fa {
 
 /* Modal footer i botó Cerrar */
 .modal-footer {
-  padding-top: 15px;
-  margin-top: auto;
+  padding-top: 5px;
+  margin-top: 8px;
   border-top: 1px solid var(--grey-border, #eee);
   flex-shrink: 0;
   display: flex;
-  margin-top: 12px;
   justify-content: flex-end;
 }
 
