@@ -59,7 +59,7 @@ let globalChipBarEl = null;
 let globalChipButtons = [];
 
 export let serviceModes = [];
-export let serviceNotes = ["", "", "", ""]; // Export afegit per permetre import des d'altres mòduls (resolt l'error de sintaxi)
+export let serviceNotes = ["", "", "", ""];
 
 // --- Helpers ---
 

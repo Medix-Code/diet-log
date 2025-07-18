@@ -743,16 +743,19 @@
         tabindex="-1"
       >
         <div class="modal-content">
-          <h2 id="about-title">Sobre este herramienta</h2>
+          <h2 id="about-title">Bienvenido a MisDietas</h2>
+
           <p>
-            Esta herramienta te permite generar justificantes de dietas en
-            formato PDF de manera rápida y sencilla. Tan fácil como rellenar el
-            formulario y descargarlo de inmediato.
+            MisDietas es la forma más rápida y sencilla de registrar los
+            servicios de tu jornada. Registra cada servicio cómodamente durante
+            tu turno y, al finalizar, genera tu parte de dietas en formato PDF
+            al instante.
           </p>
           <p>
-            Los datos guardados se almacenan localmente en tu navegador para
-            garantizar su seguridad y privacidad. Ten en cuenta que, si los
-            eliminas, no podrás recuperarlos.
+            <strong>La seguridad de tus datos es fundamental.</strong> Toda la
+            información se guarda exclusivamente en tu dispositivo y nunca se
+            comparte. Por este motivo, recuerda que si borras los datos de tu
+            navegador, la información se eliminará de forma permanente.
           </p>
           <div class="modal-buttons">
             <button class="close-modal-btn">Entendido</button>
@@ -788,7 +791,7 @@
           <div class="notes-textarea-container">
             <textarea
               id="notes-textarea"
-              rows="9"
+              rows="8"
               placeholder=" "
               maxlength="200"
             ></textarea>
@@ -858,6 +861,7 @@
     <footer class="footer">
       <div class="footer__content">
         <div class="footer__icons">
+          <!-- Botó del tema -->
           <button
             id="theme-toggle-btn"
             class="footer-btn"
@@ -869,30 +873,29 @@
               alt="Icona de tema"
               class="icon"
             />
+            <span id="theme-btn-text" class="footer-btn-text">Oscuro</span>
+            <!-- ID nou i text inicial -->
           </button>
-          <a
-            href="#about-modal"
-            class="footer-btn"
-            role="button"
-            aria-label="Información acerca de la aplicación"
-          >
+
+          <!-- Botó d'Informació -->
+          <a href="#about-modal" class="footer-btn" ...>
             <img src="assets/icons/info.svg" alt="" class="icon" />
+            <span class="footer-btn-text">Info</span>
           </a>
-          <a
-            href="https://www.paypal.com/donate/?hosted_button_id=XPFGNJ33CECHJ"
-            id="openDonation"
-            class="footer-btn"
-            aria-label="Donacions"
-          >
+
+          <!-- Botó de Donacions -->
+          <a href="https://www.paypal.com/donate/..." class="footer-btn" ...>
             <img
               src="assets/icons/donation.svg"
               alt="Icona de donacions"
               class="icon"
             />
+            <span class="footer-btn-text">Donar</span>
           </a>
         </div>
         <div class="footer__text">
-          <p>©2025 TesHub | v1.0.0</p>
+          <span class="copyright-text">©2025 MisDietas</span>
+          <span class="version-text">__APP_VERSION__</span>
         </div>
       </div>
     </footer>

@@ -278,7 +278,7 @@ main {
   display: flex;
   align-items: center; // Alinea verticalment el logo i el títol
   gap: 12px; // Espai entre el logo i el títol
-  text-decoration: none; // Traiem el subratllat de l'enllaç
+  text-decoration: none;
 }
 
 .top-bar__title {
@@ -1528,7 +1528,6 @@ button {
   font-size: 1rem;
   color: var(--text-color);
   resize: vertical; /* Permet a l'usuari canviar l'alçada */
-  min-height: 190px; /* Alçada mínima */
   transition: border-color 0.2s ease;
 }
 
@@ -2313,7 +2312,7 @@ button {
   }
 }
 
-// FOOTER
+/* FOOTER */
 .footer {
   margin-top: 60px;
   background-color: var(--bg-footer);
@@ -2321,66 +2320,94 @@ button {
   padding: 20px;
   text-align: center;
   font-family: sans-serif;
+}
 
-  .footer__content {
-    display: flex;
-    flex-direction: column;
-  }
+.footer .footer__content {
+  display: flex;
+  flex-direction: column;
+}
 
-  .footer__icons {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 50px;
-    margin-bottom: 30px;
-  }
+.footer .footer__icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  margin-bottom: 30px;
+}
 
-  .footer__text p {
-    margin: 0;
-    font-size: 1rem;
-    opacity: 0.8;
-  }
+/* Contenidor del text centrat per defecte */
+.footer .footer__text {
+  line-height: 1.4;
+}
 
-  .footer-btn {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
-    outline: none;
+/* Estil pel text del copyright */
+.footer .copyright-text {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
 
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
+/* Estil pel text de la versió */
+.footer .version-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
 
-    &:focus {
-      background-color: transparent;
-      outline: none;
-    }
+.footer .footer-btn {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  flex-direction: column;
+  gap: 8px;
+  height: auto;
+  padding: 8px 4px;
+  width: 65px;
+}
 
-    &:focus-visible {
-      outline: 2px solid currentColor;
-      outline-offset: 3px;
-    }
+.footer .footer-btn-text {
+  font-size: 0.7rem;
+  font-family: sans-serif;
+  color: var(--text-color-footer);
+  opacity: 0.9;
+  pointer-events: none;
+}
 
-    &:active {
-      background-color: rgba(255, 255, 255, 0.2);
-      transform: scale(0.92);
-    }
+.footer .footer-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
-    .icon {
-      width: var(--icon-size);
-      height: var(--icon-size);
-      object-fit: contain;
-    }
-  }
+.footer .footer-btn:focus {
+  background-color: transparent;
+  outline: none;
+}
+
+.footer .footer-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.footer .footer-btn:active {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(0.92);
+}
+
+.footer .footer-btn .icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  object-fit: contain;
+}
+
+.footer a.footer-btn {
+  text-decoration: none;
 }
 
 .hidden {
