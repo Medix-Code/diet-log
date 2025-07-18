@@ -535,7 +535,9 @@ export async function downloadDietPDF(dietId) {
   }
 
   try {
-    const diet = await getDiet(dietId);
+    // Nova lògica: Hashja si no és ja un hash de 64 caràcters
+    const hashedId = dietId.length === 64 ? dietId : await pseudoId(dietId);
+    const diet = await getDiet(hashedId);
     if (!diet) throw new Error("Dieta no trobada.");
 
     const generalData = {
@@ -566,6 +568,7 @@ export async function downloadDietPDF(dietId) {
 
     showToast("Descàrrega iniciada correctament.", "success");
   } catch (error) {
+    console.error("Error en downloadDietPDF:", error); /
     showToast(
       `Error en la generació del PDF: ${error.message || "Desconegut"}`,
       "error"
