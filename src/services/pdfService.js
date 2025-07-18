@@ -530,15 +530,14 @@ export async function generateAndDownloadPdf() {
 
 export async function downloadDietPDF(dietId) {
   if (!dietId) {
-    showToast("ID de dieta invàlid.", "error");
+    showToast("ID de dieta inválido.", "error");
     return;
   }
 
   try {
-    // Nova lògica: Hashja si no és ja un hash de 64 caràcters
     const hashedId = dietId.length === 64 ? dietId : await pseudoId(dietId);
     const diet = await getDiet(hashedId);
-    if (!diet) throw new Error("Dieta no trobada.");
+    if (!diet) throw new Error("Dieta no encontrada.");
 
     const generalData = {
       date: diet.date || "",
@@ -566,11 +565,11 @@ export async function downloadDietPDF(dietId) {
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
     downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), fileName);
 
-    showToast("Descàrrega iniciada correctament.", "success");
+    showToast("Descarga iniciada correctamente.", "success");
   } catch (error) {
     console.error("Error en downloadDietPDF:", error);
     showToast(
-      `Error en la generació del PDF: ${error.message || "Desconegut"}`,
+      `Error en la generación del PDF: ${error.message || "Desconocido"}`,
       "error"
     );
   }
