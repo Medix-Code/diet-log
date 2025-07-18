@@ -100,14 +100,13 @@ function openNotesModal(serviceIndex) {
   currentInputHandler = () => updateCounter();
   notesTextarea.addEventListener("input", currentInputHandler);
 
-  // NOU: Listener per a la tecla Enter al textarea
   currentEnterKeyHandler = (event) => {
     if (event.key === "Enter") {
-      event.preventDefault(); // <-- MOLT IMPORTANT: Evita el salt de línia per defecte
-      notesSave.click(); // <-- Simula el clic al botó Guardar
+      event.preventDefault();
+      notesTextarea.blur();
     }
   };
-  notesTextarea.addEventListener("keydown", currentEnterKeyHandler); // Atent als keydown
+  notesTextarea.addEventListener("keydown", currentEnterKeyHandler);
 
   // Listener per al botó Guardar
   currentSaveHandler = () => {
