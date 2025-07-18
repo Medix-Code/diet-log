@@ -224,14 +224,6 @@ async function fillPdf(generalData, servicesData) {
   };
 
   // ---------------------------------------------------------------------------
-  // Càlcul dinàmic de marges per a la secció de notes
-  // ---------------------------------------------------------------------------
-  const PAGE_WIDTH = page.getWidth();
-  const NOTE_AREA_X = LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING; // 65
-  const NOTE_AREA_WIDTH =
-    PAGE_WIDTH - 2 * (LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING);
-
-  // ---------------------------------------------------------------------------
   // Camps generals
   // ---------------------------------------------------------------------------
   Object.entries(FIELD_COORDINATES.general).forEach(([field, coords]) => {
@@ -354,88 +346,79 @@ async function fillPdf(generalData, servicesData) {
   ]);
 
   // ---------------------------------------------------------------------------
-  // Secció de notes (marges simètrics)
+  // Secció de notes (marges simètrics + sagnat penjant)
   // ---------------------------------------------------------------------------
-  const notesWithContent = servicesData
-    .map((service) => ({
-      text: (service.notes || "").trim(),
-      serviceNumber: service.serviceNumber || "",
-    }))
-    .filter((note) => note.text !== "" && note.serviceNumber !== "");
+  const PAGE_WIDTH = page.getWidth();
+  const LEFT_BOUNDARY = LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING; // 65 pt
+  const RIGHT_BOUNDARY =
+    PAGE_WIDTH - (LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING);
 
-  if (notesWithContent.length > 0) {
-    // Línia separadora amb marges simètrics
-    const lineY = 275;
+  const notes = servicesData
+    .map((s) => ({ num: s.serviceNumber || "", text: (s.notes || "").trim() }))
+    .filter((n) => n.num && n.text);
+
+  if (notes.length) {
+    // línia horitzontal separadora
+    const sepY = 275;
     page.drawLine({
-      start: { x: LAYOUT.OUTER_MARGIN, y: lineY },
-      end: { x: PAGE_WIDTH - LAYOUT.OUTER_MARGIN, y: lineY },
+      start: { x: LAYOUT.OUTER_MARGIN, y: sepY },
+      end: { x: PAGE_WIDTH - LAYOUT.OUTER_MARGIN, y: sepY },
       thickness: 0.5,
       color: rgb(0.8, 0.8, 0.8),
     });
 
-    // Títol dinàmic
-    const titleText =
-      notesWithContent.length === 1 ? "Observació" : "Observacions";
-    page.drawText(titleText, {
+    // títol
+    const title = notes.length === 1 ? "Observació" : "Observacions";
+    page.drawText(title, {
       ...FIELD_COORDINATES.notesSection.title,
       font: helveticaFont,
       color: rgbFromHex(FIELD_COORDINATES.notesSection.title.color),
     });
 
-    let currentY = FIELD_COORDINATES.notesSection.start.y;
-    const noteStyle = {
-      ...FIELD_COORDINATES.notesSection.start,
-      x: NOTE_AREA_X,
-    };
-    const noteMaxWidth = NOTE_AREA_WIDTH;
-    const lineHeight = FIELD_COORDINATES.notesSection.lineHeight;
+    // paràmetres de text
+    let y = FIELD_COORDINATES.notesSection.start.y;
+    const size = FIELD_COORDINATES.notesSection.start.size;
+    const lineH = FIELD_COORDINATES.notesSection.lineHeight;
+    const bodyCol = rgbFromHex(FIELD_COORDINATES.notesSection.start.color);
 
-    notesWithContent.forEach((note) => {
-      if (currentY < 40) return; // Evitar escriure massa avall
+    notes.forEach(({ num, text }) => {
+      if (y < 40) return; // no escriure massa avall
 
-      const prefixText = `Servei ${note.serviceNumber}: `;
-      page.drawText(prefixText, {
-        x: noteStyle.x,
-        y: currentY,
+      // prefix “Servei 123: ”
+      const prefix = `Servei ${num}: `;
+      const prefixW = helveticaFont.widthOfTextAtSize(prefix, size);
+      const indentX = LEFT_BOUNDARY + prefixW; // punt de sagnat
+
+      page.drawText(prefix, {
+        x: LEFT_BOUNDARY,
+        y,
         font: helveticaFont,
-        size: noteStyle.size,
+        size,
         color: rgbFromHex(PDF_SETTINGS.SERVICE_NUMBER_COLOR),
       });
 
-      const prefixWidth = helveticaFont.widthOfTextAtSize(
-        prefixText,
-        noteStyle.size
-      );
-      let currentX = noteStyle.x + prefixWidth;
+      // recorrem paraules amb control de marge dret
+      let cx = indentX;
+      text.split(" ").forEach((word) => {
+        if (!word) return;
+        const w = helveticaFont.widthOfTextAtSize(word + " ", size);
 
-      const words = note.text.split(" ");
-
-      for (const word of words) {
-        if (!word) continue;
-        const wordWithSpace = `${word} `;
-        const wordWidth = helveticaFont.widthOfTextAtSize(
-          wordWithSpace,
-          noteStyle.size
-        );
-
-        if (currentX + wordWidth > noteStyle.x + noteMaxWidth) {
-          currentY -= lineHeight;
-          currentX = noteStyle.x;
+        if (cx + w > RIGHT_BOUNDARY) {
+          // passa del marge dret
+          y -= lineH;
+          cx = indentX; // nova línia amb sagnat penjant
         }
-
-        page.drawText(wordWithSpace, {
-          x: currentX,
-          y: currentY,
+        page.drawText(word + " ", {
+          x: cx,
+          y,
           font: helveticaFont,
-          size: noteStyle.size,
-          color: rgbFromHex(noteStyle.color),
+          size,
+          color: bodyCol,
         });
+        cx += w;
+      });
 
-        currentX += wordWidth;
-      }
-
-      currentY -= lineHeight; // Espai per a la següent nota
-      currentY -= lineHeight / 2; // Petit espai extra
+      y -= lineH * 1.5; // espai abans de la nota següent
     });
   }
 
