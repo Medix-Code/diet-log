@@ -134,15 +134,6 @@ async function buildDietObject(generalData, servicesData, dietId) {
 
   /* ---------- 2. Pseudonimització ---------- */
   const hashedDietId = await pseudoId(dietId);
-  const servicesKept = servicesData;
-
-  const servicesHashed = await Promise.all(
-    // hash per servei
-    servicesData.map(async (s) => ({
-      ...s,
-      serviceNumber: await pseudoId(s.serviceNumber ?? ""),
-    }))
-  );
 
   /* ---------- 3. Timestamp ---------- */
   const existingDiet = await getDiet(hashedDietId);
@@ -340,16 +331,24 @@ export async function autoSaveDiet() {
  * Carrega una dieta per ID i omple el formulari.
  * @param {string} dietId - ID de la dieta.
  */
+/* ───────────── dietService.js ───────────── */
 export async function loadDietById(dietId) {
   if (!dietId || typeof dietId !== "string") {
     throw new Error("ID invàlid");
   }
-  const hashedId = await pseudoId(dietId);
-  const diet = await getDiet(hashedId);
+
+  // 1️⃣  Si ja ens arriba un hash (64 caràcters) el fem servir directament.
+  //     Si és el número de 9 xifres, el convertim amb pseudoId().
+  const diet =
+    dietId.length === 64
+      ? await getDiet(dietId) // ja és hash
+      : await getDiet(await pseudoId(dietId)); // número → hash
+
   if (!diet) {
     throw new Error(`Dieta no trobada: ${dietId}`);
   }
 
+  /* ---------- omplim el formulari ---------- */
   populateFormWithDietData(diet);
   captureInitialFormState();
 

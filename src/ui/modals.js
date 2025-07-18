@@ -168,6 +168,11 @@ function _formatTimeFromISO(isoTimestamp) {
 }
 
 function _createDietListItem(diet) {
+  const displayId =
+    diet.services && diet.services.length > 0
+      ? diet.services[0].serviceNumber // número de 9 xifres
+      : "?????????"; // fallback
+
   const { ddmmaa, franjaText } = getDietDisplayInfo(diet.date, diet.dietType);
   const creationTime = _formatTimeFromISO(diet.timeStampDiet);
 
@@ -195,7 +200,7 @@ function _createDietListItem(diet) {
   loadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} ${CSS_CLASSES.LIST_ITEM_BTN_LOAD} ${CSS_CLASSES.DIET_LOAD_BTN}`;
   loadBtn.setAttribute("aria-label", `Editar dieta ${ddmmaa}`);
   loadBtn.innerHTML = `<img src="assets/icons/ic_edit.svg" alt="" class="icon"><span class="btn-text visually-hidden">Editar</span>`;
-  loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, diet.id);
+  loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, displayId);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_DATE, diet.date);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_TYPE, diet.dietType);
 
@@ -206,7 +211,7 @@ function _createDietListItem(diet) {
     `Descarregar PDF de la dieta ${ddmmaa}`
   );
   downloadBtn.innerHTML = `<img src="assets/icons/download_blue.svg" alt="" class="icon"><span class="btn-text visually-hidden">PDF</span>`;
-  downloadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, diet.id);
+  downloadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, displayId);
 
   iconsContainer.appendChild(loadBtn);
   iconsContainer.appendChild(downloadBtn);
@@ -227,7 +232,7 @@ export async function _handleDietListClick(event) {
 
   if (loadButton) {
     event.stopPropagation();
-    const dietId = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_ID);
+    const rawId = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_ID);
     const dietDate = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_DATE);
     const dietType = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_TYPE);
     if (!dietId) return;
@@ -235,7 +240,7 @@ export async function _handleDietListClick(event) {
     const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
 
     try {
-      await loadDietById(dietId);
+      await loadDietById(rawId);
     } catch (error) {
       // Maneig silenciós o toast d'error
     }
