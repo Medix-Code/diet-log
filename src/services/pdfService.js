@@ -9,7 +9,6 @@ import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
 import { getDiet } from "../db/indexedDbDietRepository.js";
-import { getDietDisplayInfo } from "../utils/utils.js";
 
 // --- Constants ---
 const DOM_IDS = {
@@ -63,10 +62,10 @@ const FIELD_COORDINATES = {
     ayudante: { x: 380, y: 295, width: 100, height: 50 },
   },
   notesSection: {
-    title: { x: 65, y: 250, size: 14, color: "#000000" },
-    lineHeight: 15,
+    title: { x: 65, y: 250, size: 16, color: "#000000" },
+    lineHeight: 18,
     maxWidth: 465,
-    start: { x: 65, y: 230, size: 10, color: "#333333" },
+    start: { x: 65, y: 230, size: 14, color: "#333333" },
   },
   fixedText: {
     website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
@@ -110,8 +109,6 @@ function formatDateForPdf(dateString) {
   const [yyyy, mm, dd] = dateString.split("-");
   return `${dd}/${mm}/${yyyy}`;
 }
-
-// A pdfService.js (substitueix l'antiga funció wrapText per aquesta)
 
 /**
  * Gestiona salts de línia manuals (\n) i ajusta automàticament les línies llargues.
@@ -323,6 +320,9 @@ async function fillPdf(generalData, servicesData) {
   ]);
 
   // ----------------- NOTES SECTION -----------------
+  // A pdfService.js -> dins de fillPdf
+
+  // ----------------- NOTES SECTION (La teva versió millorada) -----------------
   const notesWithContent = servicesData
     .map((service) => ({
       text: (service.notes || "").trim(),
@@ -331,16 +331,17 @@ async function fillPdf(generalData, servicesData) {
     .filter((note) => note.text !== "" && note.serviceNumber !== "");
 
   if (notesWithContent.length > 0) {
+    // La teva línia separadora
     const lineY = 275;
     page.drawLine({
       start: { x: 55, y: lineY },
       end: { x: 540, y: lineY },
       thickness: 0.5,
-      color: rgb(0.8, 0.8, 0.8),
+      color: rgb(0.8, 0.8, 0.8), // Un gris clar
     });
 
+    // El teu títol dinàmic (singular/plural)
     const titleText = notesWithContent.length === 1 ? "Nota" : "NOTAS";
-
     page.drawText(titleText, {
       ...FIELD_COORDINATES.notesSection.title,
       font: helveticaFont,
@@ -355,30 +356,52 @@ async function fillPdf(generalData, servicesData) {
     notesWithContent.forEach((note) => {
       if (currentY < 40) return;
 
-      const fullText = `${note.serviceNumber}: ${note.text}`;
+      const prefixText = `Servei ${note.serviceNumber}: `;
+      page.drawText(prefixText, {
+        x: noteStyle.x,
+        y: currentY,
+        font: helveticaFont,
+        size: noteStyle.size,
+        color: rgbFromHex(PDF_SETTINGS.SERVICE_NUMBER_COLOR),
+      });
 
-      const lines = wrapText(
-        fullText,
-        helveticaFont,
-        noteStyle.size,
-        noteMaxWidth
+      const prefixWidth = helveticaFont.widthOfTextAtSize(
+        prefixText,
+        noteStyle.size
       );
+      let currentX = noteStyle.x + prefixWidth;
 
-      lines.forEach((line) => {
-        if (currentY < 40) return;
+      const words = (note.text || "").split(" ");
 
-        page.drawText(line, {
-          x: noteStyle.x,
+      for (const word of words) {
+        if (!word) continue;
+        const wordWithSpace = `${word} `;
+        const wordWidth = helveticaFont.widthOfTextAtSize(
+          wordWithSpace,
+          noteStyle.size
+        );
+
+        if (currentX + wordWidth > noteStyle.x + noteMaxWidth) {
+          currentY -= lineHeight;
+          currentX = noteStyle.x;
+        }
+
+        page.drawText(wordWithSpace, {
+          x: currentX,
           y: currentY,
-          size: noteStyle.size,
           font: helveticaFont,
+          size: noteStyle.size,
           color: rgbFromHex(noteStyle.color),
         });
 
-        currentY -= lineHeight;
-      });
+        currentX += wordWidth;
+      }
+
+      currentY -= lineHeight;
+      currentY -= lineHeight / 2;
     });
   }
+
   // ----------------- END NOTES SECTION -----------------
 
   // Watermark
@@ -393,7 +416,44 @@ async function fillPdf(generalData, servicesData) {
     color: rgbFromHex(FIELD_COORDINATES.fixedText.website.color),
   });
 
-  return await pdfDoc.save();
+  // ----------------- METADADES DEL PDF -----------------
+
+  const datePart = formatDateForPdf(generalData.date) || "Dieta";
+  const typePart =
+    generalData.dietType === "lunch"
+      ? "Comida"
+      : generalData.dietType === "dinner"
+      ? "Cena"
+      : "";
+  const dynamicTitle = `Dieta ${typePart} ${datePart}`
+    .trim()
+    .replace(/ +/g, " ");
+
+  pdfDoc.setTitle(dynamicTitle);
+  pdfDoc.setAuthor("misdietas.com");
+  pdfDoc.setSubject("Justificante de dieta de transporte sanitario");
+  pdfDoc.setCreator("MisDietas");
+  pdfDoc.setKeywords([
+    "dieta",
+    "justificante",
+    "transporte sanitario",
+    "tsu",
+    "tsnu",
+  ]);
+  const dataDeLaDieta = new Date(generalData.date);
+  if (!isNaN(dataDeLaDieta.getTime())) {
+    pdfDoc.setCreationDate(dataDeLaDieta);
+    pdfDoc.setModificationDate(dataDeLaDieta);
+  }
+
+  // ----------------- SEGURETAT DEL PDF -----------------
+
+  return await pdfDoc.save({
+    permissions: {
+      modifying: false,
+      copying: false,
+    },
+  });
 }
 
 export function buildPdfFileName(dateValue, dietType) {

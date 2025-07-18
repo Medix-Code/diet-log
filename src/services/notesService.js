@@ -84,54 +84,35 @@ export function setupNotesSelectedService() {
 function openNotesModal(serviceIndex) {
   if (!notesModal) return;
 
-  // Guardem la posició de scroll actual per evitar el salt
-  const scrollY = window.scrollY;
+  notesTitle.textContent = `S${serviceIndex + 1}: Observaciones`;
 
-  // Actualitzem el títol del modal per saber a quin servei pertany la nota
-  notesTitle.textContent = `${serviceIndex + 1}": Observaciones". ${
-    serviceIndex + 1
-  }`;
-
-  // Omplim el textarea amb la nota guardada per a aquest servei
   notesTextarea.value = serviceNotes[serviceIndex] || "";
 
-  // Funció per actualitzar el comptador de caràcters
   const updateCounter = () => {
     const currentLength = notesTextarea.value.length;
     const maxLength = notesTextarea.maxLength;
     notesCounter.textContent = `${currentLength} / ${maxLength}`;
   };
-
-  // Actualitzem el comptador en obrir el modal
   updateCounter();
 
-  // Definim i afegim el listener per a l'escriptura (input)
-  currentInputHandler = () => {
-    updateCounter();
-  };
+  currentInputHandler = () => updateCounter();
   notesTextarea.addEventListener("input", currentInputHandler);
 
-  // Definim i afegim el listener per al botó de guardar
   currentSaveHandler = () => {
     const newNote = notesTextarea.value.trim();
-
-    // Comprovem si la nota anterior era diferent de la nova
     const oldNote = serviceNotes[serviceIndex] || "";
 
-    // Si la nota no ha canviat, simplement tanquem el modal
     if (newNote === oldNote) {
       closeNotesModal();
       return;
     }
 
-    // Si la nota ha canviat, la guardem
     serviceNotes[serviceIndex] = newNote;
 
-    // Mostrem el missatge només si la nova nota no és buida
-    if (newNote !== "") {
+    if (newNote) {
       showToast("Observación guardada.", "success");
     } else {
-      showToast("Observación eliminada.", "info"); // Missatge opcional quan es buida
+      showToast("Observación eliminada.", "info");
     }
 
     closeNotesModal();
@@ -139,13 +120,12 @@ function openNotesModal(serviceIndex) {
   };
   notesSave.addEventListener("click", currentSaveHandler);
 
-  // Mostrem el modal i bloquegem el body
   notesModal.style.display = "block";
   document.body.classList.add("modal-open");
 
-  // Posem el focus i immediatament restaurem l'scroll per evitar el salt
-  notesTextarea.focus();
-  window.scrollTo(0, scrollY);
+  setTimeout(() => {
+    notesTextarea.focus({ preventScroll: true });
+  }, 0);
 }
 
 /**
