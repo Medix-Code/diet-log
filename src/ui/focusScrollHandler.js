@@ -1,12 +1,13 @@
 // src/ui/focusScrollHandler.js
-import { keyboardHeight, isKeyboardOpen } from "./keyboardHandler.js"; // Importa també isKeyboardOpen per optimitzacions
 
-// Selecciona tots els inputs i selects del formulari (ajusta selectors si cal)
+import { keyboardHeight, isKeyboardOpen } from "./keyboardHandler.js";
+
+// Selecciona tots els inputs i selects del formulari
 const formElements = document.querySelectorAll("input, select, textarea");
 
-// Offset base per deixar espai per sobre del teclat (ajusta segons proves)
-const BASE_SCROLL_OFFSET = 120; // Pixels per sobre de l'input per visibilitat
-const LABEL_MARGIN = 20; // Marge extra entre label i input
+// Offset base per deixar espai per sobre del teclat
+const BASE_SCROLL_OFFSET = 120;
+const LABEL_MARGIN = 20;
 
 // Funció per scroll suau a l'element focusat, incloent alçada del label i teclat
 function scrollToFocusedElement(element, anticipat = false) {
@@ -41,19 +42,21 @@ function scrollToFocusedElement(element, anticipat = false) {
 
   // Fallback: Si el teclat tapa encara, usa scrollIntoView per centrar
   if (!anticipat) {
-    // Només en la segona passada
     setTimeout(() => {
       if (keyboardHeight > 0) {
         requestAnimationFrame(() => {
           element.scrollIntoView({ block: "center", behavior: "smooth" });
         });
       }
-    }, 100); // Delay ajustat per segona passada
+    }, 100);
   }
 }
 
-// Funció per manejar focus amb dues passades (la teva proposta refinada)
+// Funció per manejar focus amb dues passades
 function handleFocus(el) {
+  if (el.closest(".modal")) {
+    return;
+  }
   scrollToFocusedElement(el, true);
   setTimeout(() => scrollToFocusedElement(el), 50);
 }

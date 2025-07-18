@@ -194,18 +194,21 @@ function injectUndoStyles() {
 
   style.textContent = `
     .${CONFIG.UNDO_BTN_CLASS} {
-      margin-left: 12px;
+      margin-left: auto; 
+      padding: 8px 12px; 
       background: none;
       border: none;
-      padding: 0 4px;
+      border-radius: 4px; 
+      cursor: pointer;     
       font-weight: 600;
-      cursor: pointer;
-      text-decoration: underline;
-      color: inherit;
-      font-size: 0.9em;
+      font-size: 0.875rem; 
+      text-transform: uppercase; 
+      letter-spacing: 0.08em; 
+      color: inherit; 
+      transition: background-color 0.2s ease;
     }
     .${CONFIG.UNDO_BTN_CLASS}:hover {
-      opacity: 0.8;
+      background-color: rgba(255, 255, 255, 0.15); 
     }
   `;
 
