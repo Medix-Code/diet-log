@@ -235,7 +235,7 @@ export async function _handleDietListClick(event) {
     const rawId = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_ID);
     const dietDate = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_DATE);
     const dietType = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_TYPE);
-    if (!dietId) return;
+    if (!rawId) return; // Correcció: Canvi de !dietId a !rawId
 
     const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
 
@@ -243,6 +243,7 @@ export async function _handleDietListClick(event) {
       await loadDietById(rawId);
     } catch (error) {
       // Maneig silenciós o toast d'error
+      console.error("Error en carregar la dieta:", error); // Afegit per depuració
     }
   } else if (downloadButton) {
     event.stopPropagation();
