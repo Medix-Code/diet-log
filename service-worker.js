@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Aquesta variable serà actualitzada automàticament per el  workflow de GitHub Actions.
-const VERSION = "1.0.0"; // Un valor inicial per a desenvolupament local
+const VERSION = "__APP_VERSION__";
 
 const APP_SHELL_CACHE_NAME = `misdietas-app-shell-${VERSION}`;
 const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
@@ -34,7 +34,7 @@ const APP_SHELL_FILES = [
   "./assets/icons/save_green.svg",
 ];
 
-// --- INSTALL (AMB DEPURACIÓ DETALLADA) ---
+// --- INSTALL  ---
 self.addEventListener("install", (event) => {
   console.log(
     `[ServiceWorker-DEBUG] Iniciant instal·lació de la versió: ${VERSION}`
@@ -48,10 +48,8 @@ self.addEventListener("install", (event) => {
 
       for (const url of APP_SHELL_FILES) {
         try {
-          // Intentem afegir cada fitxer individualment
           await cache.add(url);
         } catch (error) {
-          // Si un fitxer falla, ho registrem a la consola de manera molt visible
           console.error(
             `===========================================================`
           );
@@ -67,7 +65,6 @@ self.addEventListener("install", (event) => {
       }
 
       if (!allOk) {
-        // Fem que la instal·lació falli explícitament per poder-ho veure a la pestanya "Application"
         throw new Error(
           "La instal·lació ha fallat. Revisa la consola per veure quin fitxer té un nom o camí incorrecte."
         );
@@ -76,7 +73,7 @@ self.addEventListener("install", (event) => {
       console.log(
         "[ServiceWorker-DEBUG] Tots els fitxers de l'App Shell s'han cachejat correctament."
       );
-      return self.skipWaiting(); // Força activació immediata
+      return self.skipWaiting();
     })
   );
 });
@@ -108,16 +105,13 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Ignora peticions a dominis externs i no-GET
   if (url.origin !== self.location.origin || request.method !== "GET") {
     return;
   }
 
-  // Construeix un camí relatiu a partir del pathname de la URL.
   const requestPath = "." + url.pathname;
   const isAppShellFile = APP_SHELL_FILES.includes(requestPath);
 
-  // 2. Estratègia "Cache First, then Network" per a l'App Shell
   if (isAppShellFile) {
     event.respondWith(
       caches
