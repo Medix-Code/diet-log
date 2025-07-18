@@ -235,15 +235,14 @@ export async function _handleDietListClick(event) {
     const rawId = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_ID);
     const dietDate = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_DATE);
     const dietType = loadButton.getAttribute(DATA_ATTRIBUTES.DIET_TYPE);
-    if (!rawId) return; // Correcció: Canvi de !dietId a !rawId
+    if (!rawId || !dietDate || !dietType) return;
 
     const { ddmmaa, franjaText } = getDietDisplayInfo(dietDate, dietType);
 
     try {
       await loadDietById(rawId);
     } catch (error) {
-      // Maneig silenciós o toast d'error
-      console.error("Error en carregar la dieta:", error); // Afegit per depuració
+      console.error("Error en carregar la dieta:", error);
     }
   } else if (downloadButton) {
     event.stopPropagation();
