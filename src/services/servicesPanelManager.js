@@ -8,7 +8,7 @@ import { revalidateFormState } from "./formService.js";
 
 // --- Constants ---
 
-const ALLOWED_MODES = ["3.6", "3.22", "3.11"];
+const ALLOWED_MODES = ["3.6", "3.22", "3.11", "3.51"];
 
 const DOM_IDS = {
   CONTAINER: "services-container",
@@ -147,7 +147,6 @@ function _updatePanelChipsUI(panel, activeMode) {
   );
 }
 
-// Busca aquesta funció al teu codi...
 function _attachPanelChipListeners() {
   servicePanels.forEach((panel, idx) => {
     const chipsInPanel = panel.querySelectorAll(SELECTORS.CHIP);

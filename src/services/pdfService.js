@@ -1,6 +1,6 @@
 /**
  * @file pdfService.js
- * @description Genera i descarrega PDF de dietes amb validacions i missatges d'usuari optimitzats.
+ * @description Genera i descarrega PDF de dietes amb validacions i marges simètrics per a la secció de notes.
  * @module pdfService
  */
 
@@ -10,7 +10,20 @@ import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
 import { getDiet } from "../db/indexedDbDietRepository.js";
 
-// --- Constants ---
+// -----------------------------------------------------------------------------
+// Constants
+// -----------------------------------------------------------------------------
+
+/**
+ * Control global de marges exteriors de la plantilla i de la separació interna
+ * del text respecte la línia vertical.  D’aquesta manera el marge dret queda
+ * sempre idèntic al marge esquerre sense dependre de valors màgics.
+ */
+const LAYOUT = {
+  OUTER_MARGIN: 55,
+  INNER_PADDING: 10,
+};
+
 const DOM_IDS = {
   DADES_TAB: "tab-dades",
   SERVEIS_TAB: "tab-serveis",
@@ -62,9 +75,10 @@ const FIELD_COORDINATES = {
     ayudante: { x: 380, y: 295, width: 100, height: 50 },
   },
   notesSection: {
+    // Els valors x i maxWidth seran recalculats dinàmicament a partir de LAYOUT
     title: { x: 65, y: 250, size: 16, color: "#000000" },
     lineHeight: 18,
-    maxWidth: 465,
+    maxWidth: 465, // Mantingut per compatibilitat; serà sobreescrit a fillPdf
     start: { x: 65, y: 230, size: 14, color: "#333333" },
   },
   fixedText: {
@@ -72,7 +86,9 @@ const FIELD_COORDINATES = {
   },
 };
 
-// --- Utility Functions ---
+// -----------------------------------------------------------------------------
+// Utility Functions
+// -----------------------------------------------------------------------------
 
 function toTitleCase(str) {
   if (!str || typeof str !== "string" || str.trim() === "") return "";
@@ -111,12 +127,8 @@ function formatDateForPdf(dateString) {
 }
 
 /**
- * Gestiona salts de línia manuals (\n) i ajusta automàticament les línies llargues.
- * @param {string} text - El text a dividir.
- * @param {object} font - L'objecte font de pdf-lib.
- * @param {number} size - La mida de la font.
- * @param {number} maxWidth - L'amplada màxima permesa per línia.
- * @returns {string[]} Un array amb les línies de text finals.
+ * Divideix textos llargs respectant salts de línia manuals (\n) i ajustant‑los
+ * automàticament a l’amplada màxima.
  */
 function wrapText(text, font, size, maxWidth) {
   const manualLines = text.split("\n");
@@ -149,7 +161,8 @@ function wrapText(text, font, size, maxWidth) {
   return finalLines;
 }
 
-function getPdfTemplateUrl(generalData) {
+function getPdfTemplateUrl() {
+  // Ara mateix només un tipus de plantilla, però així queda preparat.
   return PDF_SETTINGS.TEMPLATE_URLS.DEFAULT;
 }
 
@@ -168,7 +181,6 @@ function handleValidationUIErrors(isDadesValid, isServeisValid) {
     message = "Completa els camps obligatoris a Dades.";
     dadesTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else {
-    // if (!isServeisValid)
     message = "Completa els camps obligatoris a Serveis.";
     serveisTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   }
@@ -187,14 +199,21 @@ function downloadBlob(blob, fileName) {
   setTimeout(() => URL.revokeObjectURL(url), 500);
 }
 
-// --- Core Functions ---
+// -----------------------------------------------------------------------------
+// Core Functions
+// -----------------------------------------------------------------------------
+
+/**
+ * Omple la plantilla PDF amb les dades de la dieta.
+ * Inclou marges simètrics per a la secció de notes sense valors màgics.
+ */
 async function fillPdf(generalData, servicesData) {
   if (!generalData || !Array.isArray(servicesData))
     throw new Error("Dades invàlides.");
   if (!window.PDFLib) throw new Error("PDFLib no carregada.");
 
   const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
-  const pdfTemplateUrl = getPdfTemplateUrl(generalData);
+  const pdfTemplateUrl = getPdfTemplateUrl();
   const pdfBytes = await fetch(pdfTemplateUrl).then((res) => res.arrayBuffer());
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -204,7 +223,17 @@ async function fillPdf(generalData, servicesData) {
     return rgb(r / 255, g / 255, b / 255);
   };
 
-  // General fields
+  // ---------------------------------------------------------------------------
+  // Càlcul dinàmic de marges per a la secció de notes
+  // ---------------------------------------------------------------------------
+  const PAGE_WIDTH = page.getWidth();
+  const NOTE_AREA_X = LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING; // 65
+  const NOTE_AREA_WIDTH =
+    PAGE_WIDTH - 2 * (LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING);
+
+  // ---------------------------------------------------------------------------
+  // Camps generals
+  // ---------------------------------------------------------------------------
   Object.entries(FIELD_COORDINATES.general).forEach(([field, coords]) => {
     let value = generalData[field] || "";
     if (field === "date") value = formatDateForPdf(value);
@@ -223,7 +252,9 @@ async function fillPdf(generalData, servicesData) {
     });
   });
 
-  // Service fields
+  // ---------------------------------------------------------------------------
+  // Camps per servei
+  // ---------------------------------------------------------------------------
   servicesData.forEach((service, index) => {
     const yOffset = index * PDF_SETTINGS.SERVICE_Y_OFFSET;
     const serviceMode = service.mode || "3.6";
@@ -290,6 +321,9 @@ async function fillPdf(generalData, servicesData) {
     }
   });
 
+  // ---------------------------------------------------------------------------
+  // Signatures
+  // ---------------------------------------------------------------------------
   const embedSignature = async (signatureData, coords) => {
     const isValidSignature =
       typeof signatureData === "string" &&
@@ -319,10 +353,9 @@ async function fillPdf(generalData, servicesData) {
     ),
   ]);
 
-  // ----------------- NOTES SECTION -----------------
-  // A pdfService.js -> dins de fillPdf
-
-  // ----------------- NOTES SECTION (La teva versió millorada) -----------------
+  // ---------------------------------------------------------------------------
+  // Secció de notes (marges simètrics)
+  // ---------------------------------------------------------------------------
   const notesWithContent = servicesData
     .map((service) => ({
       text: (service.notes || "").trim(),
@@ -331,17 +364,18 @@ async function fillPdf(generalData, servicesData) {
     .filter((note) => note.text !== "" && note.serviceNumber !== "");
 
   if (notesWithContent.length > 0) {
-    // La teva línia separadora
+    // Línia separadora amb marges simètrics
     const lineY = 275;
     page.drawLine({
-      start: { x: 55, y: lineY },
-      end: { x: 540, y: lineY },
+      start: { x: LAYOUT.OUTER_MARGIN, y: lineY },
+      end: { x: PAGE_WIDTH - LAYOUT.OUTER_MARGIN, y: lineY },
       thickness: 0.5,
-      color: rgb(0.8, 0.8, 0.8), // Un gris clar
+      color: rgb(0.8, 0.8, 0.8),
     });
 
-    // El teu títol dinàmic (singular/plural)
-    const titleText = notesWithContent.length === 1 ? "Nota" : "NOTAS";
+    // Títol dinàmic
+    const titleText =
+      notesWithContent.length === 1 ? "Observació" : "Observacions";
     page.drawText(titleText, {
       ...FIELD_COORDINATES.notesSection.title,
       font: helveticaFont,
@@ -349,12 +383,15 @@ async function fillPdf(generalData, servicesData) {
     });
 
     let currentY = FIELD_COORDINATES.notesSection.start.y;
-    const noteStyle = FIELD_COORDINATES.notesSection.start;
-    const noteMaxWidth = FIELD_COORDINATES.notesSection.maxWidth;
+    const noteStyle = {
+      ...FIELD_COORDINATES.notesSection.start,
+      x: NOTE_AREA_X,
+    };
+    const noteMaxWidth = NOTE_AREA_WIDTH;
     const lineHeight = FIELD_COORDINATES.notesSection.lineHeight;
 
     notesWithContent.forEach((note) => {
-      if (currentY < 40) return;
+      if (currentY < 40) return; // Evitar escriure massa avall
 
       const prefixText = `Servei ${note.serviceNumber}: `;
       page.drawText(prefixText, {
@@ -371,7 +408,7 @@ async function fillPdf(generalData, servicesData) {
       );
       let currentX = noteStyle.x + prefixWidth;
 
-      const words = (note.text || "").split(" ");
+      const words = note.text.split(" ");
 
       for (const word of words) {
         if (!word) continue;
@@ -397,14 +434,14 @@ async function fillPdf(generalData, servicesData) {
         currentX += wordWidth;
       }
 
-      currentY -= lineHeight;
-      currentY -= lineHeight / 2;
+      currentY -= lineHeight; // Espai per a la següent nota
+      currentY -= lineHeight / 2; // Petit espai extra
     });
   }
 
-  // ----------------- END NOTES SECTION -----------------
-
-  // Watermark
+  // ---------------------------------------------------------------------------
+  // Marca d'aigua
+  // ---------------------------------------------------------------------------
   const watermarkText = PDF_SETTINGS.WATERMARK_TEXT;
   const textSize = FIELD_COORDINATES.fixedText.website.size;
   const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, textSize);
@@ -416,8 +453,9 @@ async function fillPdf(generalData, servicesData) {
     color: rgbFromHex(FIELD_COORDINATES.fixedText.website.color),
   });
 
-  // ----------------- METADADES DEL PDF -----------------
-
+  // ---------------------------------------------------------------------------
+  // Metadades del PDF
+  // ---------------------------------------------------------------------------
   const datePart = formatDateForPdf(generalData.date) || "Dieta";
   const typePart =
     generalData.dietType === "lunch"
@@ -446,8 +484,9 @@ async function fillPdf(generalData, servicesData) {
     pdfDoc.setModificationDate(dataDeLaDieta);
   }
 
-  // ----------------- SEGURETAT DEL PDF -----------------
-
+  // ---------------------------------------------------------------------------
+  // Seguretat del PDF
+  // ---------------------------------------------------------------------------
   return await pdfDoc.save({
     permissions: {
       modifying: false,
@@ -455,6 +494,10 @@ async function fillPdf(generalData, servicesData) {
     },
   });
 }
+
+// -----------------------------------------------------------------------------
+// Funcions d’alta nivell exposades
+// -----------------------------------------------------------------------------
 
 export function buildPdfFileName(dateValue, dietType) {
   const datePart = formatDateForPdf(dateValue).replace(/\//g, "_") || "";
