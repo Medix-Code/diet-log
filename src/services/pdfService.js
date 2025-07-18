@@ -4,6 +4,7 @@
  * @module pdfService
  */
 
+mport { pseudoId } from "../utils/pseudoId.js";
 import { showToast } from "../ui/toast.js";
 import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
@@ -535,6 +536,7 @@ export async function downloadDietPDF(dietId) {
   }
 
   try {
+    // Nueva lógica: Hash si no es ya un hash de 64 caracteres
     const hashedId = dietId.length === 64 ? dietId : await pseudoId(dietId);
     const diet = await getDiet(hashedId);
     if (!diet) throw new Error("Dieta no encontrada.");
@@ -567,10 +569,12 @@ export async function downloadDietPDF(dietId) {
 
     showToast("Descarga iniciada correctamente.", "success");
   } catch (error) {
-    console.error("Error en downloadDietPDF:", error);
-    showToast(
-      `Error en la generación del PDF: ${error.message || "Desconocido"}`,
-      "error"
-    );
+  console.error("Error en downloadDietPDF:", error);
+  let errorMsg = error.message || "Desconocido";
+  if (error instanceof ReferenceError) {
+    errorMsg = "Función pseudoId no definida. Verifica las importaciones.";
+  }
+  showToast(`Error en la generación del PDF: ${errorMsg}`, "error");
+
   }
 }
