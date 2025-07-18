@@ -36,7 +36,6 @@ const CSS_CLASSES = {
 const PDF_SETTINGS = {
   TEMPLATE_URLS: {
     DEFAULT: "./dieta_tsc.pdf",
-    EMPRESA_2: "./dieta_tsc.pdf",
   },
   SERVICE_Y_OFFSET: 82,
   SIGNATURE_WIDTH: 100,

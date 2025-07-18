@@ -21,7 +21,6 @@ export class Diet {
    * @param {string} [options.signatureConductor=''] - Signatura del conductor (DataURL base64).
    * @param {string} [options.signatureAjudant=''] - Signatura de l'ajudant (DataURL base64).
    * @param {Array<object>} [options.services=[]] - Array d'objectes de servei.
-   * @param {string} [options.empresa=''] - Nom de l'empresa.
    * @param {string} [options.timeStampDiet=new Date().toISOString()] - Timestamp ISO de quan es va desar/actualitzar.
    */
   constructor({
@@ -34,7 +33,7 @@ export class Diet {
     signatureConductor = "",
     signatureAjudant = "",
     services = [], // Assegura que és un array per defecte
-    serviceType = "TSU", // <-- AFEGIM AQUEST
+    serviceType = "TSU",
     timeStampDiet = new Date().toISOString(),
   } = {}) {
     /** @property {string} id - ID únic de la dieta. */
