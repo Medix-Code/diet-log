@@ -124,6 +124,12 @@ async function buildDietObject(generalData, servicesData, dietId) {
     ) {
       throw new Error("Formato de hora inválido detectado. Use HH:mm.");
     }
+    // Validació addicional per serviceNumber: només hashjar si té 9 dígits; altrament, deixar en blanc o error
+    if (s.serviceNumber && !/^\d{9}$/.test(s.serviceNumber)) {
+      throw new Error(
+        `ServiceNumber invàlid en servei: ${s.serviceNumber}. Debe contener 9 dígitos.`
+      );
+    }
   }
 
   /* ---------- 2. Pseudonimització ---------- */
@@ -135,7 +141,21 @@ async function buildDietObject(generalData, servicesData, dietId) {
     ? existingDiet.timeStampDiet
     : new Date().toISOString();
 
-  /* ---------- 4. Construcció segura ---------- */
+  /* ---------- 4. Construcció segura amb hash als serviceNumber ---------- */
+  // Hashjar cada serviceNumber en paral·lel
+  const hashedServices = await Promise.all(
+    servicesData.map(async (s) => ({
+      serviceNumber: s.serviceNumber ? await pseudoId(s.serviceNumber) : "", // Hash si existeix; altrament, buit
+      origin: sanitizeText(s.origin),
+      destination: sanitizeText(s.destination),
+      originTime: s.originTime,
+      destinationTime: s.destinationTime,
+      endTime: s.endTime,
+      mode: sanitizeText(s.mode),
+      notes: sanitizeText(s.notes) || "",
+    }))
+  );
+
   const dietData = {
     id: hashedDietId,
     date: sanitizeText(generalData.date),
@@ -145,17 +165,7 @@ async function buildDietObject(generalData, servicesData, dietId) {
     person2: sanitizeText(generalData.person2),
     signatureConductor: generalData.signatureConductor,
     signatureAjudant: generalData.signatureAjudant,
-    services: servicesData.map((s) => ({
-      // <--- Canvi aquí: servicesData en lloc de servicesKept
-      serviceNumber: sanitizeText(s.serviceNumber),
-      origin: sanitizeText(s.origin),
-      destination: sanitizeText(s.destination),
-      originTime: s.originTime,
-      destinationTime: s.destinationTime,
-      endTime: s.endTime,
-      mode: sanitizeText(s.mode),
-      notes: sanitizeText(s.notes) || "",
-    })),
+    services: hashedServices, // Ara amb serviceNumber hashjats
     serviceType: sanitizeText(generalData.serviceType),
     timeStampDiet,
   };
