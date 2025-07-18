@@ -106,6 +106,10 @@ export async function clearAllDiets() {
   await waitTx(tx);
 }
 
+export async function openDatabase() {
+  return openInternal();
+}
+
 export function closeDatabase() {
   dbInstance?.close();
   dbInstance = null;
