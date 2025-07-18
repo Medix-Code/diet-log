@@ -265,7 +265,7 @@ async function performSave(isManual) {
   setSaveButtonState(false);
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 500)); 
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (!validateFormTabs()) {
       throw new Error("Validació fallida");
@@ -293,15 +293,14 @@ async function performSave(isManual) {
 
     await displayDietOptions();
   } catch (error) {
-    console.error("Error en performSave:", error); /
-    indicateSaveError(error.message || "No se pudo guardar"); 
+    console.error("Error en performSave:", error);
+    indicateSaveError(error.message || "No se pudo guardar");
     if (isManual) {
-      showToast(`Error al guardar: ${error.message}`, "error"); 
+      showToast(`Error al guardar: ${error.message}`, "error");
     }
-    setSaveButtonState(true); 
+    setSaveButtonState(true);
   }
 }
-
 
 // --- Funcions Exportades ---
 
