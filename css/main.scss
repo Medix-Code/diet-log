@@ -965,13 +965,12 @@ button {
 }
 /* Modal footer i botó Cerrar */
 .modal-footer {
-  padding-top: 15px;
-  margin-top: auto; // Empeny el peu cap avall
+  padding-top: 5px;
+  margin-top: 8px;
   border-top: 1px solid var(--grey-border, #eee);
-  flex-shrink: 0; // Evita que el peu s'encongeixi
+  flex-shrink: 0;
   display: flex;
-  margin-top: 12px;
-  justify-content: flex-end; // Alinea el botó "Cerrar" a la dreta
+  justify-content: flex-end;
 }
 
 @keyframes fadeIn {
