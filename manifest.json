@@ -36,20 +36,19 @@
   "screenshots": [
     {
       "src": "assets/images/screenshot-desktop.png",
-      "sizes": "1280x720",
+      "sizes": "1765x993",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Vista de escritorio de MisDietas"
     },
     {
       "src": "assets/images/screenshot-mobile.png",
-      "sizes": "720x1280",
+      "sizes": "1170x2532",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Vista móvil de MisDietas"
     }
   ],
-
   "launch_handler": {
     "client_mode": "navigate-existing"
   },
