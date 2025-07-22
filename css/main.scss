@@ -2455,7 +2455,7 @@ button .icon {
 }
 
 /* ============================================================= */
-/* ==   BANNER PWA (INSTAL·LACIÓ) - PROPORCIONS MILLORADES    == */
+/* ==   BANNER PWA - VERSIÓ FINAL I ROBUSTA PER A PRODUCCIÓ   == */
 /* ============================================================= */
 
 #install-prompt {
@@ -2463,87 +2463,88 @@ button .icon {
   bottom: 0;
   left: 0;
   right: 0;
-
-  /* Centrem el contenidor per a l'amplada màxima */
+  padding: 16px;
   display: flex;
   justify-content: center;
-
-  /* Fons transparent per a l'àrea exterior */
-  background-color: transparent;
-  padding: 16px; /* Espai a les vores en mòbils */
-
   z-index: 9999;
 
-  /* Apliquem l'estil al contenidor intern */
-  .prompt-content {
-    width: 100%;
-    max-width: 450px; /* Amplada màxima en pantalles grans */
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    padding: 24px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-    border-radius: 16px; /* Arrodoniment a tot el bàner */
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    text-align: center;
+  /* Per defecte, el contenidor principal està amagat i no es pot clicar */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
 
-    /* Animació */
-    transform: translateY(100%);
-    opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-    pointer-events: none;
-  }
+#install-prompt.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
 
-  &.visible .prompt-content {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
+/* El contenidor intern amb l'estil visual */
+#install-prompt .prompt-content {
+  width: 100%;
+  max-width: 450px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  border-radius: 16px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
 
-  p {
-    margin: 0 0 24px 0;
-    font-size: 1.2rem; /* Mida de font més gran */
-    font-weight: 600;
-    font-family: "Roboto Serif", serif;
-    line-height: 1.4; /* Més espai entre línies si el text ocupa dues */
-  }
+  /* Animació de lliscament */
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  .install-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-  }
+/* Quan el contenidor principal és visible, el contingut llisca cap a la seva posició */
+#install-prompt.visible .prompt-content {
+  transform: translateY(0);
+}
 
-  button {
-    flex: 1;
-    padding: 14px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: "Roboto", sans-serif;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
+#install-prompt p {
+  margin: 0 0 24px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: "Roboto Serif", serif;
+  line-height: 1.4;
+}
 
-  #install-button {
-    background-color: var(--secondary-color);
-    color: white;
+#install-prompt .install-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
 
-    &:hover {
-      background-color: var(--secondary-color-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-  }
+#install-prompt button {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: "Roboto", sans-serif;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
-  #dismiss-button {
-    background-color: var(--bg-tab-hover);
-    color: var(--text-color);
+#install-prompt #install-button {
+  background-color: var(--secondary-color);
+  color: white;
+}
 
-    &:hover {
-      background-color: #dcdcdc;
-    }
-  }
+#install-prompt #install-button:hover {
+  background-color: var(--secondary-color-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#install-prompt #dismiss-button {
+  background-color: var(--bg-tab-hover);
+  color: var(--text-color);
+}
+
+#install-prompt #dismiss-button:hover {
+  background-color: #dcdcdc;
 }
 // EASTER EGG
 .easter-egg-overlay {
