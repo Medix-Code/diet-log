@@ -1,6 +1,6 @@
 /**
  * @file servicesPanelManager.js
- * @description Gestor de panells de servei i chips.
+ * @description Gestor de panells de serveis i chips.
  * @module servicesPanelManager
  */
 
