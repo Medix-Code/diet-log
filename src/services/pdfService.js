@@ -510,7 +510,7 @@ export async function downloadDietPDF(dietId) {
   }
 
   try {
-    // Nueva lógica: Hash si no es ya un hash de 64 caracteres
+    //  Hash si no es ya un hash de 64 caracteres
     const hashedId = dietId.length === 64 ? dietId : await pseudoId(dietId);
     const diet = await getDiet(hashedId);
     if (!diet) throw new Error("Dieta no encontrada.");
