@@ -10,13 +10,28 @@ const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
 // 1. APP SHELL: Fitxers essencials per a la càrrega inicial.
 // =================================================================================
 const APP_SHELL_FILES = [
-  "./", // L'arrel de l'aplicació
+  "./",
   "./index.html",
+  "./sw-register.js",
   "./css/main.css",
   "./manifest.json",
-  "./assets/images/icons-512.png", // La icona principal
-  "./assets/images/icons-192.png", // La icona secundària
-  // ELS ARXIUS JAVASCRIPT PRINCIPALS ARA ELS GESTIONARÀ EL CACHE DINÀMIC
+  "./src/app.js",
+  "./src/init.js",
+  "./src/ui/saveIndicator.js",
+  "./src/ui/theme.js",
+  "./src/ui/tabs.js",
+  "./src/services/formService.js",
+  "./src/services/dietService.js",
+  "./src/services/servicesPanelManager.js",
+  "./assets/images/icons-512.png",
+  "./assets/images/icons-192.png",
+  "./assets/icons/moon.svg",
+  "./assets/icons/sun.svg",
+  "./assets/icons/gear.svg",
+  "./assets/icons/info.svg",
+  "./assets/icons/donation.svg",
+  "./assets/icons/download_blue.svg",
+  "./assets/icons/save_green.svg",
 ];
 
 // --- INSTALL  ---
@@ -87,30 +102,50 @@ self.addEventListener("activate", (event) => {
 
 // --- FETCH ---
 self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  if (url.origin !== self.location.origin || request.method !== "GET") {
+    return;
+  }
+
+  const requestPath = "." + url.pathname;
+  const isAppShellFile = APP_SHELL_FILES.includes(requestPath);
+
+  if (isAppShellFile) {
+    event.respondWith(
+      caches
+        .match(request, { cacheName: APP_SHELL_CACHE_NAME })
+        .then((response) => {
+          // Si trobem el fitxer al cache, el retornem.
+          // Si NO el trobem (response és null/undefined), intentem anar a la xarxa.
+          return response || fetch(request);
+        })
+    );
+    return;
+  }
+
+  // 3. Estratègia "Stale-While-Revalidate" per a la resta de recursos
   event.respondWith(
-    caches.open(DYNAMIC_CACHE_NAME).then(async (cache) => {
-      try {
-        // 1. Intenta anar a la xarxa primer
-        const networkResponse = await fetch(event.request);
+    caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+      return cache.match(request).then((cachedResponse) => {
+        const fetchPromise = fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch((error) => {
+            console.error(
+              `[ServiceWorker-DEBUG] Error en fetch: ${error.message} per a ${request.url}`
+            );
+            // Opcional: Retorna cachedResponse si hi ha error de xarxa
+            return cachedResponse;
+          });
 
-        // 2. Si funciona, guarda una còpia al cache i retorna la resposta de la xarxa
-        // Només cachegem peticions GET correctes
-        if (event.request.method === "GET" && networkResponse.ok) {
-          cache.put(event.request, networkResponse.clone());
-        }
-
-        return networkResponse;
-      } catch (error) {
-        // 3. Si la xarxa falla, busca al cache
-        console.log(
-          `[ServiceWorker] La xarxa ha fallat per a ${event.request.url}, buscant al cache...`
-        );
-        const cachedResponse = await cache.match(event.request);
-
-        // Si trobem una resposta al cache, la retornem.
-        // Si no, l'error continuarà (la qual cosa és correcte si el recurs mai s'ha visitat)
-        return cachedResponse;
-      }
+        return cachedResponse || fetchPromise;
+      });
     })
   );
 });
