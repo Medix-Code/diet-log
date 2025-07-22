@@ -251,23 +251,6 @@ main {
   padding-top: 100px;
 }
 
-/* ============================================================= */
-/* ==       APLICAR FONT SANS-SERIF A LA INTERFÍCIE           == */
-/* ============================================================= */
-
-/* Apliquem Roboto (sans-serif) a botons, pestanyes, etiquetes, etc. */
-button,
-.tab,
-.chip,
-.form-group label,
-.group-title,
-.chip-group-title,
-.modal-button,
-.footer-btn-text,
-.service-button {
-  font-family: "Roboto", sans-serif;
-}
-
 // TOP BAR (CAPÇALERA)
 .top-bar {
   position: fixed;
@@ -1006,6 +989,7 @@ button {
 .chip-group-title {
   display: block;
   font-size: var(--font-size-base);
+  font-weight: 500;
   color: var(--subtext-color);
   margin-top: 0;
   margin-bottom: 10px;
