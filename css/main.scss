@@ -626,9 +626,10 @@ button {
   margin-top: 120px;
   padding-bottom: 60px;
   padding: 20px;
-  overflow-y: auto; /* Permet scroll vertical */
-  transition: padding-bottom 0.3s ease; /* Transició suau per padding-bottom, evitant salts */
+  overflow-y: auto;
+  transition: padding-bottom 0.3s ease;
   scroll-behavior: smooth;
+  transition: padding-bottom 0.3s ease-out;
 }
 
 .tab-content {
@@ -639,7 +640,6 @@ button {
   }
 }
 
-// Pestanya amb error (parpelleig)
 .tab.error-tab {
   animation: blinkErrorAnim 1s ease-in-out infinite alternate;
   font-weight: 600;
@@ -665,7 +665,6 @@ button {
     margin-bottom: 10px;
   }
 
-  /* ---> CORRECCIÓ: AFEGIM EL SELECTOR QUE FALTAVA <--- */
   input[type="text"],
   input[type="date"],
   input[type="time"],

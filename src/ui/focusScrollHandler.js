@@ -52,13 +52,32 @@ function scrollToFocusedElement(element, anticipat = false) {
   }
 }
 
-// Funció per manejar focus amb dues passades
+// A src/ui/focusScrollHandler.js
+
 function handleFocus(el) {
+  // Ignorem els modals com ja feies
   if (el.closest(".modal")) {
     return;
   }
-  scrollToFocusedElement(el, true);
-  setTimeout(() => scrollToFocusedElement(el), 50);
+
+  // Esperem un petit instant perquè el teclat comenci a aparèixer
+  setTimeout(() => {
+    // La funció 'scrollIntoView' és la manera estàndard de fer això.
+    // 'block: "nearest"' intentarà moure l'element el mínim possible per fer-lo visible.
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+
+    // Afegeix un scroll extra si l'element queda massa enganxat a dalt.
+    // Aquesta part és opcional, per a un refinament extra.
+    setTimeout(() => {
+      if (window.scrollY < 50) {
+        // Si l'scroll és molt a dalt
+        window.scrollBy({ top: -80, behavior: "smooth" }); // Tira una mica avall
+      }
+    }, 150);
+  }, 100); // Un petit delay és crucial
 }
 
 formElements.forEach((el) => {

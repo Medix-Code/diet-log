@@ -509,9 +509,10 @@ button .fa {
   margin-top: 120px;
   padding-bottom: 60px;
   padding: 20px;
-  overflow-y: auto; /* Permet scroll vertical */
-  transition: padding-bottom 0.3s ease; /* Transició suau per padding-bottom, evitant salts */
+  overflow-y: auto;
+  transition: padding-bottom 0.3s ease;
   scroll-behavior: smooth;
+  transition: padding-bottom 0.3s ease-out;
 }
 
 .tab-content {
@@ -537,7 +538,6 @@ button .fa {
 }
 .form-group {
   margin-bottom: 25px;
-  /* ---> CORRECCIÓ: AFEGIM EL SELECTOR QUE FALTAVA <--- */
 }
 .form-group label {
   display: block;

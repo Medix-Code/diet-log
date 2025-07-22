@@ -7,21 +7,13 @@ const THRESHOLD = 150;
 
 const scrollContainer = document.querySelector(".tab-content-container"); // Contenidor scrollable
 
-// Funció per ajustar posició: fixa arran del teclat, ignorant scroll
 function adjustPillPosition(height = keyboardHeight) {
   if (isKeyboardOpen && height > THRESHOLD) {
     savePill.style.bottom = `calc(${height}px + ${MARGIN_ABOVE_KEYBOARD}px + env(safe-area-inset-bottom, 0px))`;
-    if (scrollContainer) {
-      scrollContainer.style.paddingBottom = `${height + 50}px`; // Padding = alçada teclat + marge extra per seguretat
-    }
   } else {
     savePill.style.bottom = `calc(20px + env(safe-area-inset-bottom, 0px))`;
-    if (scrollContainer) {
-      scrollContainer.style.paddingBottom = "0px"; // Restaura quan teclat tancat
-    }
   }
 }
-
 // Activa VirtualKeyboard API si disponible (millor pràctica per consistència)
 if ("virtualKeyboard" in navigator) {
   const vk = navigator.virtualKeyboard;
