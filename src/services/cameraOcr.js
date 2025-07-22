@@ -51,13 +51,13 @@ const CSS_CLASSES = {
 const OCR_PATTERNS = {
   ORIGIN_TIME: {
     id: "originTime",
-    label: "Hora Origen",
+    label: "Hora movilización",
     fieldIdSuffix: "origin-time",
     lineKeywordRegex: /mobilitzat|ltat/i,
   },
   DESTINATION_TIME: {
     id: "destinationTime",
-    label: "Hora Destino",
+    label: "Hora de llegada hospital",
     fieldIdSuffix: "destination-time",
     lineKeywordRegex: /arribada|hospital|aaah/i,
   },
