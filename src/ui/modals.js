@@ -7,7 +7,6 @@
 import { loadDietById, deleteDietHandler } from "../services/dietService.js";
 import { getDietDisplayInfo, capitalizeFirstLetter } from "../utils/utils.js";
 import { getAllDiets } from "../db/indexedDbDietRepository.js";
-import { hasPendingChanges } from "../services/formService.js";
 import { downloadDietPDF } from "../services/pdfService.js";
 import { dotacionService } from "../services/dotacion.js";
 // --- Constants ---
