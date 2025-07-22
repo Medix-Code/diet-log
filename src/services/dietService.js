@@ -62,6 +62,10 @@ const DOM_IDS = {
   SERVICE_TYPE_SELECT: "service-type",
 };
 
+//  Variables de estado para controlar el guardado
+let isSaving = false;
+let needsAnotherSave = false;
+
 const CSS_CLASSES = {
   ERROR_TAB: "error-tab",
 };
@@ -146,7 +150,6 @@ async function buildDietObject(generalData, servicesData, dietId) {
     signatureConductor: generalData.signatureConductor,
     signatureAjudant: generalData.signatureAjudant,
     services: servicesData.map((s) => ({
-      // <--- Canvi aquí: servicesData en lloc de servicesKept
       serviceNumber: sanitizeText(s.serviceNumber),
       origin: sanitizeText(s.origin),
       destination: sanitizeText(s.destination),
@@ -250,17 +253,35 @@ function populateFormWithDietData(diet) {
 }
 
 async function performSave(isManual) {
+  if (isSaving) {
+    needsAnotherSave = true;
+    return;
+  }
+
+  isSaving = true;
+  needsAnotherSave = false;
+
   const { generalData, servicesData } = gatherAllData();
   const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
   if (!dietId || !/^\d{9}$/.test(dietId)) {
-    throw new Error("ID invàlid");
+    isSaving = false;
+    if (isManual) {
+      showToast(
+        "El primer servicio debe tener un N.º de servicio válido.",
+        "error"
+      );
+    }
+    return;
   }
 
   const hashedId = await pseudoId(dietId);
   const existingDiet = await getDiet(hashedId);
   const isNewDiet = !existingDiet;
   const saveMessage = isNewDiet ? "Guardando nueva dieta…" : "Guardando…";
-  indicateSaving(saveMessage);
+
+  if (isManual) {
+    indicateSaving(saveMessage);
+  }
 
   setSaveButtonState(false);
 
@@ -268,7 +289,10 @@ async function performSave(isManual) {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (!validateFormTabs()) {
-      throw new Error("Validació fallida");
+      if (isManual) {
+        indicateSaveError("Validación fallida");
+      }
+      return;
     }
 
     const dietToSave = await buildDietObject(generalData, servicesData, dietId);
@@ -291,14 +315,23 @@ async function performSave(isManual) {
     captureInitialFormState();
     indicateSaved();
 
-    await displayDietOptions();
+    if (isManual) {
+      await displayDietOptions();
+    }
   } catch (error) {
     console.error("Error en performSave:", error);
     indicateSaveError(error.message || "No se pudo guardar");
     if (isManual) {
       showToast(`Error al guardar: ${error.message}`, "error");
     }
+  } finally {
+    isSaving = false;
     setSaveButtonState(true);
+
+    if (needsAnotherSave) {
+      needsAnotherSave = false;
+      setTimeout(() => autoSaveDiet(), 100);
+    }
   }
 }
 
@@ -368,16 +401,15 @@ export async function deleteDietHandler(id, dietDate, dietType) {
     const sortedDiets = allDiets.sort(
       (a, b) => new Date(b.timeStampDiet) - new Date(a.timeStampDiet)
     );
-    dietBackup.index = sortedDiets.findIndex((d) => d.id === id); // Ara l'índex coincideix amb la llista mostrada
+    dietBackup.index = sortedDiets.findIndex((d) => d.id === id);
 
     await deleteDietById(id);
 
     showToast("Dieta eliminada", "success", 5000, {
       priority: 2,
       undoCallback: async () => {
-        await addDiet(dietBackup); // Restaura BD
+        await addDiet(dietBackup);
 
-        // Crida la funció exportada per restauració visual
         restoreDietItemToList(dietBackup);
 
         showToast("Dieta restaurada", "success", 3000, {
