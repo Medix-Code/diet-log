@@ -47,7 +47,7 @@ export function showInstallBanner(forceShow = false) {
     return;
   }
   if (getLsBoolean(LS_KEYS.NEVER_SHOW_AGAIN)) {
-    console.log("[PWA] Bloquejat: L'usuari ha demanat no tornar a mostrar.");
+    console.log("[PWA] Bloquejat: L'usuarii ha demanat no tornar a mostrar.");
     return;
   }
   if (!deferredInstallPrompt) {
