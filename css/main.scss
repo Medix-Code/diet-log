@@ -624,6 +624,7 @@ button {
 
 .tab-content-container {
   margin-top: 120px;
+  padding-bottom: 60px;
   padding: 20px;
   overflow-y: auto; /* Permet scroll vertical */
   transition: padding-bottom 0.3s ease; /* Transició suau per padding-bottom, evitant salts */
@@ -2339,7 +2340,7 @@ button {
 
 /* FOOTER */
 .footer {
-  margin-top: 60px;
+  margin-top: 0px;
   background-color: var(--bg-footer);
   color: var(--text-color-footer);
   padding: 20px;
@@ -2721,6 +2722,7 @@ button .icon {
 
   .tab-content-container {
     margin-top: 125px;
+    padding-bottom: 60px;
   }
 
   #diet-modal-title {
