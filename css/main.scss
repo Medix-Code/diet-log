@@ -985,15 +985,11 @@ button {
   }
 }
 
-/* ================================================================= */
-/* == CHIPS I BOTONS D'ACCIÓ (VERSIÓ NETA I SENSE DUPLICATS) == */
-/* ================================================================= */
-
+// CHIPS I BOTONS D'ACCIÓ (Secció Refinada i Unificada)
 .chip-group-title {
   display: block;
   font-size: var(--font-size-base);
-  font-weight: 400;
-  font-family: "Roboto Serif", serif;
+  font-weight: 500;
   color: var(--subtext-color);
   margin-top: 0;
   margin-bottom: 10px;
@@ -1007,9 +1003,67 @@ button {
   width: 100%;
 }
 
-/* ================================================ */
-/* ==       ESTILS REFINATS PER ALS CHIPS        == */
-/* ================================================ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  line-height: 1;
+}
+
+.chip:not(.chip-active) {
+  background-color: #ffffff;
+  border: 1px solid var(--input-border);
+  color: var(--txtcolor-tab-noactive);
+  opacity: 0.7;
+  font-size: 13px;
+
+  &:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.chip.chip-active {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chip-group.service-1 .chip.chip-active {
+  background-color: var(--service-1-bg);
+  border: 1px solid var(--service-1-border);
+  color: color-mix(in srgb, var(--service-1-border) 80%, black 20%);
+}
+
+.chip-group.service-2 .chip.chip-active {
+  background-color: var(--service-2-bg);
+  border: 1px solid var(--service-2-border);
+  color: color-mix(in srgb, var(--service-2-border) 80%, black 20%);
+}
+
+.chip-group.service-3 .chip.chip-active {
+  background-color: var(--service-3-bg);
+  border: 1px solid var(--service-3-border);
+  color: color-mix(in srgb, var(--service-3-border) 80%, black 20%);
+}
+
+.chip-group.service-4 .chip.chip-active {
+  background-color: var(--service-4-bg);
+  border: 1px solid var(--service-4-border);
+  color: color-mix(in srgb, var(--service-4-border) 80%, black 20%);
+}
 
 .section-divider {
   border: none;
@@ -1024,9 +1078,10 @@ button {
   align-items: center;
   width: 100%;
   margin-bottom: 10px;
-}
-.label-action-container label {
-  margin-bottom: 0;
+
+  label {
+    margin-bottom: 0;
+  }
 }
 
 // ESCANER OCR
