@@ -10,28 +10,13 @@ const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
 // 1. APP SHELL: Fitxers essencials per a la càrrega inicial.
 // =================================================================================
 const APP_SHELL_FILES = [
-  "./",
+  "./", // L'arrel de l'aplicació
   "./index.html",
-  "./sw-register.js",
   "./css/main.css",
   "./manifest.json",
-  "./src/app.js",
-  "./src/init.js",
-  "./src/ui/saveIndicator.js",
-  "./src/ui/theme.js",
-  "./src/ui/tabs.js",
-  "./src/services/formService.js",
-  "./src/services/dietService.js",
-  "./src/services/servicesPanelManager.js",
-  "./assets/images/icons-512.png",
-  "./assets/images/icons-192.png",
-  "./assets/icons/moon.svg",
-  "./assets/icons/sun.svg",
-  "./assets/icons/gear.svg",
-  "./assets/icons/info.svg",
-  "./assets/icons/donation.svg",
-  "./assets/icons/download_blue.svg",
-  "./assets/icons/save_green.svg",
+  "./assets/images/icons-512.png", // La icona principal
+  "./assets/images/icons-192.png", // La icona secundària
+  // ELS ARXIUS JAVASCRIPT PRINCIPALS ARA ELS GESTIONARÀ EL CACHE DINÀMIC
 ];
 
 // --- INSTALL  ---
@@ -101,49 +86,63 @@ self.addEventListener("activate", (event) => {
 });
 
 // --- FETCH ---
+// A service-worker.js
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // No interceptis peticions que no siguin del nostre origen o que no siguin GET
   if (url.origin !== self.location.origin || request.method !== "GET") {
     return;
   }
 
-  const requestPath = "." + url.pathname;
-  const isAppShellFile = APP_SHELL_FILES.includes(requestPath);
+  // Estratègia 1: Cache First per a l'App Shell (el que ja teníem a la llista)
+  // Comprovem si la petició és per a un dels nostres fitxers base.
+  const isAppShellRequest = APP_SHELL_FILES.some((file) =>
+    url.pathname.endsWith(file.replace("./", "/"))
+  );
 
-  if (isAppShellFile) {
+  if (isAppShellRequest) {
     event.respondWith(
-      caches
-        .match(request, { cacheName: APP_SHELL_CACHE_NAME })
-        .then((response) => {
-          // Si trobem el fitxer al cache, el retornem.
-          // Si NO el trobem (response és null/undefined), intentem anar a la xarxa.
-          return response || fetch(request);
-        })
+      caches.match(request, { cacheName: APP_SHELL_CACHE_NAME })
     );
     return;
   }
 
-  // 3. Estratègia "Stale-While-Revalidate" per a la resta de recursos
-  event.respondWith(
-    caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-      return cache.match(request).then((cachedResponse) => {
-        const fetchPromise = fetch(request)
+  // Estratègia 2: Network First per a fitxers JS i CSS importants
+  // Si és un fitxer JS o CSS, intenta anar a la xarxa primer. Si falla, utilitza el cache.
+  if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
+    event.respondWith(
+      caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+        return fetch(request)
           .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
+            if (networkResponse.ok) {
               cache.put(request, networkResponse.clone());
             }
             return networkResponse;
           })
-          .catch((error) => {
-            console.error(
-              `[ServiceWorker-DEBUG] Error en fetch: ${error.message} per a ${request.url}`
-            );
-            // Opcional: Retorna cachedResponse si hi ha error de xarxa
-            return cachedResponse;
+          .catch(() => {
+            // Si la xarxa falla, intenta servir des del cache
+            return cache.match(request);
           });
+      })
+    );
+    return;
+  }
 
+  // Estratègia 3: Stale-While-Revalidate per a la resta (ex: icones, fonts)
+  // Serveix ràpidament des del cache, però actualitza en segon pla.
+  event.respondWith(
+    caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+      return cache.match(request).then((cachedResponse) => {
+        const fetchPromise = fetch(request).then((networkResponse) => {
+          if (networkResponse.ok) {
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        });
+        // Retorna el del cache si existeix, si no, espera a la xarxa.
         return cachedResponse || fetchPromise;
       });
     })
