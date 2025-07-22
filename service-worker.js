@@ -86,65 +86,31 @@ self.addEventListener("activate", (event) => {
 });
 
 // --- FETCH ---
-// A service-worker.js
-
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // No interceptis peticions que no siguin del nostre origen o que no siguin GET
-  if (url.origin !== self.location.origin || request.method !== "GET") {
-    return;
-  }
-
-  // Estratègia 1: Cache First per a l'App Shell (el que ja teníem a la llista)
-  // Comprovem si la petició és per a un dels nostres fitxers base.
-  const isAppShellRequest = APP_SHELL_FILES.some((file) =>
-    url.pathname.endsWith(file.replace("./", "/"))
-  );
-
-  if (isAppShellRequest) {
-    event.respondWith(
-      caches.match(request, { cacheName: APP_SHELL_CACHE_NAME })
-    );
-    return;
-  }
-
-  // Estratègia 2: Network First per a fitxers JS i CSS importants
-  // Si és un fitxer JS o CSS, intenta anar a la xarxa primer. Si falla, utilitza el cache.
-  if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
-    event.respondWith(
-      caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-        return fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse.ok) {
-              cache.put(request, networkResponse.clone());
-            }
-            return networkResponse;
-          })
-          .catch(() => {
-            // Si la xarxa falla, intenta servir des del cache
-            return cache.match(request);
-          });
-      })
-    );
-    return;
-  }
-
-  // Estratègia 3: Stale-While-Revalidate per a la resta (ex: icones, fonts)
-  // Serveix ràpidament des del cache, però actualitza en segon pla.
   event.respondWith(
-    caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-      return cache.match(request).then((cachedResponse) => {
-        const fetchPromise = fetch(request).then((networkResponse) => {
-          if (networkResponse.ok) {
-            cache.put(request, networkResponse.clone());
-          }
-          return networkResponse;
-        });
-        // Retorna el del cache si existeix, si no, espera a la xarxa.
-        return cachedResponse || fetchPromise;
-      });
+    caches.open(DYNAMIC_CACHE_NAME).then(async (cache) => {
+      try {
+        // 1. Intenta anar a la xarxa primer
+        const networkResponse = await fetch(event.request);
+
+        // 2. Si funciona, guarda una còpia al cache i retorna la resposta de la xarxa
+        // Només cachegem peticions GET correctes
+        if (event.request.method === "GET" && networkResponse.ok) {
+          cache.put(event.request, networkResponse.clone());
+        }
+
+        return networkResponse;
+      } catch (error) {
+        // 3. Si la xarxa falla, busca al cache
+        console.log(
+          `[ServiceWorker] La xarxa ha fallat per a ${event.request.url}, buscant al cache...`
+        );
+        const cachedResponse = await cache.match(event.request);
+
+        // Si trobem una resposta al cache, la retornem.
+        // Si no, l'error continuarà (la qual cosa és correcte si el recurs mai s'ha visitat)
+        return cachedResponse;
+      }
     })
   );
 });
