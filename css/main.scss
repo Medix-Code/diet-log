@@ -2454,97 +2454,75 @@ button .icon {
   height: 1.3em;
 }
 
-/* ============================================================= */
-/* ==   BANNER PWA - VERSIÓ FINAL I ROBUSTA PER A PRODUCCIÓ   == */
-/* ============================================================= */
+/* ================================================================= */
+/* ==   BANNER PWA - VERSIÓ SIMPLE I FUNCIONAL (SENSE ANIMACIONS) == */
+/* ================================================================= */
 
 #install-prompt {
+  /* Amaguem el bàner per defecte */
+  display: none;
+
+  /* Estils de posicionament i visuals */
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-  z-index: 9999;
-
-  /* Per defecte, el contenidor principal està amagat i no es pot clicar */
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
-#install-prompt.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* El contenidor intern amb l'estil visual */
-#install-prompt .prompt-content {
-  width: 100%;
-  max-width: 450px;
   background-color: var(--bg-color);
   color: var(--text-color);
   padding: 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  border-radius: 16px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
   text-align: center;
+  z-index: 9999;
 
-  /* Animació de lliscament */
-  transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  p {
+    margin: 0 0 24px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: "Roboto Serif", serif;
+  }
+
+  .install-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  button {
+    flex: 1;
+    max-width: 200px; /* Evita que s'estirin massa en pantalles grans */
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: "Roboto", sans-serif;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  #install-button {
+    background-color: var(--secondary-color);
+    color: white;
+    &:hover {
+      background-color: var(--secondary-color-hover);
+    }
+  }
+
+  #dismiss-button {
+    background-color: var(--bg-tab-hover);
+    color: var(--text-color);
+    &:hover {
+      background-color: #dcdcdc;
+    }
+  }
 }
 
-/* Quan el contenidor principal és visible, el contingut llisca cap a la seva posició */
-#install-prompt.visible .prompt-content {
-  transform: translateY(0);
-}
-
-#install-prompt p {
-  margin: 0 0 24px 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  font-family: "Roboto Serif", serif;
-  line-height: 1.4;
-}
-
-#install-prompt .install-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-
-#install-prompt button {
-  flex: 1;
-  padding: 14px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: "Roboto", sans-serif;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-#install-prompt #install-button {
-  background-color: var(--secondary-color);
-  color: white;
-}
-
-#install-prompt #install-button:hover {
-  background-color: var(--secondary-color-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#install-prompt #dismiss-button {
-  background-color: var(--bg-tab-hover);
-  color: var(--text-color);
-}
-
-#install-prompt #dismiss-button:hover {
-  background-color: #dcdcdc;
+/* Quan tingui la classe .visible, el mostrem */
+#install-prompt.visible {
+  display: block;
 }
 // EASTER EGG
 .easter-egg-overlay {
