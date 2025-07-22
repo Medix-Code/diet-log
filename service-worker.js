@@ -119,8 +119,6 @@ self.addEventListener("fetch", (event) => {
       caches
         .match(request, { cacheName: APP_SHELL_CACHE_NAME })
         .then((response) => {
-          // Si trobem el fitxer al cache, el retornem.
-          // Si NO el trobem (response és null/undefined), intentem anar a la xarxa.
           return response || fetch(request);
         })
     );
