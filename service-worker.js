@@ -23,8 +23,6 @@ const APP_SHELL_FILES = [
   "./src/services/formService.js",
   "./src/services/dietService.js",
   "./src/services/servicesPanelManager.js",
-  "./assets/images/icons-512.png",
-  "./assets/images/icons-192.png",
   "./assets/icons/moon.svg",
   "./assets/icons/sun.svg",
   "./assets/icons/gear.svg",
@@ -32,6 +30,10 @@ const APP_SHELL_FILES = [
   "./assets/icons/donation.svg",
   "./assets/icons/download_blue.svg",
   "./assets/icons/save_green.svg",
+  "./assets/images/icons-512.png",
+  "./assets/images/icons-192.png",
+  "./assets/images/screenshot-desktop.png",
+  "./assets/images/screenshot-mobile.png",
 ];
 
 // --- INSTALL  ---
