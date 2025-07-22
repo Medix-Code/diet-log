@@ -25,8 +25,14 @@
     <link rel="stylesheet" href="css/main.css" />
     <noscript><link rel="stylesheet" href="css/main.css" /></noscript>
 
-    <script src="./node_modules/tesseract.js/dist/tesseract.min.js"></script>
-    <script src="./node_modules/pdf-lib/dist/pdf-lib.min.js" async></script>
+    <!-- Tesseract.js des de la CDN, fixant la versió major 5 per a estabilitat -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- PDF-Lib des de la CDN -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"
+      async
+    ></script>
 
     <script src="./sw-register.js" type="module"></script>
   </head>
