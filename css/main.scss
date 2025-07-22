@@ -1548,12 +1548,38 @@ button {
 
 /* Estils per al comptador de caràcters */
 .char-counter {
-  text-align: right; /* Alineat a la dreta */
-  font-size: 0.75rem; /* Mida petita */
+  text-align: right;
+  font-size: 0.75rem;
   color: var(--subtext-color);
-  opacity: 0.7; /* Una mica transparent */
-  margin-top: 4px; /* Petit espai superior */
+  opacity: 0.7;
+  margin-top: 4px;
   padding-right: 4px;
+  font-weight: 500;
+  transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+/* Estat d'advertència */
+.char-counter.warning {
+  color: var(--textfield-warning); /* Color ambre/taronja */
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Estat de límit assolit */
+.char-counter.limit {
+  color: var(--textfield-error); /* Color vermell */
+  opacity: 1;
+  font-weight: 700;
+}
+
+#notes-textarea.input-warning {
+  border-color: var(--textfield-warning) !important;
+  background-color: var(--textfield-warning-bg) !important;
+}
+
+#notes-textarea.input-error {
+  border-color: var(--textfield-error) !important;
+  background-color: var(--textfield-error-bg) !important;
 }
 
 // MODAL “BOTTOM SHEET” BASE OCR
