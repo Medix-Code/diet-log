@@ -21,7 +21,6 @@ import { setupDatePickers, setupTimePickers } from "./ui/pickers.js";
 import { setupServiceNumberRestrictions } from "./utils/restrictions.js";
 import { initSettingsPanel } from "./ui/settingsPanel.js";
 import * as formService from "./services/formService.js";
-import { initPwaInstall } from "./services/pwaInstallHandler.js";
 import { initCameraOcr } from "./services/cameraOcr.js";
 import { dotacionService } from "./services/dotacion.js";
 import { getAnonymousUserId } from "./services/userService.js";
@@ -103,9 +102,6 @@ export async function initializeApp() {
 
     // Captura l'estat inicial del formulari
     formService.captureInitialFormState();
-
-    // --- Inicialització del Servei PWA ---
-    initPwaInstall();
 
     // --- Altres ---
     easterEgg();
