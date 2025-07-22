@@ -165,6 +165,22 @@ main {
   padding-top: 100px;
 }
 
+/* ============================================================= */
+/* ==       APLICAR FONT SANS-SERIF A LA INTERFÍCIE           == */
+/* ============================================================= */
+/* Apliquem Roboto (sans-serif) a botons, pestanyes, etiquetes, etc. */
+button,
+.tab,
+.chip,
+.form-group label,
+.group-title,
+.chip-group-title,
+.modal-button,
+.footer-btn-text,
+.service-button {
+  font-family: "Roboto", sans-serif;
+}
+
 .top-bar {
   position: fixed;
   top: 0;
@@ -536,6 +552,7 @@ button .fa {
 }
 .form-group {
   margin-bottom: 25px;
+  /* ---> CORRECCIÓ: AFEGIM EL SELECTOR QUE FALTAVA <--- */
 }
 .form-group label {
   display: block;
@@ -552,7 +569,6 @@ button .fa {
   padding-right: 15px;
   font-size: 15px;
   font-weight: 300;
-  border-radius: 4px;
   border: 1px solid var(--input-border);
   background-color: var(--textfield);
   color: var(--subtext-color);
@@ -642,7 +658,6 @@ button .fa {
   align-items: center;
   justify-content: center;
   text-align: center;
-  border-radius: 8px;
   font-size: 16px;
   font-weight: bold;
   box-shadow: 0 2px 4px var(--bg-transp-ajustes);
@@ -838,7 +853,6 @@ button .fa {
 .chip-group-title {
   display: block;
   font-size: var(--font-size-base);
-  font-weight: 500;
   color: var(--subtext-color);
   margin-top: 0;
   margin-bottom: 10px;
@@ -1071,7 +1085,6 @@ button .fa {
   padding-left: clamp(10px, 2vw, 20px);
   padding-right: clamp(10px, 2vw, 20px);
   background-color: var(--bg-color);
-  border-radius: 8px;
   box-shadow: 0 4px 8px var(--bg-transp-ajustes);
   position: relative;
   border: 2px dashed transparent;
@@ -1635,7 +1648,6 @@ button .fa {
   position: relative;
   margin: 10% auto;
   background-color: var(--bg-color);
-  border-radius: 12px;
   padding: 20px 30px;
   max-width: 500px;
   box-shadow: 0 4px 8px var(--bg-transp-ajustes);
@@ -2033,7 +2045,6 @@ button .fa {
   background-color: var(--toast-info-bg, #323232); /* Fons fosc per defecte, com Google dark mode */
   color: var(--toast-text-color, #ffffff); /* Text clar per contrast */
   padding: 16px 24px; /* Padding més ample per comoditat */
-  border-radius: 4px; /* Corners suau, com Material Design */
   box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12); /* Shadow elevat */
   font-size: 14px; /* Font més petit i llegible */
   line-height: 20px;
@@ -2671,4 +2682,50 @@ button .icon {
 .link-404:focus {
   text-decoration: none;
   border-bottom-color: var(--primary-color);
+}
+
+/* ============================================================= */
+/* == BLOC PER ARRODONIR CANTONADES - AFEGIR AL FINAL DEL CSS == */
+/* ============================================================= */
+/* --- Arrodoniment principal (8px) per a camps i botons petits --- */
+.form-group input[type=text],
+.form-group input[type=date],
+.form-group input[type=time],
+.form-group select,
+.signature-group .input-with-icon,
+.group-btn,
+.service-button,
+.options-btn,
+.chip,
+.btn-ocr-inline,
+.btn-ocr-scan,
+.modal-button,
+#install-prompt button,
+.diet-icons button,
+.dotacio-load {
+  border-radius: 8px;
+}
+
+/* --- Arrodoniment més gran (12px) per a contenidors i targetes --- */
+.ajustes-panel,
+.service,
+.modal-content,
+.modal-bottom-content,
+.modal-bottom-btn,
+.signature-canvas-container,
+#install-prompt,
+.dotacio-item,
+.diet-item {
+  border-radius: 12px;
+}
+
+/* --- Arrodoniment complet per a botons tipus "píndola" --- */
+.close-modal-btn,
+.modal-button {
+  border-radius: 9999px;
+}
+
+/* --- Ajust fi per al camp de signatura (perquè l'arrodoniment s'apliqui bé) --- */
+.signature-group .input-with-icon {
+  overflow: hidden;
 }
