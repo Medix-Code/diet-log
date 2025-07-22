@@ -39,7 +39,7 @@ export function isAppInstalled() {
   );
 }
 
-function showInstallBanner() {
+export function showInstallBanner(forceShow = false) {
   console.log("[PWA] Intentant mostrar el bàner d'instal·lació...");
 
   if (isAppInstalled()) {
@@ -61,11 +61,13 @@ function showInstallBanner() {
 
   console.log("%c[PWA] Mostrant el bàner!", "color: green; font-weight: bold;");
   installPromptElement.classList.add("visible");
+  installPromptElement.classList.remove("hidden");
 }
 
 function hideInstallBanner() {
   console.log("[PWA] Amagant el bàner.");
   installPromptElement?.classList.remove("visible");
+  installPromptElement?.classList.add("hidden");
 }
 
 function handleDismissAction() {
