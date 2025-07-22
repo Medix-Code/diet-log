@@ -1,64 +1,57 @@
 // src/ui/keyboardHandler.js
+
 const savePill = document.getElementById("save-pill");
+const scrollContainer = document.querySelector(".tab-content-container");
+
 let keyboardHeight = 0;
 let isKeyboardOpen = false;
+
 const MARGIN_ABOVE_KEYBOARD = 10;
 const THRESHOLD = 150;
 
-const scrollContainer = document.querySelector(".tab-content-container"); // Contenidor scrollable
+// Guardem el padding per defecte que ve del CSS (60px)
+const DEFAULT_PADDING_BOTTOM = scrollContainer
+  ? parseInt(window.getComputedStyle(scrollContainer).paddingBottom, 10) || 60
+  : 60;
 
-function adjustPillPosition(height = keyboardHeight) {
-  if (isKeyboardOpen && height > THRESHOLD) {
+function adjustUIForKeyboard(height = keyboardHeight) {
+  isKeyboardOpen = height > THRESHOLD;
+
+  if (isKeyboardOpen) {
+    // Teclat obert: Mou la píndola i afegeix padding
     savePill.style.bottom = `calc(${height}px + ${MARGIN_ABOVE_KEYBOARD}px + env(safe-area-inset-bottom, 0px))`;
+    if (scrollContainer) {
+      scrollContainer.style.paddingBottom = `${height + 50}px`;
+    }
   } else {
+    // Teclat tancat: Restaura la píndola i el padding per defecte
     savePill.style.bottom = `calc(20px + env(safe-area-inset-bottom, 0px))`;
+    if (scrollContainer) {
+      scrollContainer.style.paddingBottom = `${DEFAULT_PADDING_BOTTOM}px`;
+    }
   }
 }
-// Activa VirtualKeyboard API si disponible (millor pràctica per consistència)
-if ("virtualKeyboard" in navigator) {
-  const vk = navigator.virtualKeyboard;
-  vk.overlaysContent = true; // Opta per overlay: teclat no resize viewport automàticament
 
-  vk.addEventListener("geometrychange", (event) => {
+// API principal per detectar el teclat
+if ("virtualKeyboard" in navigator) {
+  navigator.virtualKeyboard.overlaysContent = true;
+  navigator.virtualKeyboard.addEventListener("geometrychange", (event) => {
     keyboardHeight = event.target.boundingRect.height;
-    isKeyboardOpen = keyboardHeight > THRESHOLD;
-    adjustPillPosition(keyboardHeight);
+    adjustUIForKeyboard(keyboardHeight);
   });
 } else {
-  // Fallback per browsers sense API: Usa visualViewport o resize
-  if ("visualViewport" in window) {
-    window.visualViewport.addEventListener("resize", () => {
-      keyboardHeight = window.innerHeight - window.visualViewport.height;
-      isKeyboardOpen =
-        keyboardHeight > THRESHOLD &&
-        document.activeElement?.tagName === "INPUT";
-      adjustPillPosition();
-    });
-  } else {
-    window.addEventListener("resize", () => {
-      keyboardHeight = initialViewportHeight - window.innerHeight;
-      isKeyboardOpen =
-        keyboardHeight > THRESHOLD &&
-        document.activeElement?.tagName === "INPUT";
-      adjustPillPosition();
-    });
-  }
+  // Fallback per a navegadors antics
+  let initialHeight = window.innerHeight;
+  window.addEventListener("resize", () => {
+    // Aquesta heurística és menys fiable, però és el millor que podem fer
+    if (window.innerHeight < initialHeight) {
+      keyboardHeight = initialHeight - window.innerHeight;
+      adjustUIForKeyboard(keyboardHeight);
+    } else {
+      keyboardHeight = 0;
+      adjustUIForKeyboard(0);
+    }
+  });
 }
-
-// Inicialitza alçada i listeners per focus (per estabilitzar)
-let initialViewportHeight = window.innerHeight;
-window.addEventListener("load", () => {
-  initialViewportHeight = window.innerHeight;
-});
-
-document.addEventListener("focusin", (e) => {
-  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") {
-    setTimeout(adjustPillPosition, 300); // Delay per esperar estabilització del teclat
-  }
-});
-
-document.addEventListener("focusout", () => {
-  setTimeout(adjustPillPosition, 100);
-});
 
 export { keyboardHeight, isKeyboardOpen };
