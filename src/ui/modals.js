@@ -737,7 +737,7 @@ function _createDotacioListItem(dotacio, index) {
 export function restoreDotacioItemToList(dotacio) {
   const dotacioOptionsList = document.getElementById("dotacio-options");
   if (!dotacioOptionsList) {
-    dotacionService._displayDotacioOptions();
+    dotacionService.displayDotacioOptions();
     return;
   }
 

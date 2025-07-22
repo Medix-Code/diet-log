@@ -64,19 +64,15 @@ export function setupNotesSelectedService() {
     return;
   }
 
-  // Listener per obrir el modal
   notesButton.addEventListener("click", () => {
     const currentIndex = getCurrentServiceIndex();
     openNotesModal(currentIndex);
   });
 
-  // Afegim el listener de cancel·lar només una vegada
   notesCancel.addEventListener("click", closeNotesModal);
 
   console.log("Funcionalitat 'Afegir Notes' configurada.");
 }
-
-// --- Funcions Auxiliars ---
 
 /**
  * Obre el modal de notes, configura els listeners i el comptador.
@@ -86,29 +82,48 @@ function openNotesModal(serviceIndex) {
   if (!notesModal) return;
 
   notesTitle.textContent = `S${serviceIndex + 1}: Observaciones`;
-
   notesTextarea.value = serviceNotes[serviceIndex] || "";
+  const maxLength = notesTextarea.maxLength;
 
-  const updateCounter = () => {
+  const updateCounterAndStyle = () => {
     const currentLength = notesTextarea.value.length;
-    const maxLength = notesTextarea.maxLength;
-    notesCounter.textContent = `${currentLength} / ${maxLength}`;
-  };
-  updateCounter();
 
-  // Listener per al comptador de caràcters
-  currentInputHandler = () => updateCounter();
+    notesCounter.textContent = `${currentLength} / ${maxLength}`;
+
+    notesCounter.classList.remove("warning", "limit");
+    notesTextarea.classList.remove("input-warning", "input-error");
+
+    if (currentLength >= maxLength) {
+      notesCounter.classList.add("limit");
+      notesTextarea.classList.add("input-error");
+    } else if (currentLength > maxLength * 0.8) {
+      // Més del 80%
+      notesCounter.classList.add("warning");
+      notesTextarea.classList.add("input-warning");
+    }
+  };
+
+  updateCounterAndStyle();
+
+  currentInputHandler = () => {
+    const currentLength = notesTextarea.value.length;
+
+    if (currentLength > maxLength) {
+      notesTextarea.value = notesTextarea.value.slice(0, maxLength);
+    }
+
+    updateCounterAndStyle();
+  };
   notesTextarea.addEventListener("input", currentInputHandler);
 
   currentEnterKeyHandler = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       notesTextarea.blur();
     }
   };
   notesTextarea.addEventListener("keydown", currentEnterKeyHandler);
 
-  // Listener per al botó Guardar
   currentSaveHandler = () => {
     const newNote = notesTextarea.value.trim();
     const oldNote = serviceNotes[serviceIndex] || "";
@@ -136,6 +151,10 @@ function openNotesModal(serviceIndex) {
 
   setTimeout(() => {
     notesTextarea.focus({ preventScroll: true });
+    notesTextarea.setSelectionRange(
+      notesTextarea.value.length,
+      notesTextarea.value.length
+    );
   }, 0);
 }
 
@@ -145,7 +164,6 @@ function openNotesModal(serviceIndex) {
 function closeNotesModal() {
   if (!notesModal) return;
 
-  // Eliminem els listeners per evitar que s'acumulin
   if (currentSaveHandler) {
     notesSave.removeEventListener("click", currentSaveHandler);
     currentSaveHandler = null;
@@ -155,12 +173,14 @@ function closeNotesModal() {
     currentInputHandler = null;
   }
   if (currentEnterKeyHandler) {
-    // <-- NOU: Neteja també el listener de la tecla Enter
     notesTextarea.removeEventListener("keydown", currentEnterKeyHandler);
     currentEnterKeyHandler = null;
   }
 
-  // Amaguem el modal i desbloquegem el body
+  // Netejem les classes d'estil en tancar
+  notesCounter.classList.remove("warning", "limit");
+  notesTextarea.classList.remove("input-warning", "input-error");
+
   notesModal.style.display = "none";
   document.body.classList.remove("modal-open");
 }
