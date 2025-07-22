@@ -223,9 +223,6 @@ async function fillPdf(generalData, servicesData) {
     return rgb(r / 255, g / 255, b / 255);
   };
 
-  // ---------------------------------------------------------------------------
-  // Camps generals
-  // ---------------------------------------------------------------------------
   Object.entries(FIELD_COORDINATES.general).forEach(([field, coords]) => {
     let value = generalData[field] || "";
     if (field === "date") value = formatDateForPdf(value);
@@ -244,9 +241,6 @@ async function fillPdf(generalData, servicesData) {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Camps per servei
-  // ---------------------------------------------------------------------------
   servicesData.forEach((service, index) => {
     const yOffset = index * PDF_SETTINGS.SERVICE_Y_OFFSET;
     const serviceMode = service.mode || "3.6";
@@ -313,9 +307,6 @@ async function fillPdf(generalData, servicesData) {
     }
   });
 
-  // ---------------------------------------------------------------------------
-  // Signatures
-  // ---------------------------------------------------------------------------
   const embedSignature = async (signatureData, coords) => {
     const isValidSignature =
       typeof signatureData === "string" &&
@@ -345,11 +336,8 @@ async function fillPdf(generalData, servicesData) {
     ),
   ]);
 
-  // ---------------------------------------------------------------------------
-  // Secció de notes (marges simètrics + sagnat penjant)
-  // ---------------------------------------------------------------------------
   const PAGE_WIDTH = page.getWidth();
-  const LEFT_BOUNDARY = LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING; // 65 pt
+  const LEFT_BOUNDARY = LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING;
   const RIGHT_BOUNDARY =
     PAGE_WIDTH - (LAYOUT.OUTER_MARGIN + LAYOUT.INNER_PADDING);
 
@@ -358,7 +346,6 @@ async function fillPdf(generalData, servicesData) {
     .filter((n) => n.num && n.text);
 
   if (notes.length) {
-    // línia horitzontal separadora
     const sepY = 275;
     page.drawLine({
       start: { x: LAYOUT.OUTER_MARGIN, y: sepY },
@@ -367,7 +354,6 @@ async function fillPdf(generalData, servicesData) {
       color: rgb(0.8, 0.8, 0.8),
     });
 
-    // títol
     const title = notes.length === 1 ? "Observació" : "Observacions";
     page.drawText(title, {
       ...FIELD_COORDINATES.notesSection.title,
@@ -375,20 +361,15 @@ async function fillPdf(generalData, servicesData) {
       color: rgbFromHex(FIELD_COORDINATES.notesSection.title.color),
     });
 
-    // paràmetres de text
     let y = FIELD_COORDINATES.notesSection.start.y;
     const size = FIELD_COORDINATES.notesSection.start.size;
     const lineH = FIELD_COORDINATES.notesSection.lineHeight;
     const bodyCol = rgbFromHex(FIELD_COORDINATES.notesSection.start.color);
 
     notes.forEach(({ num, text }) => {
-      if (y < 40) return; // no escriure massa avall
+      if (y < 40) return;
 
-      // prefix “Servei 123: ”
       const prefix = `Servei ${num}: `;
-      const prefixW = helveticaFont.widthOfTextAtSize(prefix, size);
-      const indentX = LEFT_BOUNDARY + prefixW; // punt de sagnat
-
       page.drawText(prefix, {
         x: LEFT_BOUNDARY,
         y,
@@ -397,17 +378,19 @@ async function fillPdf(generalData, servicesData) {
         color: rgbFromHex(PDF_SETTINGS.SERVICE_NUMBER_COLOR),
       });
 
-      // recorrem paraules amb control de marge dret
-      let cx = indentX;
+      const prefixW = helveticaFont.widthOfTextAtSize(prefix, size);
+      let cx = LEFT_BOUNDARY + prefixW;
+
       text.split(" ").forEach((word) => {
         if (!word) return;
-        const w = helveticaFont.widthOfTextAtSize(word + " ", size);
 
-        if (cx + w > RIGHT_BOUNDARY) {
-          // passa del marge dret
+        const wordWidth = helveticaFont.widthOfTextAtSize(word + " ", size);
+
+        if (cx + wordWidth > RIGHT_BOUNDARY) {
           y -= lineH;
-          cx = indentX; // nova línia amb sagnat penjant
+          cx = LEFT_BOUNDARY;
         }
+
         page.drawText(word + " ", {
           x: cx,
           y,
@@ -415,16 +398,14 @@ async function fillPdf(generalData, servicesData) {
           size,
           color: bodyCol,
         });
-        cx += w;
+
+        cx += wordWidth;
       });
 
-      y -= lineH * 1.5; // espai abans de la nota següent
+      y -= lineH * 1.5;
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // Marca d'aigua
-  // ---------------------------------------------------------------------------
   const watermarkText = PDF_SETTINGS.WATERMARK_TEXT;
   const textSize = FIELD_COORDINATES.fixedText.website.size;
   const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, textSize);
@@ -436,9 +417,6 @@ async function fillPdf(generalData, servicesData) {
     color: rgbFromHex(FIELD_COORDINATES.fixedText.website.color),
   });
 
-  // ---------------------------------------------------------------------------
-  // Metadades del PDF
-  // ---------------------------------------------------------------------------
   const datePart = formatDateForPdf(generalData.date) || "Dieta";
   const typePart =
     generalData.dietType === "lunch"
@@ -467,9 +445,6 @@ async function fillPdf(generalData, servicesData) {
     pdfDoc.setModificationDate(dataDeLaDieta);
   }
 
-  // ---------------------------------------------------------------------------
-  // Seguretat del PDF
-  // ---------------------------------------------------------------------------
   return await pdfDoc.save({
     permissions: {
       modifying: false,
