@@ -75,10 +75,9 @@ const FIELD_COORDINATES = {
     ayudante: { x: 380, y: 295, width: 100, height: 50 },
   },
   notesSection: {
-    // Els valors x i maxWidth seran recalculats dinàmicament a partir de LAYOUT
     title: { x: 65, y: 250, size: 16, color: "#000000" },
     lineHeight: 18,
-    maxWidth: 465, // Mantingut per compatibilitat; serà sobreescrit a fillPdf
+    maxWidth: 465,
     start: { x: 65, y: 230, size: 16, color: "#333333" },
   },
   fixedText: {
