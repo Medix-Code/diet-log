@@ -1,13 +1,19 @@
 // src/app.js
-// Punt d'entrada principal de l'aplicació.
 
 import { initializeApp } from "./init.js";
+import { initPwaInstall } from "./services/pwaInstallHandler.js";
+
+// Funció que s'executarà quan el DOM estigui llest
+async function startApp() {
+  await initializeApp();
+  initPwaInstall();
+}
 
 // Quan el DOM estigui completament carregat, inicialitzem l'aplicació.
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeApp);
+  document.addEventListener("DOMContentLoaded", startApp);
 } else {
-  initializeApp(); // Si el DOM ja està carregat
+  startApp();
 }
 
 console.log("App.js carregat, esperant DOMContentLoaded per inicialitzar...");
