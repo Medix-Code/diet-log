@@ -25,6 +25,30 @@
     <link rel="stylesheet" href="css/main.css" />
     <noscript><link rel="stylesheet" href="css/main.css" /></noscript>
 
+    <!-- Google Analytics Tag (amb Consent Mode v2) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-23SXKMLR75"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+
+      // Estableix l'estat de consentiment per defecte a 'denied'
+      // Això és crucial per complir amb la privacitat abans que l'usuari triï.
+      gtag("consent", "default", {
+        analytics_storage: "denied",
+        ad_storage: "denied", // Pots eliminar aquesta línia si no fas servir anuncis
+      });
+
+      gtag("js", new Date());
+
+      // Carrega la configuració normalment. GA esperarà el consentiment per activar les cookies.
+      gtag("config", "G-23SXKMLR75");
+    </script>
+
     <!-- Tesseract.js des de la CDN, fixant la versió major 5 per a estabilitat -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
@@ -921,5 +945,25 @@
         </div>
       </div>
     </footer>
+
+    <!-- ✅ AÑADE EL BANNER DE COOKIES AQUÍ -->
+    <div id="cookie-consent-banner" class="cookie-banner hidden">
+      <div class="cookie-banner-content">
+        <p class="cookie-banner-text">
+          Utilizamos cookies para analizar el tráfico de la web y mejorar tu
+          experiencia. Haciendo clic en "Aceptar", consientes nuestro uso de
+          cookies para analíticas.
+        </p>
+        <div class="cookie-banner-actions">
+          <button id="decline-cookies" class="cookie-btn cookie-btn-decline">
+            Rechazar
+          </button>
+          <button id="accept-cookies" class="cookie-btn cookie-btn-accept">
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- FIN DEL BANNER DE COOKIES -->
   </body>
 </html>

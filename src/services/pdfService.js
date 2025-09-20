@@ -493,6 +493,13 @@ export async function generateAndDownloadPdf() {
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
     downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), fileName);
 
+    if (typeof gtag === "function") {
+      gtag("event", "download_pdf", {
+        event_category: "PDF Generation",
+        event_label: "Download from main form",
+      });
+    }
+
     showToast("Descàrrega iniciada correctament.", "success");
     requestInstallPromptAfterAction();
   } catch (error) {
@@ -540,6 +547,14 @@ export async function downloadDietPDF(dietId) {
     const pdfBytes = await fillPdf(generalData, servicesData);
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
     downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), fileName);
+
+    // Envia l'esdeveniment a Google Analytics
+    if (typeof gtag === "function") {
+      gtag("event", "download_pdf", {
+        event_category: "PDF Generation",
+        event_label: "Download from saved list", // Etiqueta diferent per saber d'on ve
+      });
+    }
 
     showToast("Descarga iniciada correctamente.", "success");
   } catch (error) {
