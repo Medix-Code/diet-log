@@ -2609,13 +2609,19 @@ button .icon {
     margin-bottom: 25px;
   }
 
+  .modal {
+    display: flex;
+    align-items: center; /* Centra verticalment */
+    justify-content: center; /* Centra horitzontalment */
+  }
+
   /* --- Modals (Finestres emergents) --- */
   .modal-content {
     max-width: 90%;
-    max-height: 80vh; /* Unificat per a tots els modals */
-    margin: auto; /* Centra el modal verticalment i horitzontal */
+    max-height: 85vh;
     overflow: auto;
     padding: 20px;
+    margin: 0;
   }
   .modal-content h2,
   .modal-content h3 {
