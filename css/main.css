@@ -1153,14 +1153,14 @@ button .fa {
   }
 }
 /* ==================================================================== */
-/* ✅ VERSIÓ FINAL I CORRECTA PER AL MENÚ DESPLEGABLE                 */
+/* ✅ VERSIÓ FINAL I SIMPLIFICADA PER AL MENÚ DESPLEGABLE             */
 /* ==================================================================== */
 .options-dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   width: max-content;
-  min-width: 220px;
+  min-width: 200px;
   padding: 8px;
   background: var(--bg-btn-ajustes);
   border-radius: 12px;
@@ -1177,23 +1177,24 @@ button .fa {
   display: none;
 }
 
-.option-item {
+.option-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
   display: flex;
   align-items: center;
   gap: 12px;
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  text-align: left;
 }
-.option-item:hover {
+.option-btn:hover {
   background-color: var(--bgcolor-hover);
 }
 
-.option-btn {
+.option-icon-wrapper {
   --size: 40px;
   width: var(--size);
   height: var(--size);
@@ -1202,9 +1203,8 @@ button .fa {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  border: none;
 }
-.option-btn .icon {
+.option-icon-wrapper .icon {
   width: 20px;
   height: 20px;
 }
@@ -1213,12 +1213,22 @@ button .fa {
   font-size: 15px;
   font-weight: 500;
   color: var(--text-color);
-  text-align: left;
-  flex-grow: 1;
 }
 
-.option-item > .option-btn {
-  pointer-events: none;
+.option-btn.service-1 .option-icon-wrapper {
+  background-color: var(--service-1-border);
+}
+
+.option-btn.service-2 .option-icon-wrapper {
+  background-color: var(--service-2-border);
+}
+
+.option-btn.service-3 .option-icon-wrapper {
+  background-color: var(--service-3-border);
+}
+
+.option-btn.service-4 .option-icon-wrapper {
+  background-color: var(--service-4-border);
 }
 
 .clear-selected-btn {
