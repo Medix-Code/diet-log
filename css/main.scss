@@ -1325,22 +1325,28 @@ button {
 }
 
 /* ==================================================================== */
-/* ✅ NOU CSS PER AL MENÚ D'OPCIONS AMB ICONA I TEXT SEPARATS          */
+/* ✅ VERSIÓ FINAL I CORRECTA PER AL MENÚ DESPLEGABLE                 */
 /* ==================================================================== */
 
-// Contenidor principal del menú
+// 1. El contenidor principal del menú (ara serà el requadre visible)
 .options-dropdown {
   position: absolute;
-  top: calc(100% + 12px); // Una mica més de separació
+  top: calc(100% + 8px); // Separació respecte al botó dels tres punts
   right: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px; // Més espai vertical entre opcions
-  width: max-content;
-  padding: 0; // Sense padding, ja que l'espai el donarà cada item
-  background: transparent; // El fons el traiem, és només un contenidor
-  box-shadow: none;
+
+  // Estils per crear el requadre
+  width: max-content; // L'amplada s'ajusta al contingut
+  min-width: 220px; // Amplada mínima per a una bona aparença
+  padding: 8px; // Espai intern
+  background: var(--bg-btn-ajustes); // Fons blanc o del tema
+  border-radius: 12px; // Vores arrodonides
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); // Ombra professional
   z-index: 999;
+
+  // Organització interna
+  display: flex;
+  flex-direction: column; // Col·loca les opcions una sota l'altra
+  gap: 8px; // Espai entre les dues files (notes i borrar)
 
   // Animacions (les mantenim)
   opacity: 0;
@@ -1352,48 +1358,68 @@ button {
   }
 }
 
-// Cada fila del menú (botó + text)
+// 2. Cada fila del menú (ara serà un botó sencer clicable)
 .option-item {
   display: flex;
   align-items: center;
-  gap: 12px; // Espai entre el botó i el text
+  gap: 12px;
+
+  // Convertim tota la fila en un botó clicable
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background-color: transparent; // El fons el traiem, el posarem al hover
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  // Important: Hem de fer que els botons de dins semblin part de la fila
+  // Això ho farem al següent pas. Aquesta regla és per a l'element pare.
+
+  &:hover {
+    background-color: var(--bgcolor-hover); // Efecte al passar el ratolí
+  }
 }
 
-// El botó (només la icona)
+// 3. El botó de la icona (ara és només per mostrar la icona amb color)
 .option-btn {
-  --size: clamp(40px, 5vw, 50px); // Mida consistent amb els botons S1, S2...
+  --size: 40px; // Una mida una mica més petita i consistent
   width: var(--size);
   height: var(--size);
+  flex-shrink: 0; // Evita que s'encongeixi
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   border-radius: 8px;
   border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  // NO posem ombra aquí, la té el menú principal
 
-  // Important: el color de fons l'heretarà de les classes de servei
-  // que el JavaScript afegeix (service-1, service-2, etc.)
+  // El color de fons vindrà de les classes .service-1, .service-2, etc.
 
   .icon {
-    width: 22px; // Mida de la icona
-    height: 22px;
-  }
-
-  &:active {
-    transform: scale(0.95);
-    filter: brightness(0.9);
+    width: 20px;
+    height: 20px;
   }
 }
 
-// El text de l'etiqueta
+// 4. El text de l'etiqueta
 .option-label {
   font-size: 15px;
   font-weight: 500;
   color: var(--text-color);
-  // Afegim una petita ombra al text per a millor llegibilitat sobre qualsevol fons
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
+  text-align: left;
+  flex-grow: 1; // Fa que el text ocupi l'espai restant
+}
+
+// 5. Un petit ajust a l'HTML implícit:
+// Necessitem que al fer clic a l'àrea del text també s'activi el botó.
+// Això ja ho fa l'estructura HTML que tenim, però hem d'eliminar
+// l'acció de clic del botó intern per evitar conflictes.
+// Aquesta regla és més un recordatori del que fa l'estructura nova.
+.option-item > .option-btn {
+  pointer-events: none; // La icona no serà clicable, ho serà tota la fila.
 }
 
 .clear-selected-btn {
