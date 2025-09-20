@@ -1146,19 +1146,26 @@ button .fa {
   filter: brightness(0.9);
 }
 
+@keyframes dropdownAnimation {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* ==================================================================== */
+/* ✅ NOU CSS PER AL MENÚ D'OPCIONS AMB ICONA I TEXT SEPARATS          */
+/* ==================================================================== */
 .options-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 12px);
   right: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
   width: max-content;
-  min-width: 190px;
-  padding: 8px;
-  background: var(--bg-btn-ajustes);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
   z-index: 999;
   opacity: 0;
   transform: translateY(-10px);
@@ -1168,53 +1175,39 @@ button .fa {
   display: none;
 }
 
-.options-dropdown .option-btn {
-  width: 100%;
-  padding: 12px 16px;
+.option-item {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--text-color);
-  background-color: transparent;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-align: left;
-}
-.options-dropdown .option-btn:hover {
-  background-color: var(--bgcolor-hover);
-}
-.options-dropdown .option-btn .icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
 }
 
-@keyframes dropdownAnimation {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 .option-btn {
-  width: clamp(40px, 5vw, 50px);
-  border-radius: 8px;
-  border: none;
-  font-size: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  color: var(--text-color);
+  --size: clamp(40px, 5vw, 50px);
+  width: var(--size);
+  height: var(--size);
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  background-color: var(--bg-tab-active);
-  transition: background-color 0.3s ease, filter 0.3s ease;
-  opacity: 0;
-  animation: fadeIn 0.3s ease-out forwards;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+.option-btn .icon {
+  width: 22px;
+  height: 22px;
+}
+.option-btn:active {
+  transform: scale(0.95);
+  filter: brightness(0.9);
+}
+
+.option-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-color);
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
 }
 
 .clear-selected-btn {
