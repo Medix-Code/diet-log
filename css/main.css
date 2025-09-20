@@ -1153,20 +1153,22 @@ button .fa {
   }
 }
 /* ==================================================================== */
-/* ✅ NOU CSS PER AL MENÚ D'OPCIONS AMB ICONA I TEXT SEPARATS          */
+/* ✅ VERSIÓ FINAL I CORRECTA PER AL MENÚ DESPLEGABLE                 */
 /* ==================================================================== */
 .options-dropdown {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 8px);
   right: 0;
+  width: max-content;
+  min-width: 220px;
+  padding: 8px;
+  background: var(--bg-btn-ajustes);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: max-content;
-  padding: 0;
-  background: transparent;
-  box-shadow: none;
-  z-index: 999;
+  gap: 8px;
   opacity: 0;
   transform: translateY(-10px);
   animation: dropdownAnimation 0.3s ease-out forwards;
@@ -1179,35 +1181,44 @@ button .fa {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.option-item:hover {
+  background-color: var(--bgcolor-hover);
 }
 
 .option-btn {
-  --size: clamp(40px, 5vw, 50px);
+  --size: 40px;
   width: var(--size);
   height: var(--size);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
   border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease;
 }
 .option-btn .icon {
-  width: 22px;
-  height: 22px;
-}
-.option-btn:active {
-  transform: scale(0.95);
-  filter: brightness(0.9);
+  width: 20px;
+  height: 20px;
 }
 
 .option-label {
   font-size: 15px;
   font-weight: 500;
   color: var(--text-color);
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
+  text-align: left;
+  flex-grow: 1;
+}
+
+.option-item > .option-btn {
+  pointer-events: none;
 }
 
 .clear-selected-btn {

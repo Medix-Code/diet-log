@@ -268,37 +268,37 @@
             </button>
             <!-- A index.html -->
             <div class="options-dropdown hidden" id="options-menu">
-              <!-- Opció 1: Añadir Notas -->
-              <div class="option-item">
-                <button
-                  type="button"
-                  class="option-btn notes-btn"
-                  id="notes-selected-service"
-                  aria-label="Añadir notas"
-                >
+              <!-- L'ID i les classes rellevants ara van al DIV contenidor -->
+              <div
+                class="option-item notes-btn"
+                id="notes-selected-service"
+                role="button"
+                tabindex="0"
+              >
+                <div class="option-btn">
+                  <!-- Canviat a DIV per a més simplicitat -->
                   <img
                     src="assets/icons/ic_note.svg"
                     alt="Notas"
                     class="icon"
                   />
-                </button>
+                </div>
                 <span class="option-label">Añadir Notas</span>
               </div>
 
-              <!-- Opció 2: Borrar Campos -->
-              <div class="option-item">
-                <button
-                  type="button"
-                  class="option-btn clear-selected-btn"
-                  id="clear-selected-service"
-                  aria-label="Borrar campos del servicio"
-                >
+              <div
+                class="option-item clear-selected-btn"
+                id="clear-selected-service"
+                role="button"
+                tabindex="0"
+              >
+                <div class="option-btn">
                   <img
                     src="assets/icons/eraser.svg"
                     alt="Borrar"
                     class="icon"
                   />
-                </button>
+                </div>
                 <span class="option-label">Borrar campos</span>
               </div>
             </div>
