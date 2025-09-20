@@ -1325,28 +1325,25 @@ button {
 }
 
 /* ==================================================================== */
-/* ✅ VERSIÓ FINAL I CORRECTA PER AL MENÚ DESPLEGABLE                 */
+/* ✅ VERSIÓ FINAL I SIMPLIFICADA PER AL MENÚ DESPLEGABLE             */
 /* ==================================================================== */
 
-// 1. El contenidor principal del menú (ara serà el requadre visible)
+// 1. El contenidor del menú
 .options-dropdown {
   position: absolute;
-  top: calc(100% + 8px); // Separació respecte al botó dels tres punts
+  top: calc(100% + 8px);
   right: 0;
-
-  // Estils per crear el requadre
-  width: max-content; // L'amplada s'ajusta al contingut
-  min-width: 220px; // Amplada mínima per a una bona aparença
-  padding: 8px; // Espai intern
-  background: var(--bg-btn-ajustes); // Fons blanc o del tema
-  border-radius: 12px; // Vores arrodonides
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); // Ombra professional
+  width: max-content;
+  min-width: 200px;
+  padding: 8px;
+  background: var(--bg-btn-ajustes);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 999;
 
-  // Organització interna
   display: flex;
-  flex-direction: column; // Col·loca les opcions una sota l'altra
-  gap: 8px; // Espai entre les dues files (notes i borrar)
+  flex-direction: column;
+  gap: 8px;
 
   // Animacions (les mantenim)
   opacity: 0;
@@ -1358,45 +1355,40 @@ button {
   }
 }
 
-// 2. Cada fila del menú (ara serà un botó sencer clicable)
-.option-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  // Convertim tota la fila en un botó clicable
+// 2. Cada botó del menú
+.option-btn {
   width: 100%;
-  padding: 10px;
+  padding: 8px; // Padding intern del botó
   border-radius: 8px;
   border: none;
-  background-color: transparent; // El fons el traiem, el posarem al hover
+  background: transparent; // El fons del botó és transparent
   cursor: pointer;
   transition: background-color 0.2s ease;
 
-  // Important: Hem de fer que els botons de dins semblin part de la fila
-  // Això ho farem al següent pas. Aquesta regla és per a l'element pare.
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
 
   &:hover {
-    background-color: var(--bgcolor-hover); // Efecte al passar el ratolí
+    background-color: var(--bgcolor-hover);
   }
 }
 
-// 3. El botó de la icona (ara és només per mostrar la icona amb color)
-.option-btn {
-  --size: 40px; // Una mida una mica més petita i consistent
+// 3. El requadre de color NOMÉS per a la icona
+.option-icon-wrapper {
+  --size: 40px;
   width: var(--size);
   height: var(--size);
-  flex-shrink: 0; // Evita que s'encongeixi
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   border-radius: 8px;
-  border: none;
-  // NO posem ombra aquí, la té el menú principal
-
-  // El color de fons vindrà de les classes .service-1, .service-2, etc.
+  // El color de fons el posaran les classes .service-1, .service-2, etc.
+  // que s'apliquen al botó pare (.option-btn)
 
   .icon {
     width: 20px;
@@ -1404,22 +1396,25 @@ button {
   }
 }
 
-// 4. El text de l'etiqueta
+// 4. El text
 .option-label {
   font-size: 15px;
   font-weight: 500;
   color: var(--text-color);
-  text-align: left;
-  flex-grow: 1; // Fa que el text ocupi l'espai restant
 }
 
-// 5. Un petit ajust a l'HTML implícit:
-// Necessitem que al fer clic a l'àrea del text també s'activi el botó.
-// Això ja ho fa l'estructura HTML que tenim, però hem d'eliminar
-// l'acció de clic del botó intern per evitar conflictes.
-// Aquesta regla és més un recordatori del que fa l'estructura nova.
-.option-item > .option-btn {
-  pointer-events: none; // La icona no serà clicable, ho serà tota la fila.
+// 5. Herència de color: fem que el wrapper de la icona agafi el color del botó
+.option-btn.service-1 .option-icon-wrapper {
+  background-color: var(--service-1-border);
+}
+.option-btn.service-2 .option-icon-wrapper {
+  background-color: var(--service-2-border);
+}
+.option-btn.service-3 .option-icon-wrapper {
+  background-color: var(--service-3-border);
+}
+.option-btn.service-4 .option-icon-wrapper {
+  background-color: var(--service-4-border);
 }
 
 .clear-selected-btn {
