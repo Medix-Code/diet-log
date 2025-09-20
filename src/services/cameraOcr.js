@@ -233,7 +233,15 @@ async function _preprocessImage(blob) {
 
 function _safeSetFieldValue(fieldId, value, fieldName) {
   const element = document.getElementById(fieldId);
-  if (element) element.value = value;
+  if (element) {
+    element.value = value;
+
+    const inputEvent = new Event("input", {
+      bubbles: true,
+      cancelable: true,
+    });
+    element.dispatchEvent(inputEvent);
+  }
 }
 
 function _processAndFillForm(ocrText) {
