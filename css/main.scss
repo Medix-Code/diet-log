@@ -1346,9 +1346,7 @@ button {
 }
 
 .option-btn {
-  gap: 10px; /* Afegeix un espai de 10px entre la icona i el text */
-  width: 100%; /* Fa que els dos botons tinguin la mateixa amplada */
-  justify-content: flex-start; /* Alinea el contingut a l'esquerra */
+  width: clamp(40px, 5vw, 50px);
   border-radius: 8px;
   border: none;
   font-size: 20px;
@@ -1356,6 +1354,7 @@ button {
   color: var(--text-color);
   display: flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   background-color: var(--bg-tab-active);
   transition: background-color 0.3s ease, filter 0.3s ease;
