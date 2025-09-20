@@ -28,6 +28,7 @@ import "./ui/keyboardHandler.js";
 import "./ui/focusScrollHandler.js";
 import { setupNameAndVehicleInputSanitizers } from "./utils/validation.js";
 import { setupNotesSelectedService } from "./services/notesService.js";
+import { initCookieConsentService } from "./services/cookieConsentService.js";
 
 // --- Constants Específiques d'Inicialització ---
 const DONATION_LINK_ID = "openDonation";
@@ -105,6 +106,7 @@ export async function initializeApp() {
 
     // --- Altres ---
     easterEgg();
+    initCookieConsentService();
 
     console.log("initializeApp() completada.");
   } catch (error) {
