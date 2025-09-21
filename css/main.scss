@@ -2419,14 +2419,6 @@ button {
   opacity: 0.7;
 }
 
-// Estil per a l'enllaç dins del peu de pàgina
-.footer__text a {
-  color: var(--text-color-footer);
-  text-decoration: underline;
-  font-size: 0.8rem;
-  margin: 0 10px;
-}
-
 .footer .footer-btn {
   height: 44px;
   display: flex;
@@ -2700,47 +2692,6 @@ button .icon {
     padding: 8px 2px;
   }
 }
-
-/* ============================================================= */
-/* == Estils per a la Política de Privacitat i els Enllaços   == */
-/* ============================================================= */
-
-// 1. Estils per a la pàgina de Política de Privacitat
-// S'apliquen només quan el body té la classe .body-privacy-policy
-.body-privacy-policy {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: var(--bg-color);
-
-  h1,
-  h2,
-  h3 {
-    color: var(--primary-color);
-  }
-
-  .container {
-    border: 1px solid var(--grey-border, #eee);
-    padding: 20px 30px;
-    border-radius: 12px;
-    background-color: var(--bg-tab-active);
-  }
-
-  .back-link {
-    margin-top: 30px;
-    display: inline-block;
-    font-weight: bold;
-    color: var(--primary-color);
-  }
-}
-
-// 2. Estil per a l'enllaç dins del bàner de cookies
-.cookie-banner-text a {
-  color: var(--primary-color);
-  text-decoration: underline;
-  font-weight: 500;
-}
-
 /* ======================================== */
 /* == Estils per al Bàner de Cookies     == */
 /* ======================================== */
@@ -3188,4 +3139,90 @@ button .icon {
 /* --- Ajust fi per al camp de signatura (perquè l'arrodoniment s'apliqui bé) --- */
 .signature-group .input-with-icon {
   overflow: hidden;
+}
+
+/* ============================================================= */
+/* == Estils Professionals per a la Política de Privacitat    == */
+/* ============================================================= */
+
+// S'apliquen només quan el body té la classe .body-privacy-policy
+.body-privacy-policy {
+  // Configuració general de la pàgina
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem; // Més espai en mòbils (1rem = 16px)
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  line-height: 1.7; // Més espai entre línies per a llegibilitat
+
+  // Títol principal
+  h1 {
+    color: var(--primary-color);
+    font-size: 2rem; // Més gran
+    border-bottom: 2px solid var(--grey-border, #eee);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  // Subtítols de cada secció
+  h2,
+  h3 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-top: 2.5rem; // Més separació entre seccions
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+
+  // Paràgrafs de text
+  p {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  // Llistes amb punts
+  ul {
+    padding-left: 25px;
+    margin-bottom: 1rem;
+  }
+
+  li {
+    margin-bottom: 0.75rem;
+  }
+
+  // Paraules en negreta
+  strong {
+    color: var(--text-color);
+  }
+
+  // Enllaços
+  a {
+    color: var(--primary-color);
+    text-decoration: none; // Traiem el subratllat per defecte
+    font-weight: 500;
+    border-bottom: 1px solid currentColor; // Subratllat més subtil
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  // Enllaç per tornar a l'aplicació
+  .back-link {
+    margin-top: 3rem;
+    display: inline-block;
+    font-weight: bold;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 9999px;
+    border-bottom: none;
+  }
 }
