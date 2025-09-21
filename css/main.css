@@ -1711,6 +1711,136 @@ button .fa {
     transform: scale(1);
   }
 }
+/* Contenidor */
+#about-modal {
+  align-items: center; /* Centrat vertical: espai igual a dalt i a baix */
+  justify-content: center; /* Centrat horitzontal: espai igual a esquerra i dreta */
+  position: fixed;
+  inset: 0; /* Ocupa tota la pantalla */
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); /* Mantenim els paddings segurs */
+  background-color: rgba(0, 0, 0, 0.6); /* Fons semitransparent per overlay, si cal */
+  z-index: 1200; /* Assegura que estigui per sobre d'altres elements */
+}
+
+#about-modal .modal-content {
+  position: relative; /* Canviem d'absolute a relative per Flexbox */
+  top: auto; /* Eliminem els valors antics */
+  left: auto;
+  transform: none; /* No cal transformació */
+  width: min(560px, 92vw); /* Mantenim l'amplada responsiva */
+  max-block-size: min(86svh, 720px); /* Límit d'alçada per evitar desbordament */
+  overflow: hidden; /* Evita contingut que surti fora */
+  background: var(--bg-color);
+  box-shadow: 0 4px 8px var(--bg-transp-ajustes);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+}
+
+#about-modal .modal-scrollable-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  max-inline-size: 62ch;
+  margin-inline: auto;
+  line-height: 1.6;
+  padding: 16px 12px;
+}
+
+#about-modal .modal-scrollable-content p {
+  margin: 0 0 12px;
+}
+
+/* COLOR en <strong> */
+#about-modal strong {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* Títols del pas: esquerra + lleu fons de marca */
+#about-modal .modal-scrollable-content > h3 {
+  text-align: left;
+  font-weight: 600;
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  margin: 18px 0 10px;
+  padding: 6px 10px;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 6px;
+  color: var(--text-color);
+  background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+}
+
+/* Separadors i espai entre passos */
+#about-modal .modal-scrollable-content hr {
+  border: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--primary-color) 30%, var(--grey-border) 70%);
+  margin: 22px 0 28px;
+}
+
+#about-modal .modal-scrollable-content h3:not(:first-of-type) {
+  margin-top: 28px;
+}
+
+/* Botonera sticky (ja la tens, ho deixem igual) */
+#about-modal .modal-buttons {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg-color), color-mix(in srgb, var(--bg-color) 70%, transparent));
+  border-top: 1px solid var(--grey-border);
+  padding-top: 12px;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+  margin-top: 12px;
+}
+
+/* Llistes dins l’about: SENSE punts, sense caixes, amb espai entre ítems */
+#about-modal .modal-scrollable-content ul,
+#about-modal .modal-scrollable-content ol {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 16px;
+  display: grid;
+  row-gap: 10px;
+}
+
+#about-modal .modal-scrollable-content li {
+  line-height: 1.6;
+}
+
+/* “Kicker” opcional (p. ex. “¿Cómo funciona?”) */
+#about-modal .about-kicker {
+  margin: 10px 0 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary-color);
+}
+
+#about-modal .about-kicker.with-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#about-modal .about-kicker.with-line::before,
+#about-modal .about-kicker.with-line::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--grey-border);
+}
+
+/* Icones alineades amb text */
+#about-modal .icon-inline {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  margin-right: 0.3em;
+}
+
 .close-modal-btn {
   display: inline-flex;
   align-items: center;
@@ -2410,6 +2540,11 @@ button .icon {
   .hamburger span {
     height: 2.5px;
   }
+  #about-modal .modal-content {
+    width: min(94vw, 560px);
+    max-block-size: min(84svh, 680px);
+    padding: 18px 20px;
+  }
   .ajustes-panel {
     top: calc(var(--top-bar-height) - 4px);
     padding: 20px 0 0 0;
@@ -2738,6 +2873,13 @@ button .icon {
     font-size: 1.1rem;
     font-weight: 600;
   }
+  #about-modal .modal-content {
+    max-block-size: min(78svh, 620px);
+    padding: 16px 18px;
+  }
+  #about-modal .modal-scrollable-content h3 + ul {
+    padding-left: 16px;
+  }
   h3#diet-modal-title {
     font-size: 1.1rem;
     font-weight: 600;
@@ -2809,17 +2951,15 @@ button .icon {
     flex-shrink: 0; /* Botons mantenen mida fixa */
     margin-left: 8px; /* Espai entre botons si n'hi ha múltiples */
   }
-  /* Responsivitat: Ajusta en pantalles petites  */
 }
-@media (max-width: 768px) and (max-width: 600px) {
+/* Responsivitat: Ajusta en pantalles petites  */
+@media (max-width: 600px) {
   #diet-options {
     height: auto; /* Manté flexible en mòbils */
   }
   #diet-options li {
     padding: 10px 15px 10px 10px; /* Padding més compacte per espai limitat */
   }
-}
-@media (max-width: 768px) {
   .modal-buttons {
     flex-direction: row;
     gap: 20px;
@@ -2845,6 +2985,7 @@ button .icon {
     font-size: 13px;
   }
 }
+/* En mòbil molt estret, una mica més de gola */
 *,
 *::before,
 *::after {
