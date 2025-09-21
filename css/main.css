@@ -2562,6 +2562,10 @@ button .icon {
   padding-left: 25px;
   margin-bottom: 1rem;
 }
+.body-privacy-policy ul ul {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
 .body-privacy-policy li {
   margin-bottom: 0.75rem;
 }
