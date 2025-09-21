@@ -1946,22 +1946,20 @@ button {
 }
 
 #about-modal .modal-content {
-  position: relative; /* Canviem d'absolute a relative per Flexbox */
-  top: auto; /* Eliminem els valors antics */
+  position: relative;
+  top: auto;
   left: auto;
-  transform: none; /* No cal transformació */
-  width: min(560px, 92vw); /* Mantenim l'amplada responsiva */
-  max-block-size: min(
-    86svh,
-    720px
-  ); /* Límit d'alçada per evitar desbordament */
-  overflow: hidden; /* Evita contingut que surti fora */
+  transform: none;
+  width: min(560px, 92vw);
+  max-width: 480px;
+  max-block-size: min(86svh, 720px);
+  overflow: hidden;
   background: var(--bg-color);
   box-shadow: 0 4px 8px var(--bg-transp-ajustes);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  padding: 20px 24px;
+  padding: 0 24px;
 }
 
 #about-modal .modal-scrollable-content {
@@ -1972,11 +1970,14 @@ button {
   max-inline-size: 62ch;
   margin-inline: auto;
   line-height: 1.6;
-  padding: 16px 12px;
+  padding: 16px 4px;
 }
 
 #about-modal .modal-scrollable-content p {
   margin: 0 0 12px;
+}
+#about-modal h2 {
+  padding: 20px 24px 16px;
 }
 
 /* COLOR en <strong> */
@@ -2023,8 +2024,7 @@ button {
     color-mix(in srgb, var(--bg-color) 70%, transparent)
   );
   border-top: 1px solid var(--grey-border);
-  padding-top: 12px;
-  padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 24px;
   margin-top: 12px;
 }
 
@@ -2799,7 +2799,6 @@ button .icon {
   #about-modal .modal-content {
     width: min(94vw, 560px);
     max-block-size: min(84svh, 680px);
-    padding: 18px 20px;
   }
 
   .ajustes-panel {
@@ -3201,7 +3200,6 @@ button .icon {
 
   #about-modal .modal-content {
     max-block-size: min(78svh, 620px);
-    padding: 16px 18px;
   }
 
   #about-modal .modal-scrollable-content h3 + ul {
