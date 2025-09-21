@@ -1928,28 +1928,12 @@ button {
 
 /* Contenidor */
 
-#about-modal {
-  align-items: center; /* Centrat vertical: espai igual a dalt i a baix */
-  justify-content: center; /* Centrat horitzontal: espai igual a esquerra i dreta */
-  position: fixed;
-  inset: 0; /* Ocupa tota la pantalla */
-  padding: max(12px, env(safe-area-inset-top))
-    max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
-    max(12px, env(safe-area-inset-left)); /* Mantenim els paddings segurs */
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.6
-  ); /* Fons semitransparent per overlay, si cal */
-  z-index: 1200; /* Assegura que estigui per sobre d'altres elements */
-}
-
 #about-modal .modal-content {
   position: relative;
   top: auto;
   left: auto;
   transform: none;
+
   width: min(560px, 92vw);
   max-width: 480px;
   max-block-size: min(86svh, 720px);
@@ -1959,7 +1943,6 @@ button {
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  padding: 0 24px;
 }
 
 #about-modal .modal-scrollable-content {
@@ -1967,17 +1950,11 @@ button {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
-  max-inline-size: 62ch;
-  margin-inline: auto;
+  p {
+    margin: 0 6px 6px;
+  }
   line-height: 1.6;
-  padding: 16px 6px;
-}
-
-#about-modal .modal-scrollable-content p {
-  margin: 0 0 12px;
-}
-#about-modal h2 {
-  padding: 20px 24px 16px;
+  padding: 20px 0px 20px;
 }
 
 /* COLOR en <strong> */
@@ -1991,7 +1968,7 @@ button {
   text-align: left;
   font-weight: 600;
   font-size: clamp(1.05rem, 2.4vw, 1.35rem);
-  margin: 18px 0 10px;
+  margin: 28px 0 14px;
   padding: 6px 10px;
   border-left: 4px solid var(--primary-color);
   border-radius: 6px;
@@ -1999,56 +1976,36 @@ button {
   background: color-mix(in srgb, var(--primary-color) 8%, transparent);
 }
 
-/* Separadors i espai entre passos */
-#about-modal .modal-scrollable-content hr {
-  border: 0;
-  height: 1px;
-  background: color-mix(
-    in srgb,
-    var(--primary-color) 30%,
-    var(--grey-border) 70%
-  );
-  margin: 22px 0 28px;
-}
-#about-modal .modal-scrollable-content h3:not(:first-of-type) {
-  margin-top: 28px;
-}
-
 /* Botonera sticky (ja la tens, ho deixem igual) */
 #about-modal .modal-buttons {
-  position: sticky;
-  bottom: 0;
-  background: linear-gradient(
-    to top,
-    var(--bg-color),
-    color-mix(in srgb, var(--bg-color) 70%, transparent)
-  );
-  border-top: 1px solid var(--grey-border);
-  padding: 16px 24px;
-  margin-top: 12px;
-}
+  flex-shrink: 0;
+  margin-top: auto;
+  border-top: 1px solid var(--grey-border, #eee);
 
-/* Llistes dins l’about: SENSE punts, sense caixes, amb espai entre ítems */
-#about-modal .modal-scrollable-content ul,
-#about-modal .modal-scrollable-content ol {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 16px;
-  display: grid;
-  row-gap: 10px;
-}
-#about-modal .modal-scrollable-content li {
-  line-height: 1.6;
+  // Controlem l'espai i la posició aquí
+  display: flex;
+  justify-content: flex-end; // Botó a la dreta
+  padding: 0px 0px;
 }
 
 /* “Kicker” opcional (p. ex. “¿Cómo funciona?”) */
 #about-modal .modal-scrollable-content .about-kicker {
-  margin: 24px 0 8px;
+  margin: 20px 6px 0px;
+
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--primary-color);
+  padding: 0px 0px 0px;
+}
+
+#about-modal .modal-scrollable-content ul,
+#about-modal .modal-scrollable-content ol {
+  list-style: none;
+  display: grid;
+  row-gap: 20px;
+  padding: 0px 6px 6px;
 }
 
 /* Icones alineades amb text */
@@ -3188,10 +3145,6 @@ button .icon {
 
   #about-modal .modal-content {
     max-block-size: min(78svh, 620px);
-  }
-
-  #about-modal .modal-scrollable-content h3 + ul {
-    padding-left: 16px;
   }
 
   h3#diet-modal-title {
