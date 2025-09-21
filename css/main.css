@@ -1747,7 +1747,7 @@ button .fa {
   max-inline-size: 62ch;
   margin-inline: auto;
   line-height: 1.6;
-  padding: 16px 4px;
+  padding: 16px 6px;
 }
 
 #about-modal .modal-scrollable-content p {
@@ -1814,27 +1814,13 @@ button .fa {
 }
 
 /* “Kicker” opcional (p. ex. “¿Cómo funciona?”) */
-#about-modal .about-kicker {
-  margin: 10px 0 8px;
+#about-modal .modal-scrollable-content .about-kicker {
+  margin: 24px 0 8px;
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--primary-color);
-}
-
-#about-modal .about-kicker.with-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#about-modal .about-kicker.with-line::before,
-#about-modal .about-kicker.with-line::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--grey-border);
 }
 
 /* Icones alineades amb text */
