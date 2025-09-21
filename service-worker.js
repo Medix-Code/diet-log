@@ -1,7 +1,7 @@
 // service-worker.js
 
 // Aquesta variable serà actualitzada automàticament per el  workflow de GitHub Actions.
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 const APP_SHELL_CACHE_NAME = `misdietas-app-shell-${VERSION}`;
 const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
@@ -12,6 +12,7 @@ const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
 const APP_SHELL_FILES = [
   "./",
   "./index.html",
+  "./privacy-policy.html",
   "./sw-register.js",
   "./css/main.css",
   "./manifest.json",
