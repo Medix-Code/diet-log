@@ -12,6 +12,7 @@ const DYNAMIC_CACHE_NAME = `misdietas-dynamic-${VERSION}`;
 const APP_SHELL_FILES = [
   "./",
   "./index.html",
+  "./privacy-policy.html",
   "./sw-register.js",
   "./css/main.css",
   "./manifest.json",
