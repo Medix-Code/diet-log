@@ -2830,6 +2830,12 @@ button .icon {
   ul {
     padding-left: 25px;
     margin-bottom: 1rem;
+
+    // ✅ AFEGEIX AQUESTA NOVA REGLA AQUÍ
+    ul {
+      margin-top: 10px; // Afegeix un espai superior a les llistes anidades
+      margin-bottom: 0; // Traiem el marge inferior per a un millor ajust
+    }
   }
 
   li {
