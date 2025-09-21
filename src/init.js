@@ -15,7 +15,7 @@ import { initSignature } from "./services/signatureService.js";
 import { setupTabs } from "./ui/tabs.js";
 import { initThemeSwitcher } from "./ui/theme.js";
 import { setupMainButtons } from "./ui/mainButtons.js";
-import { setupClearSelectedService } from "./ui/clearService.js"; // Eliminat el duplicat
+import { setupClearSelectedService } from "./ui/clearService.js";
 import { setupModalGenerics } from "./ui/modals.js";
 import { setupDatePickers, setupTimePickers } from "./ui/pickers.js";
 import { setupServiceNumberRestrictions } from "./utils/restrictions.js";

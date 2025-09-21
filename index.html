@@ -168,7 +168,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="service-type">Tipus de servicio</label>
+          <label for="service-type">Tipo de servicio</label>
           <select id="service-type" name="service-type">
             <option value="TSU" selected>TSU</option>
             <option value="TSNU">TSNU</option>
@@ -782,21 +782,142 @@
         aria-labelledby="about-title"
         tabindex="-1"
       >
+        <!-- A index.html, dins de #about-modal -->
         <div class="modal-content">
-          <h2 id="about-title">Bienvenido a MisDietas</h2>
+          <h2 id="about-title">¡Bienvenido a MisDietas!</h2>
+          <div class="modal-scrollable-content">
+            <p>
+              ¿Cansado de hacer fotos del AL20 para luego tener que pasarlo todo
+              a papel? Con MisDietas, di adiós al trabajo doble. Registra cada
+              servicio sobre la marcha y genera un PDF profesional al momento,
+              listo para entregar.
+            </p>
 
-          <p>
-            MisDietas es la forma más rápida y sencilla de registrar los
-            servicios de tu jornada. Registra cada servicio cómodamente durante
-            tu turno y, al finalizar, genera tu parte de dietas en formato PDF
-            al instante.
-          </p>
-          <p>
-            <strong>La seguridad de tus datos es fundamental.</strong> Toda la
-            información se guarda exclusivamente en tu dispositivo y nunca se
-            comparte. Por este motivo, recuerda que si borras los datos de tu
-            navegador, la información se eliminará de forma permanente.
-          </p>
+            <p class="about-kicker">¿Cómo funciona?</p>
+
+            <h3>Paso 1: Revisa tus Datos</h3>
+            <p>
+              En la pestaña <strong>"Datos"</strong>, comprueba que la
+              <strong>Fecha</strong> y la
+              <strong>Franja Horaria</strong> automáticas son correctas.
+              Después, selecciona tu <strong>Tipo de Servicio</strong> (TSU o
+              TSNU) y completa tu
+              <strong
+                ><img
+                  src="assets/icons/id_card_black.svg"
+                  alt=""
+                  class="icon-inline"
+                />Dotación</strong
+              >
+              añadiendo las
+              <strong>
+                <img
+                  src="assets/icons/signature.svg"
+                  alt=""
+                  class="icon-inline"
+                />firmas</strong
+              >.
+            </p>
+
+            <h3>Paso 2: Añade tus Servicios</h3>
+            <p>
+              Ve a la pestaña <strong>"Servicios"</strong>. Rellena por completo
+              el primer panel (<strong>S1</strong>). Si tienes más servicios,
+              selecciónalos con los botones <strong>S2, S3 y S4</strong> y
+              complétalos siempre en orden.
+            </p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: -10px">
+              <em
+                >(Si solo tienes un servicio, con rellenar el S1 es
+                suficiente).</em
+              >
+            </p>
+
+            <h3>Paso 3: ¡Descarga tu PDF!</h3>
+            <p>
+              Para obtener el PDF de la dieta que acabas de rellenar, haz clic
+              en el
+              <strong>menú</strong> (☰) y selecciona
+              <strong>
+                <img
+                  src="assets/icons/download_blue.svg"
+                  alt=""
+                  class="icon-inline"
+                />
+                "Descargar dieta actual" </strong
+              >. ¡Se generará al momento!
+            </p>
+            <p>
+              ¿Necesitas un parte de un día anterior? En el mismo menú, entra en
+              el
+              <strong>
+                <img src="assets/icons/gear.svg" alt="" class="icon-inline" />
+                "Gestor de dietas" </strong
+              >. Allí encontrarás todas las dietas que hayas guardado, listas
+              para descargar cuando quieras.
+            </p>
+
+            <hr style="margin: 20px 0; border: 1px solid #eee" />
+
+            <h3 style="margin-top: 25px">Consejos para ir más rápido:</h3>
+            <ul>
+              <li>
+                <strong>
+                  <img
+                    src="assets/icons/no_photo.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  ¡Sáltate el paso de la foto!:
+                </strong>
+                ¿Todavía haces fotos del AL20 para rellenar MisDietas más tarde?
+                Ahorra un paso: introduce los datos directamente en la app justo
+                al finalizar el servicio. Es más rápido y la información se
+                guarda automáticamente.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    src="assets/icons/ic_ocr.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Escanear Horas (OCR):
+                </strong>
+                Si tu servicio es <strong>TSU</strong>, usa el botón
+                <strong>"Escanear"</strong> para rellenar las horas al momento
+                haciendo una foto al 'AL20' o subiendo una que ya tengas en tu
+                galería.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    src="assets/icons/id_card_black.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Guardar y Cargar Dotación:
+                </strong>
+                Usa los botones junto al título "Dotación" para guardar los
+                datos del vehículo, conductor y ayudante. Así, podrás cargarlos
+                todos juntos la próxima vez que inicies una dieta, sin tener que
+                volver a escribirlos.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    src="assets/icons/cloud_off.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Funciona sin conexión:
+                </strong>
+                Toda la información se guarda de forma segura en tu dispositivo,
+                por lo que puedes usar la app aunque no tengas internet.
+              </li>
+            </ul>
+          </div>
+
           <div class="modal-buttons">
             <button class="close-modal-btn">Entendido</button>
           </div>
