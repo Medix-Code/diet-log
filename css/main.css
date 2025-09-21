@@ -321,8 +321,7 @@ main {
   pointer-events: auto;
   max-height: 300px;
 }
-.ajustes-panel:hover,
-.ajustes-panel:active {
+.ajustes-panel:hover, .ajustes-panel:active {
   background-color: var(--bg-btn-ajustes);
 }
 .ajustes-panel .big-btn {
@@ -446,8 +445,7 @@ main {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color var(--transition-base),
-    transform var(--transition-base), box-shadow var(--transition-base);
+  transition: background-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
   box-shadow: var(--shadow-base);
   padding: 10px 20px;
 }
@@ -546,9 +544,9 @@ button .fa {
   font-weight: 400;
   margin-bottom: 10px;
 }
-.form-group input[type="text"],
-.form-group input[type="date"],
-.form-group input[type="time"],
+.form-group input[type=text],
+.form-group input[type=date],
+.form-group input[type=time],
 .form-group select {
   height: 40px;
   width: 100%;
@@ -566,8 +564,8 @@ button .fa {
   font-family: "Roboto Serif", serif;
   font-size: 15px;
 }
-.form-group input[type="date"],
-.form-group input[type="time"] {
+.form-group input[type=date],
+.form-group input[type=time] {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -577,20 +575,20 @@ button .fa {
   padding-left: 10px;
   padding-right: 10px;
 }
-.form-group input[type="date"]:focus,
-.form-group input[type="time"]:focus,
+.form-group input[type=date]:focus,
+.form-group input[type=time]:focus,
 .form-group select:focus {
   outline: none;
   border: 2px solid var(--border-textfield-focus);
 }
 @supports (-webkit-touch-callout: none) {
-  .form-group input[type="date"],
-  .form-group input[type="time"] {
+  .form-group input[type=date],
+  .form-group input[type=time] {
     height: 40px !important;
     font-size: 16px !important;
   }
 }
-.form-group input[type="text"]:not(.txt-person1):not(.txt-person2):focus {
+.form-group input[type=text]:not(.txt-person1):not(.txt-person2):focus {
   outline: none;
   border: 2px solid var(--border-textfield-focus);
 }
@@ -717,8 +715,7 @@ button .fa {
   flex-grow: 1;
   padding-right: 5px;
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-    var(--scrollbar-track, transparent);
+  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
   scrollbar-gutter: stable;
 }
 .dotacio-modal-content .dotacio-list::-webkit-scrollbar {
@@ -727,8 +724,7 @@ button .fa {
   transition: opacity 0.3s ease;
   opacity: 0;
 }
-.dotacio-modal-content .dotacio-list:hover::-webkit-scrollbar,
-.dotacio-modal-content .dotacio-list:active::-webkit-scrollbar {
+.dotacio-modal-content .dotacio-list:hover::-webkit-scrollbar, .dotacio-modal-content .dotacio-list:active::-webkit-scrollbar {
   opacity: 1;
 }
 .dotacio-modal-content .dotacio-list::-webkit-scrollbar-thumb {
@@ -1002,8 +998,7 @@ button .fa {
 .btn-ocr-scan .icon {
   width: 20px;
   height: 20px;
-  filter: invert(79%) sepia(57%) saturate(1477%) hue-rotate(334deg)
-    brightness(102%) contrast(101%);
+  filter: invert(79%) sepia(57%) saturate(1477%) hue-rotate(334deg) brightness(102%) contrast(101%);
 }
 .btn-ocr-scan:hover {
   background-color: var(--textfield-warning-bg);
@@ -1013,11 +1008,7 @@ button .fa {
 }
 .btn-ocr-scan:active {
   transform: translateY(0) scale(0.98);
-  background-color: color-mix(
-    in srgb,
-    var(--textfield-warning-bg) 80%,
-    black 10%
-  );
+  background-color: color-mix(in srgb, var(--textfield-warning-bg) 80%, black 10%);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -1777,8 +1768,7 @@ button .fa {
   flex-grow: 1;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-    var(--scrollbar-track, transparent);
+  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
   scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
 }
@@ -1788,8 +1778,7 @@ button .fa {
   transition: opacity 0.3s ease;
   opacity: 0;
 }
-.diet-list:hover::-webkit-scrollbar,
-.diet-list:active::-webkit-scrollbar {
+.diet-list:hover::-webkit-scrollbar, .diet-list:active::-webkit-scrollbar {
   opacity: 1;
 }
 .diet-list::-webkit-scrollbar-thumb {
@@ -1939,8 +1928,7 @@ button .fa {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 10px 20px;
 }
@@ -2039,9 +2027,7 @@ button .fa {
 
 .modal-button.accept:hover,
 .modal-button.yes:hover {
-  background-color: var(
-    --bg-confirm
-  ); /* El teu blau una mica més fosc en hover */
+  background-color: var(--bg-confirm); /* El teu blau una mica més fosc en hover */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
@@ -2056,12 +2042,7 @@ button .fa {
 .modal-button.cancel:hover,
 .modal-button.no:hover {
   /* En passar el ratolí, afegim un fons molt subtil per donar feedback */
-  background-color: rgba(
-    0,
-    74,
-    173,
-    0.08
-  ); /* Blau principal amb molt poca opacitat */
+  background-color: rgba(0, 74, 173, 0.08); /* Blau principal amb molt poca opacitat */
 }
 
 /* TOASTS */
@@ -2086,21 +2067,16 @@ button .fa {
 /* Estils base per als toasts */
 .toast {
   width: 100%; /* Amplada completa dins del contenidor */
-  background-color: var(
-    --toast-info-bg,
-    #323232
-  ); /* Fons fosc per defecte, com Google dark mode */
+  background-color: var(--toast-info-bg, #323232); /* Fons fosc per defecte, com Google dark mode */
   color: var(--toast-text-color, #ffffff); /* Text clar per contrast */
   padding: 16px 24px; /* Padding més ample per comoditat */
-  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2),
-    0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12); /* Shadow elevat */
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12); /* Shadow elevat */
   font-size: 14px; /* Font més petit i llegible */
   line-height: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animació suau */
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animació suau */
   opacity: 0;
   transform: translateY(100%); /* Inici des de baix per slide-up */
   pointer-events: auto;
@@ -2474,10 +2450,7 @@ button .icon {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: var(
-    --bg-tab-active,
-    #fefeff
-  ); /* Fons clar, consistent amb el tema */
+  background-color: var(--bg-tab-active, #fefeff); /* Fons clar, consistent amb el tema */
   color: var(--text-color, #333333); /* Text fosc per a llegibilitat */
   padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px)); /* Espai intern segur per a iPhones */
   z-index: 1050; /* Per sobre de la majoria d'elements, però per sota dels modals */
@@ -2543,20 +2516,95 @@ button .icon {
 }
 
 .cookie-btn-accept {
-  background-color: var(
-    --primary-color,
-    #004aad
-  ); /* Color primari de la teva app */
+  background-color: var(--primary-color, #004aad); /* Color primari de la teva app */
   color: white;
 }
 
 .cookie-btn-accept:hover {
-  background-color: var(
-    --secondary-color-hover,
-    #0056b3
-  ); /* Color primari més fosc */
+  background-color: var(--secondary-color-hover, #0056b3); /* Color primari més fosc */
 }
 
+/* ============================================================= */
+/* == Estils per a la Política de Privacitat i els Enllaços   == */
+/* ============================================================= */
+.body-privacy-policy {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.7;
+}
+.body-privacy-policy h1 {
+  color: var(--primary-color);
+  font-size: 2rem;
+  border-bottom: 2px solid var(--grey-border, #eee);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.body-privacy-policy h2,
+.body-privacy-policy h3 {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+.body-privacy-policy h3 {
+  font-size: 1.2rem;
+  font-style: italic;
+}
+.body-privacy-policy p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+.body-privacy-policy ul {
+  padding-left: 25px;
+  margin-bottom: 1rem;
+}
+.body-privacy-policy li {
+  margin-bottom: 0.75rem;
+}
+.body-privacy-policy strong {
+  color: var(--text-color);
+}
+.body-privacy-policy a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid currentColor;
+  transition: opacity 0.2s;
+}
+.body-privacy-policy a:hover {
+  opacity: 0.7;
+}
+.body-privacy-policy .back-link {
+  margin-top: 3rem;
+  display: inline-block;
+  font-weight: bold;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 9999px;
+  border-bottom: none;
+}
+
+.cookie-banner-text a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.footer__text a {
+  color: var(--text-color-footer);
+  text-decoration: underline;
+  font-size: 0.8rem;
+  margin: 0 10px;
+}
+
+/* ============================================================= */
+/* == TLF- TABLETS...   == */
+/* ============================================================= */
 /* Assegurar contrast per accessibilitat */
 @media (prefers-contrast: high) {
   .toast {
@@ -2634,9 +2682,9 @@ button .icon {
   .diet-date {
     font-size: 15px;
   }
-  input[type="text"],
-  input[type="date"],
-  input[type="time"],
+  input[type=text],
+  input[type=date],
+  input[type=time],
   select {
     height: 36px;
     font-size: 11px;
@@ -2716,8 +2764,7 @@ button .icon {
     height: auto;
     max-height: none;
     scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2))
-      var(--scrollbar-track, transparent);
+    scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
     scrollbar-gutter: stable;
   }
   #diet-options::-webkit-scrollbar {
@@ -2726,8 +2773,7 @@ button .icon {
     transition: opacity 0.3s ease;
     opacity: 0;
   }
-  #diet-options:hover::-webkit-scrollbar,
-  #diet-options:active::-webkit-scrollbar {
+  #diet-options:hover::-webkit-scrollbar, #diet-options:active::-webkit-scrollbar {
     opacity: 1;
   }
   #diet-options::-webkit-scrollbar-thumb {
@@ -2811,9 +2857,7 @@ button .icon {
   min-height: 100vh;
   text-align: center;
   padding: 20px;
-  background-color: var(
-    --bg-color
-  ); /* Verifica que els noms de les variables siguin correctes */
+  background-color: var(--bg-color); /* Verifica que els noms de les variables siguin correctes */
   color: var(--text-color);
   font-family: "Roboto Serif", serif;
 }
@@ -2849,9 +2893,9 @@ button .icon {
 /* == BLOC PER ARRODONIR CANTONADES - AFEGIR AL FINAL DEL CSS == */
 /* ============================================================= */
 /* --- Arrodoniment principal (8px) per a camps i botons petits --- */
-.form-group input[type="text"],
-.form-group input[type="date"],
-.form-group input[type="time"],
+.form-group input[type=text],
+.form-group input[type=date],
+.form-group input[type=time],
 .form-group select,
 .signature-group .input-with-icon,
 .group-btn,
