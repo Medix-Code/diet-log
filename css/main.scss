@@ -2419,6 +2419,14 @@ button {
   opacity: 0.7;
 }
 
+// Estil per a l'enllaç dins del peu de pàgina
+.footer__text a {
+  color: var(--text-color-footer);
+  text-decoration: underline;
+  font-size: 0.8rem;
+  margin: 0 10px;
+}
+
 .footer .footer-btn {
   height: 44px;
   display: flex;
@@ -2692,6 +2700,47 @@ button .icon {
     padding: 8px 2px;
   }
 }
+
+/* ============================================================= */
+/* == Estils per a la Política de Privacitat i els Enllaços   == */
+/* ============================================================= */
+
+// 1. Estils per a la pàgina de Política de Privacitat
+// S'apliquen només quan el body té la classe .body-privacy-policy
+.body-privacy-policy {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg-color);
+
+  h1,
+  h2,
+  h3 {
+    color: var(--primary-color);
+  }
+
+  .container {
+    border: 1px solid var(--grey-border, #eee);
+    padding: 20px 30px;
+    border-radius: 12px;
+    background-color: var(--bg-tab-active);
+  }
+
+  .back-link {
+    margin-top: 30px;
+    display: inline-block;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+}
+
+// 2. Estil per a l'enllaç dins del bàner de cookies
+.cookie-banner-text a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
 /* ======================================== */
 /* == Estils per al Bàner de Cookies     == */
 /* ======================================== */
