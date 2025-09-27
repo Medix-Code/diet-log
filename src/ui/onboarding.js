@@ -7,14 +7,14 @@ export function initOnboarding() {
   if (!container) return;
 
   // --- PAS 1: COMPROVAR SI L'ONBOARDING JA S'HA COMPLETAT ---
-  // Utilitzem JSON.parse per llegir el valor de forma segura.
+
   const isCompleted = JSON.parse(
     localStorage.getItem(ONBOARDING_COMPLETED_KEY) || "false"
   );
 
-  if (isCompleted) {
-    // Si ja s'ha completat, amaguem el contenidor i no fem res més.
-    container.classList.add("hidden");
+  if (!isCompleted) {
+    container.classList.remove("hidden");
+  } else {
     return;
   }
 
