@@ -2719,11 +2719,13 @@ button .icon {
 }
 
 .onboarding-carousel {
-  width: 100%;
   flex-grow: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
-  overflow: hidden; /* Oculta los slides que no están activos */
+  overflow: hidden;
 }
 
 /* En tu main.min.css, busca y reemplaza/añade esto */
@@ -2828,9 +2830,12 @@ button .icon {
 }
 
 .onboarding-nav {
+  flex-shrink: 0;
   display: flex;
   gap: 12px;
   margin-bottom: 2rem;
+  justify-content: center;
+  width: 100%;
 }
 
 .nav-dot {
@@ -3150,14 +3155,12 @@ button .icon {
 /* == Estils per a la Pàgina 404 General == */
 /* ================================== ===== */
 /* ========= FOUC Prevention ========= */
-/* Amaga tot el cos fins que l'app estigui preparada */
-body:not(.app-ready) {
+#app-body:not(.app-ready) {
   visibility: hidden;
   opacity: 0;
 }
 
-/* Opcional: transició suau per a l'aparició */
-body.app-ready {
+#app-body.app-ready {
   opacity: 1;
   visibility: visible;
   transition: opacity 0.3s ease-in-out;
