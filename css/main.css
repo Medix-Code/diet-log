@@ -2755,14 +2755,15 @@ button .icon {
 }
 
 .onboarding-slide {
+  min-width: 100%;
+  height: 100%;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: 100%; /* Assegura que ocupi tota l'amplada */
-  padding: 20px;
-  /* Permet scroll intern si el contingut és massa llarg PERÒ el pare ho impedeix */
-  overflow-y: auto; /* <-- CANVI CLAU: Permet scroll DINS de la diapositiva si cal */
-  /* Animacions i posicionament */
+  justify-content: center;
+  align-items: center; /* Centrat horitzontal */
+  text-align: center; /* Centrat del text intern */
+  /* Estils per a l'animació de transició */
   min-width: 100%;
   position: absolute;
   opacity: 0;
@@ -2771,7 +2772,6 @@ button .icon {
   pointer-events: none;
 }
 
-/* El wrapper del contingut s'adapta a l'espai */
 .onboarding-content-wrapper {
   flex-grow: 1;
   display: flex;
@@ -2779,7 +2779,6 @@ button .icon {
   justify-content: center;
   align-items: center;
   text-align: center;
-  width: 100%; /* Ocupa tota l'amplada */
 }
 
 .onboarding-slide.active {
