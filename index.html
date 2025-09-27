@@ -49,11 +49,21 @@
       gtag("config", "G-23SXKMLR75");
     </script>
 
+    <!-- Lottie Player desde CDN -->
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"
+    ></script>
+
     <!-- Tesseract.js des de la CDN, fixant la versió major 5 per a estabilitat -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
+    ></script>
 
     <!-- PDF-Lib des de la CDN -->
     <script
+      defer
       src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"
       async
     ></script>
@@ -61,6 +71,78 @@
     <script src="./sw-register.js" type="module"></script>
   </head>
   <body>
+    <!-- ========= ONBOARDING CAROUSEL (CON MEJORAS) ========= -->
+    <div id="onboarding-container" class="onboarding-container">
+      <div class="onboarding-carousel">
+        <!-- SLIDE 1: Bienvenida -->
+        <div class="onboarding-slide active">
+          <img
+            src="/assets/animations/slide1-welcome.svg"
+            alt="Icono de bienvenida a MisDietas."
+            class="onboarding-image"
+          />
+          <h2 class="onboarding-title">Te damos la bienvenida a MisDietas</h2>
+          <p class="onboarding-text">
+            La forma más rápida y sencilla de registrar tus servicios y tener
+            tus justificantes de dietas listos al momento.
+          </p>
+        </div>
+
+        <!-- SLIDE 2: Texto ajustado para TSU/TSNU -->
+        <div class="onboarding-slide">
+          <img
+            src="/assets/animations/slide2-fast-fill.svg"
+            alt="Icono que muestra un formulario rellenándose rápidamente."
+            class="onboarding-image"
+          />
+          <h2 class="onboarding-title">Rellena a toda velocidad</h2>
+          <p class="onboarding-text">
+            Aprovecha funciones que te ahorran tiempo: escanea las horas en
+            servicios TSU, carga tus dotaciones guardadas y disfruta de una
+            interfaz ágil.
+          </p>
+        </div>
+
+        <!-- SLIDE 3: Título modificado (sin "profesional") -->
+        <div class="onboarding-slide">
+          <img
+            src="/assets/animations/slide3-pdf.svg"
+            alt="Icono de un documento PDF generado."
+            class="onboarding-image"
+          />
+          <h2 class="onboarding-title">Tu PDF, listo para entregar</h2>
+          <p class="onboarding-text">
+            Crea un justificante completo, con firmas y notas, listo para
+            compartir desde tu móvil.
+          </p>
+        </div>
+
+        <!-- SLIDE 4: Título nuevo y más directo -->
+        <div class="onboarding-slide">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide4-security.svg"
+              alt="Icono de un escudo que representa seguridad y privacidad."
+              class="onboarding-image"
+            />
+            <h2 class="onboarding-title">Trabaja con confianza</h2>
+            <p class="onboarding-text">
+              ✓ Funciona sin conexión a internet.<br />
+              ✓ Tus datos se guardan de forma segura solo en tu dispositivo.
+            </p>
+          </div>
+          <button id="onboarding-finish-btn" class="onboarding-cta">
+            Crear mi Primera Dieta
+          </button>
+        </div>
+      </div>
+
+      <div class="onboarding-nav">
+        <span class="nav-dot active"></span><span class="nav-dot"></span
+        ><span class="nav-dot"></span><span class="nav-dot"></span>
+      </div>
+      <button id="onboarding-skip-btn" class="onboarding-skip">Saltar</button>
+    </div>
     <div id="install-prompt" class="hidden">
       <p>¿Quieres instalarla como aplicación?</p>
       <div class="install-buttons">
@@ -271,10 +353,10 @@
                 type="button"
                 class="option-btn clear-selected-btn notes-btn"
                 id="notes-selected-service"
-                aria-label="Añadir notas"
+                aria-label="Añadir nota"
               >
                 <img src="assets/icons/ic_note.svg" alt="Notas" class="icon" />
-                <span>Añadir Notas</span>
+                <span>Añadir Nota</span>
               </button>
               <button
                 type="button"
@@ -851,7 +933,7 @@
               para descargar cuando quieras.
             </p>
 
-            <h3 style="margin-top: 25px">Consejos para ir más rápido:</h3>
+            <h3 style="margin-top: 25px">Consejos:</h3>
             <ul>
               <li>
                 <strong>
@@ -862,10 +944,10 @@
                   />
                   ¡Sáltate el paso de la foto!:
                 </strong>
-                ¿Todavía haces fotos del AL20 para rellenar MisDietas más tarde?
-                Ahorra un paso: introduce los datos directamente en la app justo
-                al finalizar el servicio. Es más rápido y la información se
-                guarda automáticamente.
+                En lugar de hacer fotos del AL20 para transcribir los datos más
+                tarde en MisDietas, ahórrate ese paso. Introduce la información
+                directamente en la app al finalizar cada servicio. Es más rápido
+                y la información se guarda al instante.
               </li>
               <li>
                 <strong>
@@ -894,6 +976,31 @@
                 datos del vehículo, conductor y ayudante. Así, podrás cargarlos
                 todos juntos la próxima vez que inicies una dieta, sin tener que
                 volver a escribirlos.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    src="assets/icons/ic_note.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Añade detalles a cada servicio:
+                </strong>
+                Si ha ocurrido alguna incidencia o necesitas aclarar algo, pulsa
+                el menú de opciones
+                <img
+                  src="assets/icons/submenu.svg"
+                  alt="Menú de opciones"
+                  class="icon-inline"
+                />
+                y selecciona
+                <img
+                  src="assets/icons/ic_note.svg"
+                  alt="Añadir notas"
+                  class="icon-inline"
+                />
+                <strong>Añadir Notas</strong>. Todo lo que escribas quedará
+                registrado en el PDF final.
               </li>
               <li>
                 <strong>
