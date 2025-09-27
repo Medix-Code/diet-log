@@ -1,6 +1,7 @@
 // src/init.js
 
 // --- Importacions de Mòduls ---
+import { initOnboarding } from "./ui/onboarding.js";
 import { openDatabase } from "./db/indexedDbDietRepository.js";
 import {
   setTodayDate,
@@ -35,10 +36,6 @@ const DONATION_LINK_ID = "openDonation";
 const LS_SERVICE_TYPE_KEY = "userSelectedServiceType"; // Clau per a localStorage
 
 // --- Funcions Privades d'Inicialització ---
-
-/**
- * enllaç de donació per incloure l'ID anònim de l'usuari.
- */
 function setupDonationLink() {
   const donationLink = document.getElementById(DONATION_LINK_ID);
   if (!donationLink) return console.warn("No s'ha trobat l'enllaç de donació.");
@@ -70,6 +67,7 @@ export async function initializeApp() {
     initCameraOcr();
 
     // --- Configuració de la Interfície d'Usuari (UI) ---
+    initOnboarding();
     setupTabs();
     setupMainButtons();
     setupClearSelectedService();
