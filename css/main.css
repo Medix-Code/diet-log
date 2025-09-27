@@ -2903,6 +2903,29 @@ button .icon {
 }
 
 /* ============================================================= */
+/* == EFECTE VISUAL PER A NETEJAR CAMPS (FLASH)              == */
+/* ============================================================= */
+/* Defineix l'animació del "flash" */
+@keyframes flash-clear {
+  0% {
+    background-color: var(--textfield); /* Color inicial normal */
+  }
+  50% {
+    /* Moment àlgid de l'animació: un groc pàl·lid (warning) */
+    background-color: var(--textfield-warning-bg);
+    border-color: var(--textfield-warning);
+  }
+  100% {
+    background-color: var(--textfield); /* Torna al color normal */
+  }
+}
+/* Classe que aplicarem temporalment amb JavaScript */
+.field-clearing {
+  /* Aplica l'animació que hem definit */
+  animation: flash-clear 0.6s ease-out;
+}
+
+/* ============================================================= */
 /* == TLF- TABLETS...   == */
 /* ============================================================= */
 /* Assegurar contrast per accessibilitat */

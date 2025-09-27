@@ -44,13 +44,32 @@ export function setupClearSelectedService() {
     if (currentIndex >= 0 && currentIndex < allServiceElements.length) {
       const activeServiceElement = allServiceElements[currentIndex];
 
-      clearServiceFields(activeServiceElement);
+      // 1. Seleccionem tots els camps que es poden netejar dins del panell actiu
+      const fieldsToClear = activeServiceElement.querySelectorAll(
+        'input:not([type="button"]):not([type="submit"]), select, textarea'
+      );
 
-      removeErrorClassesFromService(activeServiceElement);
+      // 2. Afegim la classe CSS per iniciar l'animació NOMÉS als camps que tenen contingut
+      fieldsToClear.forEach((field) => {
+        if (field.value !== "") {
+          field.classList.add("field-clearing");
+        }
+      });
 
-      revalidateFormState();
+      // 3. Usem un temporitzador per esperar que l'animació acabi abans de netejar realment els camps
+      setTimeout(() => {
+        // Accions que ja feies abans
+        clearServiceFields(activeServiceElement);
+        removeErrorClassesFromService(activeServiceElement);
+        revalidateFormState();
 
-      console.log(`Servei ${currentIndex + 1} netejat.`);
+        // 4. IMPORTANT: Traiem la classe de l'animació perquè pugui tornar a funcionar la propera vegada
+        fieldsToClear.forEach((field) => {
+          field.classList.remove("field-clearing");
+        });
+
+        console.log(`Servei ${currentIndex + 1} netejat amb efecte visual.`);
+      }, 600); // Aquest temps ha de coincidir amb la durada de l'animació CSS (0.6s = 600ms)
     } else {
       console.warn(
         `Clear Service: Índex de servei invàlid (${currentIndex}) o element no trobat.`
