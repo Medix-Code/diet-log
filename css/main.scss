@@ -2985,13 +2985,12 @@ button .icon {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
-  background-color: var(--bg-color, #fefeff);
+  height: 100vh; /* Ocupa el 100% de l'alçada de la vista */
+  background-color: var(--bg-color);
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  overflow: hidden; /* <-- CANVI CLAU: Evita qualsevol scroll */
   transition: opacity 0.5s ease, transform 0.5s ease;
   opacity: 1;
 }
@@ -3042,18 +3041,17 @@ button .icon {
 }
 
 .onboarding-slide {
-  min-width: 100%;
-  height: 100%;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center; /* Centrat horitzontal */
-  text-align: center; /* Centrat del text intern */
+  height: 100%;
+  width: 100%; /* Assegura que ocupi tota l'amplada */
+  padding: 20px;
 
-  /* Estils per a l'animació de transició */
+  /* Permet scroll intern si el contingut és massa llarg PERÒ el pare ho impedeix */
+  overflow-y: auto; /* <-- CANVI CLAU: Permet scroll DINS de la diapositiva si cal */
+
+  /* Animacions i posicionament */
   min-width: 100%;
-
   position: absolute;
   opacity: 0;
   transform: translateX(50px);
@@ -3061,6 +3059,7 @@ button .icon {
   pointer-events: none;
 }
 
+/* El wrapper del contingut s'adapta a l'espai */
 .onboarding-content-wrapper {
   flex-grow: 1;
   display: flex;
@@ -3068,6 +3067,7 @@ button .icon {
   justify-content: center;
   align-items: center;
   text-align: center;
+  width: 100%; /* Ocupa tota l'amplada */
 }
 
 .onboarding-slide.active {
@@ -3476,21 +3476,28 @@ button .icon {
   box-sizing: border-box;
 }
 
+body:not(.app-ready) {
+  .top-bar,
+  .tabs-container,
+  #main-content {
+    visibility: hidden;
+    opacity: 0;
+  }
+}
+
+/* Quan l'app està llesta, els mostra amb una transició */
+body.app-ready {
+  .top-bar,
+  .tabs-container,
+  #main-content {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+  }
+}
 /* ======================================== */
 /* == Estils per a la Pàgina 404 General == */
 /* ================================== ===== */
-
-/* ========= FOUC Prevention ========= */
-#app-body:not(.app-ready) {
-  visibility: hidden;
-  opacity: 0;
-}
-
-#app-body.app-ready {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.3s ease-in-out;
-}
 
 .body-404 {
   display: flex;
