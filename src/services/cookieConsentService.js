@@ -1,5 +1,7 @@
 // /src/services/cookieConsentService.js
 
+import { applyCspNonce } from "../utils/utils.js";
+
 // Funció per obtenir una cookie (del teu exemple)
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -23,6 +25,7 @@ let banner, acceptBtn, declineBtn;
 function loadGoogleAnalytics() {
   // Carreguem el script de GA
   const gaScript = document.createElement("script");
+  applyCspNonce(gaScript);
   gaScript.async = true;
   gaScript.src = "https://www.googletagmanager.com/gtag/js?id=G-23SXKMLR75";
   document.head.appendChild(gaScript);

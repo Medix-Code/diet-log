@@ -10,6 +10,7 @@ import {
   getModeForService,
 } from "../services/servicesPanelManager.js";
 import { setControlsDisabled } from "../ui/uiControls.js";
+import { applyCspNonce } from "../utils/utils.js";
 
 // --- Constants ---
 const OCR_LANGUAGE = "spa";
@@ -431,6 +432,7 @@ async function _handleFileChange(event) {
     if (!tesseractScriptLoaded) {
       await new Promise((resolve, reject) => {
         const script = document.createElement("script");
+        applyCspNonce(script);
         script.src =
           "https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js";
         script.onload = () => {

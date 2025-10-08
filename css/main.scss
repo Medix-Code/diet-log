@@ -3523,6 +3523,15 @@ body:not(.app-ready) {
   }
 }
 
+body.no-js {
+  .top-bar,
+  .tabs-container,
+  #main-content {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
 /* Quan l'app està llesta, els mostra amb una transició */
 body.app-ready {
   .top-bar,

@@ -6,14 +6,15 @@ import { initPwaInstall } from "./services/pwaInstallHandler.js";
 // Funció que s'executarà quan el DOM estigui llest
 async function startApp() {
   try {
-    await initializeApp();
-    initPwaInstall();
-
     // ---FOUC FIX ---
     document.body.classList.add("app-ready");
+    document.body.classList.remove("no-js");
+
+    await initializeApp();
+    initPwaInstall();
   } catch (error) {
     console.error("Error crític en startApp:", error);
-    document.body.classList.add("app-ready");
+    // Ja hem afegit "app-ready" al principi
   }
 }
 

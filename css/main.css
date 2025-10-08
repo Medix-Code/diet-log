@@ -287,9 +287,6 @@ main {
   left: 0;
   transition: 0.2s ease;
   pointer-events: none;
-  display: inline-block;
-  min-width: 6ch;
-  text-align: center;
 }
 .hamburger span:nth-child(1) {
   top: 0;
@@ -1584,9 +1581,6 @@ button .fa {
 .ocr-progress-container.hidden {
   opacity: 0;
   pointer-events: none;
-  display: inline-block;
-  min-width: 6ch;
-  text-align: center;
 }
 
 .ocr-progress-text {
@@ -2734,9 +2728,6 @@ button .icon {
   opacity: 0;
   transform: scale(1.05);
   pointer-events: none;
-  display: inline-block;
-  min-width: 6ch;
-  text-align: center;
 }
 
 .onboarding-container.hidden {
@@ -2795,9 +2786,6 @@ button .icon {
   transform: translateX(50px);
   transition: opacity 0.6s ease, transform 0.6s ease;
   pointer-events: none;
-  display: inline-block;
-  min-width: 6ch;
-  text-align: center;
 }
 .onboarding-slide.active {
   opacity: 1;
@@ -3205,6 +3193,13 @@ body:not(.app-ready) .tabs-container,
 body:not(.app-ready) #main-content {
   visibility: hidden;
   opacity: 0;
+}
+
+body.no-js .top-bar,
+body.no-js .tabs-container,
+body.no-js #main-content {
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Quan l'app està llesta, els mostra amb una transició */

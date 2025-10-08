@@ -29,6 +29,21 @@ const EASTER_EGG_TAPS_REQUIRED = {
   ANIMATION_DURATION: 1000,
 };
 
+/**
+ * Assigna el nonce CSP injectat via worker a un element si està disponible.
+ * @param {HTMLElement} element - Element al qual aplicar el nonce.
+ */
+export function applyCspNonce(element) {
+  if (!element) return;
+  const body = document.body;
+  if (!body) return;
+  const nonce =
+    body.dataset?.cspNonce || body.getAttribute("data-csp-nonce") || "";
+  if (nonce && !element.getAttribute("nonce")) {
+    element.setAttribute("nonce", nonce);
+  }
+}
+
 // --- Funcions Públiques ---
 
 /**

@@ -10,6 +10,7 @@ import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
 import { getDiet } from "../db/indexedDbDietRepository.js";
+import { applyCspNonce } from "../utils/utils.js";
 
 // Lazy loading PDFLib
 let pdfLibLoaded = false;
@@ -17,6 +18,7 @@ let pdfLibLoaded = false;
 async function loadPdfLib() {
   if (pdfLibLoaded) return;
   const script = document.createElement("script");
+  applyCspNonce(script);
   script.src = "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
   return new Promise((resolve, reject) => {
     script.onload = () => {

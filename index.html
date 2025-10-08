@@ -13,12 +13,6 @@
       content="Aplicació per gestionar dietes amb formularis accessibles i funcionalitat PWA."
     />
 
-    <!-- Content Security Policy -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'strict-dynamic' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.misdietas.com; font-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self';"
-    />
-
     <!-- Altres headers de seguretat -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
@@ -65,7 +59,7 @@
 
     <script src="./sw-register.js" type="module"></script>
   </head>
-  <body id="app-body">
+  <body id="app-body" class="no-js">
     <!-- ========= ONBOARDING CAROUSEL (CON MEJORAS) ========= -->
     <div id="onboarding-container" class="onboarding-container hidden">
       <div class="onboarding-carousel">
