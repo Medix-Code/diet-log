@@ -230,7 +230,7 @@ html {
 }
 
 body {
-  font-family: "Roboto Serif", serif;
+  font-family: serif;
   font-size: var(--font-size-base);
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -2509,6 +2509,13 @@ button {
   opacity: 0.7;
 }
 
+.offline-indicator {
+  color: #ff6b6b;
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-left: 10px;
+}
+
 .footer .footer-btn {
   height: 44px;
   display: flex;
@@ -3502,7 +3509,7 @@ body:not(.app-ready) {
   .top-bar,
   .tabs-container,
   #main-content {
-    visibility: hidden;
+    display: none;
     opacity: 0;
   }
 }
@@ -3512,7 +3519,7 @@ body.app-ready {
   .top-bar,
   .tabs-container,
   #main-content {
-    visibility: visible;
+    display: block;
     opacity: 1;
     transition: opacity 0.3s ease-in-out;
   }
