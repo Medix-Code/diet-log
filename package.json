@@ -1,11 +1,13 @@
 {
   "name": "diet-log",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
   "main": "index.html",
   "scripts": {
     "inject-version": "node inject-version.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --outfile=dist/bundle.js",
+    "test": "vitest",
+    "dev": "echo 'Serve index.html with compression'"
   },
   "keywords": [],
   "author": "MisDietas",
@@ -13,5 +15,11 @@
   "dependencies": {
     "pdf-lib": "^1.17.1",
     "tesseract.js": "^6.0.1"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^3.2.4",
+    "esbuild": "^0.25.10",
+    "jsdom": "^27.0.0",
+    "vitest": "^3.2.4"
   }
 }

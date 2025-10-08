@@ -19,13 +19,24 @@ const setCookie = (name, value, days) => {
 // Elements del DOM
 let banner, acceptBtn, declineBtn;
 
+// Funció per carregar GA dinàmicament sols en acceptar
+function loadGoogleAnalytics() {
+  // Carreguem el script de GA
+  const gaScript = document.createElement("script");
+  gaScript.async = true;
+  gaScript.src = "https://www.googletagmanager.com/gtag/js?id=G-23SXKMLR75";
+  document.head.appendChild(gaScript);
+
+  // Quan carregui, configurem
+  gaScript.onload = () => {
+    window.gtag("js", new Date());
+    window.gtag("config", "G-23SXKMLR75");
+  };
+}
+
 function handleAccept() {
-  // Comprovem si gtag existeix abans de cridar-lo
-  if (typeof window.gtag === "function") {
-    window.gtag("consent", "update", {
-      analytics_storage: "granted",
-    });
-  }
+  // Carreguem i configurem GA amb consentiment grant
+  loadGoogleAnalytics();
   setCookie("cookie_consent", "granted", 365);
   hideBanner();
 }

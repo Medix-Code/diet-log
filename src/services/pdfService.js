@@ -11,6 +11,23 @@ import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
 import { getDiet } from "../db/indexedDbDietRepository.js";
 
+// Lazy loading PDFLib
+let pdfLibLoaded = false;
+
+async function loadPdfLib() {
+  if (pdfLibLoaded) return;
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
+  return new Promise((resolve, reject) => {
+    script.onload = () => {
+      pdfLibLoaded = true;
+      resolve();
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------
@@ -489,6 +506,7 @@ export async function generateAndDownloadPdf() {
     const { generalData, servicesData } = gatherAllData();
     if (!generalData || !servicesData) throw new Error("Dades no recollides.");
 
+    await loadPdfLib();
     const pdfBytes = await fillPdf(generalData, servicesData);
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
     downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), fileName);
@@ -544,6 +562,7 @@ export async function downloadDietPDF(dietId) {
       notes: service.notes || "",
     }));
 
+    await loadPdfLib();
     const pdfBytes = await fillPdf(generalData, servicesData);
     const fileName = buildPdfFileName(generalData.date, generalData.dietType);
     downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), fileName);

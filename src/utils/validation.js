@@ -263,9 +263,7 @@ export function sanitizeText(input) {
   if (typeof input !== "string") return "";
 
   const trimmedInput = input.trim();
-  const temp = document.createElement("div");
-  temp.textContent = trimmedInput;
-  return temp.innerHTML;
+  return trimmedInput.replace(/[<>&"'`]/g, "").trim();
 }
 
 /**
@@ -407,7 +405,10 @@ export function validateLocationFields() {
 export function setupNameAndVehicleInputSanitizers() {
   const allowedCharsRegex = VALIDATION_RULES.PERSON_NAME_ALLOWED_CHARS;
 
-  // Funció auxiliar per filtrar en temps real
+  // Regex per camps de localització (orígens/destinacions): permet lletres, números, espais, guions, punts, cometes... però bloqueja < > & " '
+  const allowedLocationCharsRegex = /^[^\x00-\x1F\x7F<>&"'`]*$/u;
+
+  // Funció auxiliar per filtrar en temps real noms
   function handleNameInput(e) {
     const value = e.target.value;
     if (!allowedCharsRegex.test(value)) {
@@ -418,7 +419,15 @@ export function setupNameAndVehicleInputSanitizers() {
     }
   }
 
-  // Prevé entrades invàlides en keypress.
+  // Funció auxiliar per filtrar en temps real localitzacions (XSS prevention)
+  function handleLocationInput(e) {
+    const value = e.target.value;
+    if (!allowedLocationCharsRegex.test(value)) {
+      e.target.value = value.replace(/[<>&"'`]/g, "").trim();
+    }
+  }
+
+  // Prevé entrades invàlides en keypress noms.
   function handleKeypress(e) {
     if (
       e.key === "Enter" ||
@@ -435,18 +444,26 @@ export function setupNameAndVehicleInputSanitizers() {
     }
   }
 
-  // Prevé paste invàlid.
-  function handlePaste(e) {
-    try {
-      const pastedData =
-        (e.clipboardData || window.clipboardData)?.getData("text") || "";
-      if (!allowedCharsRegex.test(pastedData)) {
-        e.preventDefault();
-      }
-    } catch (error) {
-      console.error("Error processant 'paste':", error);
+  // Prevé keypress invàlides en localitzacions.
+  function handleLocationKeypress(e) {
+    if (
+      e.key === "Enter" ||
+      e.key === "Tab" ||
+      e.ctrlKey ||
+      e.metaKey ||
+      e.altKey ||
+      e.key.length > 1
+    ) {
+      return;
+    }
+    if (!allowedLocationCharsRegex.test(e.key)) {
       e.preventDefault();
     }
+  }
+
+  // Funciones auxiliares
+  function handlePaste(e) {
+    // Allow paste and sanitise in input event
   }
 
   // Aplica als inputs de noms (conductor i ajudant).
@@ -458,7 +475,15 @@ export function setupNameAndVehicleInputSanitizers() {
   nameInputs.forEach((input) => {
     input.addEventListener("input", handleNameInput);
     input.addEventListener("keypress", handleKeypress);
-    input.addEventListener("paste", handlePaste);
+  });
+
+  // Aplica als inputs de localitzacions (orígens i destinacions).
+  const locationInputs = document.querySelectorAll(
+    ".service .origin, .service .destination"
+  );
+  locationInputs.forEach((input) => {
+    input.addEventListener("input", handleLocationInput);
+    input.addEventListener("keypress", handleLocationKeypress);
   });
 
   function handleVehicleInput(e) {

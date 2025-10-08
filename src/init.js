@@ -51,6 +51,24 @@ function setupDonationLink() {
   }
 }
 
+function setupOfflineIndicator() {
+  const offlineIndicator = document.getElementById("offline-indicator");
+  if (!offlineIndicator) return;
+
+  function updateOfflineStatus() {
+    if (!navigator.onLine) {
+      offlineIndicator.hidden = false;
+    } else {
+      offlineIndicator.hidden = true;
+    }
+  }
+
+  updateOfflineStatus();
+
+  window.addEventListener("online", updateOfflineStatus);
+  window.addEventListener("offline", updateOfflineStatus);
+}
+
 export async function initializeApp() {
   try {
     console.log("initializeApp() iniciant...");
@@ -105,6 +123,9 @@ export async function initializeApp() {
     // --- Altres ---
     easterEgg();
     initCookieConsentService();
+
+    // --- Indicador Offline ---
+    setupOfflineIndicator();
 
     console.log("initializeApp() completada.");
   } catch (error) {

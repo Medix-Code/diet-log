@@ -19,6 +19,7 @@ const TESSERACT_CHAR_WHITELIST =
 const IMAGE_MAX_DIMENSION = 1500;
 const IMAGE_QUALITY = 0.95;
 const IMAGE_TYPE = "image/png";
+const MAX_IMAGE_SIZE_MB = 10; // Límit de mida d'imatge per prevenció de malware
 const MODAL_TRANSITION_DURATION = 300;
 const PROGRESS_HIDE_DELAY = 1000;
 const OCR_SEARCH_WINDOW = 200;
@@ -53,7 +54,8 @@ const OCR_PATTERNS = {
     id: "originTime",
     label: "Hora movilización",
     fieldIdSuffix: "origin-time",
-    lineKeywordRegex: /mobilitzat|ltat/i,
+    // Updated regex for better accuracy
+    lineKeywordRegex: /movilizaci|ltat|desplaza/i,
   },
   DESTINATION_TIME: {
     id: "destinationTime",
@@ -79,12 +81,15 @@ let cameraInput = null;
 
 let isProcessing = false;
 let isInitialized = false;
+let tesseractScriptLoaded = false;
+let lastPressOcr = 0;
 
 // --- Funcions ---
 
 function _normalizeTime(timeStr) {
   if (!timeStr) return "";
-  let cleaned = timeStr.replace(/[^\d:-]/g, "");
+  // Desinfecta elimiem caràcters no-u-num;rics excepte : i -
+  let cleaned = timeStr.replace(/[^\d:\-]/g, "");
   cleaned = cleaned.replace(/-/g, ":");
   const match = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (match) {
@@ -101,6 +106,10 @@ function _normalizeTime(timeStr) {
 }
 
 function _openCameraModal() {
+  // Throttle OCR button clicks to prevent abuse (500ms min interval)
+  if (Date.now() - lastPressOcr < 500) return;
+  lastPressOcr = Date.now();
+
   if (!cameraGalleryModal || !modalContentElement) return;
   document.body.classList.add("modal-open");
 
@@ -220,9 +229,13 @@ async function _preprocessImage(blob) {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("No contexto 2D.");
 
-    ctx.filter = "grayscale(100%) contrast(180%) brightness(110%)";
+    // Neteja EXIF per privacitat (elimina metadades sensibles com GPS)
     ctx.drawImage(img, 0, 0);
     img.close();
+
+    // Aplica filtres per millorar OCR sense preservar metadades originals
+    ctx.filter = "grayscale(100%) contrast(180%) brightness(110%)";
+    ctx.drawImage(img, 0, 0);
 
     return new Promise((resolve) => canvas.toBlob(resolve, IMAGE_TYPE, 1.0));
   } catch (error) {
@@ -389,6 +402,17 @@ async function _handleFileChange(event) {
     return;
   }
 
+  // Validació de mida d'imatge per prevenció de malware
+  const maxSizeBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+  if (file.size > maxSizeBytes) {
+    showToast(
+      `La imagen es demasiado grande (máx. ${MAX_IMAGE_SIZE_MB} MB).`,
+      "error"
+    );
+    if (cameraInput) cameraInput.value = "";
+    return;
+  }
+
   isProcessing = true;
   setControlsDisabled(true);
   _updateOcrProgress(0, "Preparando imagen...");
@@ -402,6 +426,22 @@ async function _handleFileChange(event) {
     imageBlob = await _preprocessImage(imageBlob);
 
     _updateOcrProgress(5, "Cargando motor OCR...");
+
+    // Carrega Tesseract dinàmicament sols quan s'usi
+    if (!tesseractScriptLoaded) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src =
+          "https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js";
+        script.onload = () => {
+          tesseractScriptLoaded = true;
+          resolve();
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
     worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
       logger: (m) => {
         if (m.status === "recognizing text") {

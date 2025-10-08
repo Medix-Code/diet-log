@@ -62,9 +62,10 @@ const DOM_IDS = {
   SERVICE_TYPE_SELECT: "service-type",
 };
 
-//  Variables de estado para controlar el guardado
-let isSaving = false;
+// Variables de estado para controlar el guardado con mutex
+let savingPromise = Promise.resolve();
 let needsAnotherSave = false;
+let debouncedAutoSave = null;
 
 const CSS_CLASSES = {
   ERROR_TAB: "error-tab",
@@ -253,86 +254,84 @@ function populateFormWithDietData(diet) {
 }
 
 async function performSave(isManual) {
-  if (isSaving) {
-    needsAnotherSave = true;
-    return;
-  }
-
-  isSaving = true;
-  needsAnotherSave = false;
-
-  const { generalData, servicesData } = gatherAllData();
-  const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
-  if (!dietId || !/^\d{9}$/.test(dietId)) {
-    isSaving = false;
-    if (isManual) {
-      showToast(
-        "El primer servicio debe tener un N.º de servicio válido.",
-        "error"
-      );
-    }
-    return;
-  }
-
-  const hashedId = await pseudoId(dietId);
-  const existingDiet = await getDiet(hashedId);
-  const isNewDiet = !existingDiet;
-  const saveMessage = isNewDiet ? "Guardando nueva dieta…" : "Guardando…";
-
-  if (isManual) {
-    indicateSaving(saveMessage);
-  }
-
-  setSaveButtonState(false);
-
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    if (!validateFormTabs()) {
+  // Use promise chain to prevent race conditions
+  savingPromise = savingPromise.then(async () => {
+    const { generalData, servicesData } = gatherAllData();
+    const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
+    if (!dietId || !/^\d{9}$/.test(dietId)) {
       if (isManual) {
-        indicateSaveError("Validación fallida");
+        showToast(
+          "El primer servicio debe tener un N.º de servicio válido.",
+          "error"
+        );
       }
       return;
     }
 
-    const dietToSave = await buildDietObject(generalData, servicesData, dietId);
+    const hashedId = await pseudoId(dietId);
+    const existingDiet = await getDiet(hashedId);
+    const isNewDiet = !existingDiet;
+    const saveMessage = isNewDiet ? "Guardando nueva dieta…" : "Guardando…";
 
-    if (existingDiet) {
-      await updateDiet(dietToSave);
-    } else {
-      await addDiet(dietToSave);
+    if (isManual) {
+      indicateSaving(saveMessage);
+    }
+
+    setSaveButtonState(false);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (!validateFormTabs()) {
+        if (isManual) {
+          indicateSaveError("Validación fallida");
+        }
+        return;
+      }
+
+      const dietToSave = await buildDietObject(
+        generalData,
+        servicesData,
+        dietId
+      );
+
+      if (existingDiet) {
+        await updateDiet(dietToSave);
+      } else {
+        await addDiet(dietToSave);
+        captureInitialFormState();
+        resetDirty();
+      }
+
+      if (isManual) {
+        showToast("Dieta guardada correctament.", "success");
+      }
+
+      lastSavedDate = new Date();
+      renderLastSaved();
+
       captureInitialFormState();
-      resetDirty();
-    }
+      indicateSaved();
 
-    if (isManual) {
-      showToast("Dieta guardada correctament.", "success");
-    }
+      if (isManual) {
+        await displayDietOptions();
+      }
+    } catch (error) {
+      console.error("Error en performSave:", error);
+      indicateSaveError(error.message || "No se pudo guardar");
+      if (isManual) {
+        showToast(`Error al guardar: ${error.message}`, "error");
+      }
+    } finally {
+      setSaveButtonState(true);
 
-    lastSavedDate = new Date();
-    renderLastSaved();
-
-    captureInitialFormState();
-    indicateSaved();
-
-    if (isManual) {
-      await displayDietOptions();
+      if (needsAnotherSave) {
+        needsAnotherSave = false;
+        setTimeout(() => autoSaveDiet(), 100);
+      }
     }
-  } catch (error) {
-    console.error("Error en performSave:", error);
-    indicateSaveError(error.message || "No se pudo guardar");
-    if (isManual) {
-      showToast(`Error al guardar: ${error.message}`, "error");
-    }
-  } finally {
-    isSaving = false;
-    setSaveButtonState(true);
-
-    if (needsAnotherSave) {
-      needsAnotherSave = false;
-      setTimeout(() => autoSaveDiet(), 100);
-    }
-  }
+  });
+  return savingPromise;
 }
 
 // --- Funcions Exportades ---
@@ -443,3 +442,11 @@ export function renderLastSaved() {
 setInterval(() => {
   if (lastSavedDate) renderLastSaved();
 }, 60000);
+
+// Debounce function
+function debounce(func, delay) {
+  return function (...args) {
+    clearTimeout(debouncedAutoSave);
+    debouncedAutoSave = setTimeout(() => func.apply(this, args), delay);
+  };
+}

@@ -287,6 +287,9 @@ main {
   left: 0;
   transition: 0.2s ease;
   pointer-events: none;
+  display: inline-block;
+  min-width: 6ch;
+  text-align: center;
 }
 .hamburger span:nth-child(1) {
   top: 0;
@@ -1368,6 +1371,9 @@ button .fa {
   transition: all 0.2s ease-in-out;
   /* Evita que l'etiqueta bloquegi el clic al textarea */
   pointer-events: none;
+  display: inline-block;
+  min-width: 6ch;
+  text-align: center;
 }
 
 /* Estils del propi textarea */
@@ -1578,6 +1584,9 @@ button .fa {
 .ocr-progress-container.hidden {
   opacity: 0;
   pointer-events: none;
+  display: inline-block;
+  min-width: 6ch;
+  text-align: center;
 }
 
 .ocr-progress-text {
@@ -2279,6 +2288,13 @@ button .fa {
   opacity: 0.7;
 }
 
+.offline-indicator {
+  color: #ff6b6b;
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-left: 10px;
+}
+
 .footer .footer-btn {
   height: 44px;
   display: flex;
@@ -2304,6 +2320,9 @@ button .fa {
   color: var(--text-color-footer);
   opacity: 0.9;
   pointer-events: none;
+  display: inline-block;
+  min-width: 6ch;
+  text-align: center;
 }
 
 .footer .footer-btn:hover {
@@ -2715,12 +2734,18 @@ button .icon {
   opacity: 0;
   transform: scale(1.05);
   pointer-events: none;
+  display: inline-block;
+  min-width: 6ch;
+  text-align: center;
 }
 
 .onboarding-container.hidden {
   opacity: 0;
   transform: scale(1.05);
   pointer-events: none;
+  display: inline-block;
+  min-width: 6ch;
+  text-align: center;
 }
 
 .onboarding-carousel {
@@ -2770,6 +2795,9 @@ button .icon {
   transform: translateX(50px);
   transition: opacity 0.6s ease, transform 0.6s ease;
   pointer-events: none;
+  display: inline-block;
+  min-width: 6ch;
+  text-align: center;
 }
 .onboarding-slide.active {
   opacity: 1;
