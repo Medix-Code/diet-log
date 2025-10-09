@@ -1,70 +1,166 @@
-# Diet Log
+# 🚑 Diet Log
 
-Una herramienta para registrar horarios y detalles de servicios, generar informes PDF y agilizar la gestión de dietas.
+Una aplicació PWA especialment dissenyada per gestionar i documentar dietes i serveis en una empresa de transport sanitari. Permet registrar detalls de serveis, generar informes PDF professionals amb signatures digitals, capturar dades via OCR des de la càmera, i assegurar validacions estrictes per als fluxos de treball de la companyia.
 
-## Tabla de Contenidos
+[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)  
+[![PWA](https://img.shields.io/badge/PWA-Compatible-blue.svg)]()  
+[![Tecnología: Vanilla JS](https://img.shields.io/badge/Tecnología-Vanilla%20JS-yellow.svg)]()
 
-- [Descripción](#descripción)
-- [Características](#características)
-- [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Uso](#uso)
-- [Licencia](#licencia)
-- [Contacto](#contacto)
+## 📖 Taula de Continguts
 
-## Descripción
+- [🎯 Descripció](#-descripció)
+- [✨ Característiques Clau](#-característiques-clau)
+- [🏗️ Tecnologies Utilitzades](#️-tecnologies-utilitzades)
+- [🚀 Instal·lació i Accés](#-instal·lació-i-accés)
+- [📱 Ús](#-ús)
+  - [Registrar un Servei](#registrar-un-servei)
+  - [Generar Informe PDF](#generar-informe-pdf)
+  - [ Gestionar Firmes](#gestionar-firmes)
+  - [Captura amb OCR](#captura-amb-ocr)
+- [🧪 Tests](#-tests)
+- [🤝 Contribucions](#-contribucions)
+- [📄 Llicència](#-llicència)
+- [📞 Contacte](#-contacte)
 
-**Diet Log** es una aplicación diseñada para facilitar la gestión de dietas y horarios de servicios. Permite a los usuarios registrar detalles de sus dietas, generar informes en formato PDF y mantener un control eficiente sobre sus actividades diarias. La herramienta está pensada para simplificar el seguimiento y la organización, asegurando que toda la información relevante esté siempre accesible y bien documentada.
+---
 
-## Características
+## 🎯 Descripció
 
-- **Registro de Servicios**: Permite agregar, actualizar y eliminar horarios y detalles de servicios de manera sencilla.
-- **Generación de Informes PDF**: Genera informes detallados en formato PDF que incluyen toda la información registrada.
-- **Gestión de Firmas**: Facilita la incorporación de firmas digitales para validar y confirmar los registros.
-- **Validaciones Automáticas**: Asegura la integridad de los datos mediante validaciones de formatos y coherencia temporal.
-- **Interfaz Intuitiva**: Diseñada para ser fácil de usar, con una interfaz clara y accesible para todos los usuarios.
-- **Almacenamiento Local**: Utiliza IndexedDB para el almacenamiento seguro de la información en el navegador.
+**Diet Log** és una aplicació PWA (Progressive Web App) dissenyada específicament per a una empresa de transport sanitari, simplificant la gestió diària de dietes i serveis. Permet registrar detalls de temps (entrades, sortides, pausas), generar informes PDF professionals amb signatures digitals, i capturar dades via OCR des de la càmera del mòbil. Tot emmagatzemat localment mitjançant IndexedDB, assegurant privacitat, offline-first i compliment amb processos interns de la companyia.
 
-## Tecnologías Utilizadas
+Per què triar Diet Log?
 
-- **JavaScript**: Lenguaje principal para la lógica de la aplicación.
-- **IndexedDB**: Para el almacenamiento local de datos.
-- **PDFLib**: Biblioteca utilizada para la generación de informes en PDF.
-- **HTML & CSS**: Para la estructura y el estilo de la interfaz de usuario.
+![Screenshot Desktop](assets/images/screenshot-desktop.png)  
+_Captura de pantalla de la versió desktop_
 
-## Uso
+![Screenshot Mobile](assets/images/screenshot-mobile.png)  
+_Captura de pantalla de la versió mòbil_
 
-### Registrar un Servicio
+---
 
-- Navega a la sección de servicios.
-- Haz clic en "Agregar Servicio".
-- Completa los campos requeridos, como número de servicio, origen, destino y horarios.
-- Guarda el servicio para que se registre en la base de datos.
+## ✨ Característiques Clau
+
+- **📝 Registre Flexiblot de Serveis**: Afegeix, edita o esborra serveis amb camps com número, origen/destí, dates i signatures. Suport per múltiples línies de servei en una dieta.
+- **📄 Generació Professional de PDFs**: Crea informes PDF automàtics amb totes les dades, signatures del conductor i ajudant, validats per dades temporals.
+- **🖊️ Signatures Digitals**: Dibuixa o importa signatures via canvas HTML5, emmagatzemades localment i exportades als PDFs.
+- **📸 OCR via Càmera**: Estalvia temps capturant números de servei o detalls directament des de fotos o càmera mòbil amb Tesseract.js.
+- **🌙/☀️ Tema Dark/Light**: Canvia entre modes per comoditat visual, amb record automàtic de preferències.
+- **🔒 Validacions Estrictes**: Assegura formats correctes (e.g., 9 dígit per números de servei, coherència temporal) amb missatges d'error clar.
+- **📱 PWA Offline**: Funciona sense connexió internet, amb instal·lació com app nativa al mòbil.
+- **💾 Emmagatzematge Local Seguí**: Dades en IndexedDB, sense núvols o comptes necessaris.
+- **🌐 Multilingue i Accessible**: Interfaç intuitiva amb suport per captures de pantalla, i accessibilitat bàsica (alt-texts).
+
+---
+
+## 🏗️ Tecnologies Utilitzades
+
+- **🟨 JavaScript Vanilla**: Lògica principal sense frameworks pesats per major control i rendiment.
+- **🗄️ IndexedDB**: Base de dades local del navegador per persistència offline i segura.
+- **📋 PDF-lib (1.23.7)**: Generació i manipulació de PDFs amb signatures i layouts professionals.
+- **📷 Tesseract.js (v6)**: Reconnaixement òptic de caràcters (OCR) per càmera i imatges.
+- **🎨 HTML5 & SCSS/CSS**: Estructura, estils i animacions responsives, amb minificació automàtica.
+- **🔧 Vite + Vitest**: Eines per desenvolupament ràpid, builds i tests unitaris.
+- **🔒 Servei Worker**: Cache offline i actualitzacions de recursos per PWA.
+
+---
+
+## 🚀 Instal·lació i Accés
+
+No es necessita instal·lació! Diet Log és una aplicació web pura que funciona al navegador.
+
+1. **Accedeix directament**: Visita [l'enllaç de producció](#) (o host local durant desenvolupament).
+2. **Instal·la com PWA** (opcional, per millor experiència offline):
+   - Obre el navegador mòbil o desktop.
+   - Navega a la pàgina.
+   - Fes clic a "Instal·lar App" al banner d'instal·lació o menú del navegador.
+
+Per desenvolupament local:
+
+- Clona el repositori.
+- Executa `pnpm install` (seguiu les regles globals per evitar sobreescriptures).
+- Executa `pnpm dev` per veure-ho al navegador (porta 3000 típicament).
+
+---
+
+## 📱 Ús
+
+### Registrar un Servei
+
+1. Obre l'app i ves a la pestanya "Serveis".
+2. Toca el botó "+" per afegir un nou servei.
+3. Omple els camps obligatoris:
+   - Número de servei (9 dígit).
+   - Origen i destí (màx. 35 caràcters).
+   - Horaris d'entrada/sortida (format HH:mm).
+   - Opcional: Notes addicionals o pausas.
+4. Fes clic a "Guardar". Els validating s'activen automàticament per evitar errors.
+
+**Exemple de validació:**  
+Si introdueixes un hora de sortida anterior a l'entrada, veuràs un missatge: "L'hora de sortida no pot ser anterior a l'entrada."
 
 ### Generar Informe PDF
 
-- Una vez hayas registrado todos los servicios necesarios, ve a la sección de informes.
-- Haz clic en "Generar PDF".
-- El informe se generará automáticamente y podrás descargarlo.
+1. Assegura't que al menys un servei està registrat.
+2. Ves a la pestanya "PDF" o "Informes".
+3. Selecciona el periode (diari/setmanal).
+4. Toca "Generar PDF".
+5. Descarrega el fitxer automàticament amb totes les dades i signatures.
 
-### Gestionar Firmas
+**Nota:** El PDF inclou una taula resumida amb total d'hores, signatures validades, i capçalera amb dades del vehicle/conductor.
 
-- En la sección de configuración, puedes agregar firmas digitales para el conductor y el ayudante.
-- Usa el lienzo de firma para dibujar y guardar tus firmas.
+### Gestionar Firmes
 
-### Validaciones
+1. Ves a "Configuració > Firmes".
+2. Selecciona si és firma de conductor o ajudant.
+3. Dibuixa al canvas amb el ratolí o dit (tactil).
+4. Guarda per usar en futurs PDFs.
 
-- La aplicación validará automáticamente los datos introducidos para asegurar que cumplen con el formato y la coherencia temporal requeridos.
+**Tip:** Importa firmes des d'imatges si ho prefereixes, però s'emmagatzemen localment.
 
-Por favor, asegúrate de seguir las normas de codificación y realizar pruebas antes de enviar tus contribuciones.
+### Captura amb OCR
 
-## Licencia
+1. Al formular de servei, toca l'icona càmera al camp número/detalls.
+2. Permet accés a la càmera.
+3. Fes foto al document (e.g.,.targeta de servei).
+4. L'app processa i emplena automàticament els camps.
 
-Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
-
-## Contacto
-
-Si tienes alguna pregunta, sugerencia o comentario, no dudes en contactarnos:
-
-- GitHub: user
+**Exemple:** Fotografia un número de servei imprès; l'OCR el detecta i el posa al camp, estalviant temps.
 
 ---
+
+## 🧪 Tests
+
+Executa tests amb Vitest per assegurar funcions clau:
+
+- Validacions (e.g., `validateServiceNumber()`).
+- Generació PDF.
+- OCR en entorns simulats.
+
+Exemple comanda:
+
+```bash
+pnpm test
+```
+
+Els tests usen dades fictícies (sense dades reals d'usuaris).
+
+---
+
+## 📄 Llicència
+
+Aquest projecte està sota la **Llicència MIT**, permetent ús, modificació i distribució lliure sempre que es mantingui l'autor original.
+
+Per detalls, consulta [LICENSE](./LICENSE).
+
+---
+
+## 📞 Contacte
+
+Tens preguntes o suggerències?
+
+- **GitHub**: [@Medix-Code/diet-log](https://github.com/Medix-Code/diet-log)
+- **Email**: (\***\*\*\*\*\*\*\***)
+
+---
+
+> 💡 **Nota d'ús**: Per privacitat, totes les dades s'emmagatzemen localment. No enviïs PDFs amb dades sensibles sense consentiment. Documentat amb ordagla a [privacy-policy.html](./privacy-policy.html).
