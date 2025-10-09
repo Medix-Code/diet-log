@@ -1932,6 +1932,10 @@ button {
 /* Contenidor */
 
 #about-modal .modal-content {
+  width: 95%;
+  max-width: none;
+  max-height: 85vh;
+  margin-bottom: 1rem;
   position: relative;
   top: auto;
   left: auto;
