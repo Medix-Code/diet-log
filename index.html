@@ -907,168 +907,218 @@
         <!-- A index.html, dins de #about-modal -->
         <div class="modal-content">
           <h2 id="about-title">¡Bienvenido a MisDietas!</h2>
+          <style>
+            .info-tabs {
+              display: flex;
+              justify-content: space-around;
+              margin-bottom: 1rem;
+            }
+            .info-tab {
+              flex: 1;
+              padding: 0.5rem;
+              background: transparent;
+              border: 1px solid var(--border-color);
+              font-size: 1rem;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            }
+            .info-tab.active {
+              background: var(--accent-color);
+              color: var(--text-color);
+            }
+            .info-tab:hover {
+              background: var(--primary-color);
+              color: var(--text-color);
+            }
+            .tab-content {
+              display: none;
+            }
+            .tab-content.active {
+              display: block;
+            }
+          </style>
+          <nav class="info-tabs" role="tablist">
+            <button
+              id="tab-como-funciona"
+              class="info-tab active"
+              role="tab"
+              aria-selected="true"
+            >
+              ¿Cómo funciona?
+            </button>
+            <button
+              id="tab-consejos"
+              class="info-tab"
+              role="tab"
+              aria-selected="false"
+            >
+              Consejos
+            </button>
+          </nav>
           <div class="modal-scrollable-content">
-            <p>
-              ¿Cansado de hacer fotos del AL20 para luego tener que pasarlo todo
-              a papel? Con <strong>MisDietas</strong>, di adiós al trabajo
-              doble. Registra cada servicio sobre la marcha y genera un PDF
-              profesional al momento, listo para entregar.
-            </p>
+            <div id="como-funciona-content" class="tab-content active">
+              <p>
+                ¿Cansado de hacer fotos del AL20 para luego tener que pasarlo
+                todo a papel? Con <strong>MisDietas</strong>, di adiós al
+                trabajo doble. Registra cada servicio sobre la marcha y genera
+                un PDF profesional al momento, listo para entregar.
+              </p>
 
-            <p class="about-kicker">¿Cómo funciona?</p>
-
-            <h3>1: Revisa tus datos</h3>
-            <p>
-              En la pestaña <strong>"Datos"</strong>, comprueba que la
-              <strong>Fecha</strong> y la
-              <strong>Franja Horaria</strong> automáticas son correctas.
-              Después, selecciona tu <strong>Tipo de Servicio</strong> (TSU o
-              TSNU) y completa tu
-              <strong
-                ><img
-                  loading="lazy"
-                  src="assets/icons/id_card_black.svg"
-                  alt=""
-                  class="icon-inline"
-                />Dotación</strong
-              >
-              añadiendo las
-              <strong>
-                <img
-                  src="assets/icons/signature.svg"
-                  alt=""
-                  class="icon-inline"
-                />firmas</strong
-              >.
-            </p>
-
-            <h3>2: Añade tus servicios</h3>
-            <p>
-              Ve a la pestaña <strong>"Servicios"</strong>. Rellena por completo
-              el primer panel (<strong>S1</strong>). Si tienes más servicios,
-              selecciónalos con los botones <strong>S2, S3 y S4</strong> y
-              complétalos siempre en orden.
-            </p>
-
-            <h3>3: ¡Descarga tu PDF!</h3>
-            <p>
-              Para obtener el PDF de la dieta que acabas de rellenar, haz clic
-              en el
-              <strong>menú</strong> (☰) y selecciona
-              <strong>
-                <img
-                  loading="lazy"
-                  src="assets/icons/download_blue.svg"
-                  alt=""
-                  class="icon-inline"
-                />
-                "Descargar dieta actual" </strong
-              >. ¡Se generará al momento!
-            </p>
-            <p>
-              ¿Necesitas una dieta de un día anterior? En el mismo menú, entra
-              en el
-              <strong>
-                <img
-                  loading="lazy"
-                  src="assets/icons/gear.svg"
-                  alt=""
-                  class="icon-inline"
-                />
-                "Gestor de dietas" </strong
-              >. Allí encontrarás todas las dietas que hayas guardado, listas
-              para descargar cuando quieras.
-            </p>
-
-            <h3 style="margin-top: 25px">Consejos:</h3>
-            <ul>
-              <li>
-                <strong>
-                  <img
-                    loading="lazy"
-                    src="assets/icons/no_photo.svg"
-                    alt=""
-                    class="icon-inline"
-                  />
-                  ¡Sáltate el paso de la foto!:
-                </strong>
-                En lugar de hacer fotos del AL20 para transcribir los datos más
-                tarde en MisDietas, ahórrate ese paso. Introduce la información
-                directamente en la app al finalizar cada servicio. Es más rápido
-                y la información se guarda al instante.
-              </li>
-              <li>
-                <strong>
-                  <img
-                    loading="lazy"
-                    src="assets/icons/ic_ocr.svg"
-                    alt=""
-                    class="icon-inline"
-                  />
-                  Escanear Horas (OCR):
-                </strong>
-                Si tu servicio es <strong>TSU</strong>, usa el botón
-                <strong>"Escanear"</strong> para rellenar las horas al momento
-                haciendo una foto al 'AL20' o subiendo una que ya tengas en tu
-                galería.
-              </li>
-              <li>
-                <strong>
-                  <img
+              <h3>1: Revisa tus datos</h3>
+              <p>
+                En la pestaña <strong>"Datos"</strong>, comprueba que la
+                <strong>Fecha</strong> y la
+                <strong>Franja Horaria</strong> automáticas son correctas.
+                Después, selecciona tu <strong>Tipo de Servicio</strong> (TSU o
+                TSNU) y completa tu
+                <strong
+                  ><img
                     loading="lazy"
                     src="assets/icons/id_card_black.svg"
                     alt=""
                     class="icon-inline"
-                  />
-                  Guardar y Cargar Dotación:
-                </strong>
-                Usa los botones junto al título "Dotación" para guardar los
-                datos del vehículo, conductor y ayudante. Así, podrás cargarlos
-                todos juntos la próxima vez que inicies una dieta, sin tener que
-                volver a escribirlos.
-              </li>
-              <li>
+                  />Dotación</strong
+                >
+                añadiendo las
+                <strong>
+                  <img
+                    src="assets/icons/signature.svg"
+                    alt=""
+                    class="icon-inline"
+                  />firmas</strong
+                >.
+              </p>
+
+              <h3>2: Añade tus servicios</h3>
+              <p>
+                Ve a la pestaña <strong>"Servicios"</strong>. Rellena por
+                completo el primer panel (<strong>S1</strong>). Si tienes más
+                servicios, selecciónalos con los botones
+                <strong>S2, S3 y S4</strong> y complétalos siempre en orden.
+              </p>
+
+              <h3>3: ¡Descarga tu PDF!</h3>
+              <p>
+                Para obtener el PDF de la dieta que acabas de rellenar, haz clic
+                en el
+                <strong>menú</strong> (☰) y selecciona
                 <strong>
                   <img
                     loading="lazy"
-                    src="assets/icons/ic_glass.svg"
+                    src="assets/icons/download_blue.svg"
                     alt=""
                     class="icon-inline"
                   />
-                  Añade detalles a cada servicio:
-                </strong>
-                Si ha ocurrido alguna incidencia o necesitas aclarar algo, pulsa
-                el menú de opciones
-                <img
-                  loading="lazy"
-                  src="assets/icons/ic_submenu_gray.svg"
-                  alt="Menú de opciones"
-                  class="icon-inline"
-                />
-                y selecciona
-                <img
-                  loading="lazy"
-                  src="assets/icons/ic_note_gray.svg"
-                  alt="Añadir notas"
-                  class="icon-inline"
-                />
-                <strong>Añadir Notas</strong>. Todo lo que escribas quedará
-                registrado en el PDF final.
-              </li>
-              <li>
+                  "Descargar dieta actual" </strong
+                >. ¡Se generará al momento!
+              </p>
+              <p>
+                ¿Necesitas una dieta de un día anterior? En el mismo menú, entra
+                en el
                 <strong>
                   <img
                     loading="lazy"
-                    src="assets/icons/cloud_off.svg"
+                    src="assets/icons/gear.svg"
                     alt=""
                     class="icon-inline"
                   />
-                  Funciona sin conexión:
-                </strong>
-                Toda la información se guarda de forma segura en tu dispositivo,
-                por lo que puedes usar la app aunque no tengas internet.
-              </li>
-            </ul>
+                  "Gestor de dietas" </strong
+                >. Allí encontrarás todas las dietas que hayas guardado, listas
+                para descargar cuando quieras.
+              </p>
+            </div>
+            <div id="consejos-content" class="tab-content">
+              <h3>Consejos para usar MisDietas:</h3>
+              <ul>
+                <li>
+                  <strong>
+                    <img
+                      loading="lazy"
+                      src="assets/icons/no_photo.svg"
+                      alt=""
+                      class="icon-inline"
+                    />
+                    ¡Sáltate el paso de la foto!:
+                  </strong>
+                  En lugar de hacer fotos del AL20 para transcribir los datos
+                  más tarde en MisDietas, ahórrate ese paso. Introduce la
+                  información directamente en la app al finalizar cada servicio.
+                  Es más rápido y la información se guarda al instante.
+                </li>
+                <li>
+                  <strong>
+                    <img
+                      loading="lazy"
+                      src="assets/icons/ic_ocr.svg"
+                      alt=""
+                      class="icon-inline"
+                    />
+                    Escanear Horas (OCR):
+                  </strong>
+                  Si tu servicio es <strong>TSU</strong>, usa el botón
+                  <strong>"Escanear"</strong> para rellenar las horas al momento
+                  haciendo una foto al 'AL20' o subiendo una que ya tengas en tu
+                  galería.
+                </li>
+                <li>
+                  <strong>
+                    <img
+                      loading="lazy"
+                      src="assets/icons/id_card_black.svg"
+                      alt=""
+                      class="icon-inline"
+                    />
+                    Guardar y Cargar Dotación:
+                  </strong>
+                  Usa los botones junto al título "Dotación" para guardar los
+                  datos del vehículo, conductor y ayudante. Así, podrás
+                  cargarlos todos juntos la próxima vez que inicies una dieta,
+                  sin tener que volver a escribirlos.
+                </li>
+                <li>
+                  <strong>
+                    <img
+                      loading="lazy"
+                      src="assets/icons/ic_glass.svg"
+                      alt=""
+                      class="icon-inline"
+                    />
+                    Añade detalles a cada servicio:
+                  </strong>
+                  Si ha ocurrido alguna incidencia o necesitas aclarar algo,
+                  pulsa el menú de opciones
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_submenu_gray.svg"
+                    alt="Menú de opciones"
+                    class="icon-inline"
+                  />
+                  y selecciona
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_note_gray.svg"
+                    alt="Añadir notas"
+                    class="icon-inline"
+                  />
+                  <strong>Añadir Notas</strong>. Todo lo que escribas quedará
+                  registrado en el PDF final.
+                </li>
+                <li>
+                  <strong>
+                    <img
+                      loading="lazy"
+                      src="assets/icons/cloud_off.svg"
+                      alt=""
+                      class="icon-inline"
+                    />
+                    Funciona sin conexión:
+                  </strong>
+                  Toda la información se guarda de forma segura en tu
+                  dispositivo, por lo que puedes usar la app aunque no tengas
+                  internet.
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="modal-buttons">
@@ -1170,6 +1220,31 @@
         <span class="pill-icon" aria-hidden="true"></span>
         <span class="pill-text"></span>
       </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const tabContainer = document.querySelector(".info-tabs");
+          if (tabContainer) {
+            const tabs = document.querySelectorAll(".info-tab");
+            const contents = document.querySelectorAll(".tab-content");
+            tabs.forEach((tab) => {
+              tab.addEventListener("click", () => {
+                tabs.forEach((t) => {
+                  t.classList.remove("active");
+                  t.setAttribute("aria-selected", "false");
+                });
+                contents.forEach((c) => c.classList.remove("active"));
+                tab.classList.add("active");
+                tab.setAttribute("aria-selected", "true");
+                const targetId =
+                  tab.id === "tab-como-funciona"
+                    ? "como-funciona-content"
+                    : "consejos-content";
+                document.getElementById(targetId).classList.add("active");
+              });
+            });
+          }
+        });
+      </script>
       <script type="module" src="./dist/bundle.js"></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
     </main>
