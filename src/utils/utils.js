@@ -1,32 +1,17 @@
-/**
- * @file utils.js
- * @description Funcions d'utilitat generals per a l'aplicació.
- * @module utils
- */
+// Importar constants centralitzades
+import { DOM_IDS, DIET_TYPES, CSS_CLASSES } from "../config/constants.js";
 
-// --- Constants ---
-const DOM_IDS = {
-  DATE_INPUT: "date",
-  DIET_TYPE_SELECT: "diet-type",
-  TOP_BAR: ".top-bar",
-  FOOTER: "footer",
-  EASTER_EGG_OVERLAY: ".easter-egg-overlay",
-  EASTER_EGG_ICON: ".easter-egg-icon",
-};
-const DIET_TYPES = {
-  LUNCH: "lunch",
-  DINNER: "dinner",
-};
+// --- Constants locals ---
 const DIET_TYPE_TEXT = {
   [DIET_TYPES.LUNCH]: "comida",
   [DIET_TYPES.DINNER]: "cena",
   DEFAULT: "dieta",
 };
 const EASTER_EGG_TAPS_REQUIRED = {
-  TOP_BAR: 3,
-  FOOTER: 2,
-  TIMEOUT: 1000,
-  ANIMATION_DURATION: 1000,
+  TOP_BAR: CSS_CLASSES.TOP_BAR_TAPS,
+  FOOTER: CSS_CLASSES.FOOTER_TAPS,
+  TIMEOUT: CSS_CLASSES.TIMEOUT,
+  ANIMATION_DURATION: CSS_CLASSES.ANIMATION_DURATION,
 };
 
 /**

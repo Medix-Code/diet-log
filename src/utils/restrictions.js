@@ -5,26 +5,12 @@
  */
 
 import { showToast } from "../ui/toast.js";
+import { debounce } from "./utils.js";
 
 // --- Constantes ---
-const SELECTORS = {
-  SERVICE_NUMBER_INPUT: ".service-number",
-};
+import { SELECTORS, MESSAGES, TIMEOUTS } from "../config/constants.js";
 
-const ERROR_MESSAGES = {
-  DIGITS_ONLY: "Solo se permiten dígitos (0-9) en el número de servicio.",
-};
-
-// --- Helper: Debounce para toast ---
-function debounce(fn, delay) {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
-}
-
-const showDebouncedToast = debounce(showToast, 300); // Evita spam de notificaciones.
+const showDebouncedToast = debounce(showToast, TIMEOUTS.DEBOUNCE_TOAST); // Evita spam de notificaciones.
 
 // --- Funciones Internas ---
 
@@ -74,7 +60,7 @@ export function setupServiceNumberRestrictions() {
 
       if (!/\d/.test(event.key)) {
         event.preventDefault();
-        showDebouncedToast(ERROR_MESSAGES.DIGITS_ONLY, "warning");
+        showDebouncedToast(MESSAGES.SERVICE_NUMBER_DIGITS_ONLY, "warning");
       }
     });
 
@@ -84,7 +70,7 @@ export function setupServiceNumberRestrictions() {
           (event.clipboardData || window.clipboardData)?.getData("text") || "";
         if (!isOnlyDigits(pastedData)) {
           event.preventDefault();
-          showDebouncedToast(ERROR_MESSAGES.DIGITS_ONLY, "warning");
+          showDebouncedToast(MESSAGES.SERVICE_NUMBER_DIGITS_ONLY, "warning");
         }
       } catch (error) {
         console.error("Error procesando 'paste':", error);

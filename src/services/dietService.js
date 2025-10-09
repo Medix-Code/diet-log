@@ -50,37 +50,20 @@ import {
   setSignatureAjudant,
 } from "./signatureService.js";
 
+import { debounce } from "../utils/utils.js";
+
 // --- Constants ---
-const DOM_IDS = {
-  DADES_TAB: "tab-dades",
-  SERVEIS_TAB: "tab-serveis",
-  DATE_INPUT: "date",
-  DIET_TYPE_SELECT: "diet-type",
-  VEHICLE_INPUT: "vehicle-number",
-  PERSON1_INPUT: "person1",
-  PERSON2_INPUT: "person2",
-  SERVICE_TYPE_SELECT: "service-type",
-};
+import {
+  DOM_IDS,
+  CSS_CLASSES,
+  SERVICE_CONTAINER_SELECTOR,
+  SERVICE_FIELD_SELECTORS,
+} from "../config/constants.js";
 
 // Variables de estado para controlar el guardado con mutex
 let savingPromise = Promise.resolve();
 let needsAnotherSave = false;
 let debouncedAutoSave = null;
-
-const CSS_CLASSES = {
-  ERROR_TAB: "error-tab",
-};
-
-const SERVICE_CONTAINER_SELECTOR = ".service";
-
-const SERVICE_FIELD_SELECTORS = {
-  serviceNumber: ".service-number",
-  origin: ".origin",
-  originTime: ".origin-time",
-  destination: ".destination",
-  destinationTime: ".destination-time",
-  endTime: ".end-time",
-};
 
 // --- Classe Diet ---
 export class Diet {
@@ -442,11 +425,3 @@ export function renderLastSaved() {
 setInterval(() => {
   if (lastSavedDate) renderLastSaved();
 }, 60000);
-
-// Debounce function
-function debounce(func, delay) {
-  return function (...args) {
-    clearTimeout(debouncedAutoSave);
-    debouncedAutoSave = setTimeout(() => func.apply(this, args), delay);
-  };
-}

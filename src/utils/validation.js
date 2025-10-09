@@ -364,6 +364,67 @@ export function validateDotacioTab() {
 }
 
 /**
+ * Valida consistència horària entre serveis. Comprova que les hores de finalització siguin coherents amb les d'inici.
+ * @returns {boolean} - True si les hores són consistents, false altrament.
+ * @export
+ */
+export function validateServiceTimesConsistency() {
+  let isValid = true;
+  const errorMessages = [];
+
+  const serviceElements = document.querySelectorAll(".service");
+  serviceElements.forEach((serviceEl, index) => {
+    const serviceNumber = index + 1;
+    const activeChip = serviceEl.querySelector('.chip[class*="chip-active"]');
+    const mode = activeChip ? activeChip.dataset.mode : "3.6";
+
+    const originTimeEl = serviceEl.querySelector(".origin-time");
+    const destinationTimeEl =
+      mode === "3.6" ? serviceEl.querySelector(".destination-time") : null;
+    const endTimeEl = serviceEl.querySelector(".end-time");
+
+    const originMinutes = timeToMinutes(originTimeEl?.value || "");
+    const destinationMinutes = destinationTimeEl
+      ? timeToMinutes(destinationTimeEl?.value || "")
+      : null;
+    const endMinutes = timeToMinutes(endTimeEl?.value || "");
+
+    // Validacions bàsiques
+    if (originMinutes !== NaN && endMinutes !== NaN) {
+      if (endMinutes <= originMinutes) {
+        errorMessages.push(
+          `Servicio ${serviceNumber}: La hora de finalización debe ser posterior a la hora de movilización.`
+        );
+        markError(endTimeEl);
+        addInstantErrorClearListener(endTimeEl);
+        isValid = false;
+      }
+    }
+
+    if (
+      mode === "3.6" &&
+      destinationMinutes !== null &&
+      destinationMinutes !== NaN &&
+      originMinutes !== NaN &&
+      destinationMinutes <= originMinutes
+    ) {
+      errorMessages.push(
+        `Servicio ${serviceNumber}: La hora de llegada al hospital debe ser posterior a la hora de movilización.`
+      );
+      markError(destinationTimeEl);
+      addInstantErrorClearListener(destinationTimeEl);
+      isValid = false;
+    }
+  });
+
+  if (!isValid) {
+    showToast(errorMessages.join("\n"), "error");
+  }
+
+  return isValid;
+}
+
+/**
  * Valida la longitud dels camps de text de localització (origen/destí)
  * per a tots els serveis.
  * @returns {boolean} - True si tots els camps són vàlids, false si algun excedeix la longitud.

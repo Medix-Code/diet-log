@@ -4,9 +4,16 @@
  * @module indexedDbDietRepository
  */
 
+/** @constant {string} DB_NAME - Nom de la base de dades IndexedDB */
 const DB_NAME = "DietasDB";
+
+/** @constant {number} DB_VERSION - Versió actual de la base de dades */
 const DB_VERSION = 1;
+
+/** @constant {string} STORE_NAME - Nom de l'object store per dietes */
 const STORE_NAME = "dietas";
+
+/** @constant {string} INDEX_DATE - Nom de l'índex per dates */
 const INDEX_DATE = "dateIndex";
 
 let dbInstance = null;
@@ -67,32 +74,82 @@ function waitTx(tx) {
   });
 }
 
-/*────────────────────────── CRUD ──────────────────────────*/
+/**
+ * Afegix una dieta nova a IndexedDB.
+ * Gestiona errors de quota en cas de que no hi hagi espai.
+ * @param {Diet} diet - Objecte Diet a afegir
+ * @returns {string} - ID de la dieta afegida
+ * @throws {Error} Quan falla l'operació (inclòs quota exceeded)
+ */
 export async function addDiet(diet) {
-  const tx = await getTx("readwrite");
-  wrap(tx.objectStore(STORE_NAME).add(diet), "No s'ha pogut afegir");
-  await waitTx(tx);
-  return diet.id;
+  try {
+    const tx = await getTx("readwrite");
+    wrap(tx.objectStore(STORE_NAME).add(diet), "No s'ha pogut afegir");
+    await waitTx(tx);
+    return diet.id;
+  } catch (error) {
+    if (
+      error.name === "QuotaExceededError" ||
+      error.message?.includes("Quota")
+    ) {
+      throw new Error(
+        "No hi ha espai suficient a l'emmagatzematge local. Elimina antigues dietes per alliberar espai."
+      );
+    }
+    throw error;
+  }
 }
 
+/**
+ * Actualitza una dieta existent a IndexedDB.
+ * Gestiona errors de quota en cas de que no hi hagi espai.
+ * @param {Diet} diet - Objecte Diet a actualitzar (ha de tenir id)
+ * @returns {string} - ID de la dieta actualitzada
+ * @throws {Error} Quan falla l'operació (inclòs quota exceeded)
+ */
 export async function updateDiet(diet) {
-  const tx = await getTx("readwrite");
-  wrap(tx.objectStore(STORE_NAME).put(diet), "No s'ha pogut actualitzar");
-  await waitTx(tx);
-  return diet.id;
+  try {
+    const tx = await getTx("readwrite");
+    wrap(tx.objectStore(STORE_NAME).put(diet), "No s'ha pogut actualitzar");
+    await waitTx(tx);
+    return diet.id;
+  } catch (error) {
+    if (
+      error.name === "QuotaExceededError" ||
+      error.message?.includes("Quota")
+    ) {
+      throw new Error(
+        "No hi ha espai suficient a l'emmagatzematge local. Elimina antigues dietes per alliberar espai."
+      );
+    }
+    throw error;
+  }
 }
 
+/**
+ * Obté una dieta per ID d'IndexedDB.
+ * @param {string} id - ID de la dieta a recuperar
+ * @returns {Diet|undefined} - La dieta trobada o undefined si no existeix
+ */
 export async function getDiet(id) {
   if (!id) return undefined;
   const tx = await getTx();
   return wrap(tx.objectStore(STORE_NAME).get(id), "Error obtenint dieta");
 }
 
+/**
+ * Obté totes les dietes emmagatzemades a IndexedDB.
+ * @returns {Diet[]} - Array de totes les dietes
+ */
 export async function getAllDiets() {
   const tx = await getTx();
   return wrap(tx.objectStore(STORE_NAME).getAll(), "Error llistant dietes");
 }
 
+/**
+ * Elimina una dieta d'IndexedDB per ID.
+ * @param {string} id - ID de la dieta a eliminar
+ */
 export async function deleteDietById(id) {
   if (!id) return;
   const tx = await getTx("readwrite");
@@ -100,16 +157,26 @@ export async function deleteDietById(id) {
   await waitTx(tx);
 }
 
+/**
+ * Elimina totes les dietes d'IndexedDB.
+ */
 export async function clearAllDiets() {
   const tx = await getTx("readwrite");
   wrap(tx.objectStore(STORE_NAME).clear(), "Error buidant dietes");
   await waitTx(tx);
 }
 
+/**
+ * Obre la connexió a la base de dades IndexedDB.
+ * @returns {IDBDatabase} - Instància de la base de dades
+ */
 export async function openDatabase() {
   return dbInstance ?? (dbInstance = await openInternal());
 }
 
+/**
+ * Tanca la connexió a la base de dades IndexedDB.
+ */
 export function closeDatabase() {
   dbInstance?.close();
   dbInstance = null;
