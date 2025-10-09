@@ -37,3 +37,5 @@ jobs:
           exclude_assets: ".github,README.md,.gitignore"
           cname: www.misdietas.com
           force_orphan: true
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
