@@ -1,24 +1,18 @@
-// Import core dependencies
+// Carrega les funciones bàsiques de l'app
 import { initializeApp } from "./init.js";
 import { initPwaInstall } from "./services/pwaInstallHandler.js";
 
-/**
- * Starts the main application initialization process.
- * Handles FOUC (Flash of Unstyled Content) prevention and initializes core services.
- * This function ensures the app is ready for user interaction.
- * @async
- * @throws Will log errors to console if initialization fails.
- */
+// Inicia l'aplicació principal
 async function startApp() {
   try {
-    // Fix FOUC by marking app as ready immediately
+    // Evita FOUC marcant que l'app està llesta
     document.body.classList.add("app-ready");
     document.body.classList.remove("no-js");
 
-    // Initialize base application functionality
+    // Inicialitza les coses bàsiques
     await initializeApp();
 
-    // Set up PWA installation prompts
+    // Prepara els prompts d'instal·lació PWA
     initPwaInstall();
   } catch (error) {
     console.error("Critical error during app startup:", error);
@@ -26,10 +20,7 @@ async function startApp() {
   }
 }
 
-/**
- * Initializes the app when DOM is ready.
- * Uses event listener or immediate execution based on document state.
- */
+// Espera que el DOM estigui llest per iniciar
 function initializeOnDOMReady() {
   const start = () => startApp();
 
@@ -40,10 +31,10 @@ function initializeOnDOMReady() {
   }
 }
 
-// Start the application initialization
+// Llança la inicialització de l'app
 initializeOnDOMReady();
 
-// Log app module load status (development aid)
+// Per debug, mostra quan es carrega l'app (només dev)
 if (process.env.NODE_ENV !== "production") {
-  console.log("App.js loaded, waiting for DOMContentLoaded to initialize...");
+  console.log("App.js carregat, esperant DOMContentLoaded per inicialitzar...");
 }

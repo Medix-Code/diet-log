@@ -1,8 +1,4 @@
-/**
- * @file cameraOcr.js
- * @description Gestió OCR amb càmera/galeria.
- * @module cameraOcr
- */
+// Mòdul per gestionar OCR amb càmera o galeria
 
 import { showToast } from "../ui/toast.js";
 import {
@@ -89,7 +85,7 @@ let lastPressOcr = 0;
 
 function _normalizeTime(timeStr) {
   if (!timeStr) return "";
-  // Desinfecta elimiem caràcters no-u-num;rics excepte : i -
+  // Neteja de caràcters no numèrics, mantenint : i -
   let cleaned = timeStr.replace(/[^\d:\-]/g, "");
   cleaned = cleaned.replace(/-/g, ":");
   const match = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);

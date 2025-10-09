@@ -1,28 +1,6 @@
-/**
- * @file Diet.js
- * @description Defineix l'estructura de dades per a un objecte Dieta.
- * @module Diet
- */
-
-/**
- * Representa una dieta amb totes les seves dades associades.
- * @class Diet
- */
+// Classe per representar una dieta amb les seves dades
 export class Diet {
-  /**
-   * Crea una instància de Diet.
-   * @param {object} options - Objecte amb les propietats de la dieta.
-   * @param {string} [options.id=''] - ID únic de la dieta (ex: número servei 1).
-   * @param {string} [options.date=''] - Data de la dieta en format YYYY-MM-DD.
-   * @param {('lunch'|'dinner'|string)} [options.dietType=''] - Tipus de dieta ('lunch', 'dinner', o altre).
-   * @param {string} [options.vehicleNumber=''] - Número del vehicle.
-   * @param {string} [options.person1=''] - Nom del conductor.
-   * @param {string} [options.person2=''] - Nom de l'ajudant.
-   * @param {string} [options.signatureConductor=''] - Signatura del conductor (DataURL base64).
-   * @param {string} [options.signatureAjudant=''] - Signatura de l'ajudant (DataURL base64).
-   * @param {Array<object>} [options.services=[]] - Array d'objectes de servei.
-   * @param {string} [options.timeStampDiet=new Date().toISOString()] - Timestamp ISO de quan es va desar/actualitzar.
-   */
+  // Constructor per crear una dieta
   constructor({
     id = "",
     date = "",
@@ -36,37 +14,37 @@ export class Diet {
     serviceType = "TSU",
     timeStampDiet = new Date().toISOString(),
   } = {}) {
-    /** @property {string} id - ID únic de la dieta. */
-    this.id = String(id); // Assegura que és string
+    // ID únic de la dieta
+    this.id = String(id);
 
-    /** @property {string} date - Data (YYYY-MM-DD). */
+    // Data de la dieta
     this.date = String(date);
 
-    /** @property {string} dietType - Tipus ('lunch', 'dinner', etc.). */
+    // Tipus de dieta (lunch, dinner, etc.)
     this.dietType = String(dietType);
 
-    /** @property {string} vehicleNumber - Número del vehicle. */
+    // Número del vehicle
     this.vehicleNumber = String(vehicleNumber);
 
-    /** @property {string} person1 - Nom del conductor. */
+    // Nom del conductor
     this.person1 = String(person1);
 
-    /** @property {string} person2 - Nom de l'ajudant. */
+    // Nom de l'ajudant
     this.person2 = String(person2);
 
-    /** @property {string} signatureConductor - Signatura conductor (DataURL). */
+    // Signatura del conductor
     this.signatureConductor = String(signatureConductor);
 
-    /** @property {string} signatureAjudant - Signatura ajudant (DataURL). */
+    // Signatura de l'ajudant (si cal)
     this.signatureAjudant = String(signatureAjudant);
 
-    /** @property {Array<object>} services - Array d'objectes de servei. */
-    this.services = Array.isArray(services) ? services : []; // Assegura que és array
+    // Llista de serveis relacionats
+    this.services = Array.isArray(services) ? services : [];
 
-    /** @property {string} serviceType - Nom del servei. */
+    // Tipus de servei (TSU, TSNU, etc.)
     this.serviceType = String(serviceType);
 
-    /** @property {string} timeStampDiet - Timestamp ISO. */
+    // Quan es va desar la dieta
     this.timeStampDiet = String(timeStampDiet);
   }
 }

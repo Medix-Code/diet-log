@@ -1,6 +1,6 @@
 // src/init.js
 
-// --- Importacions de Mòduls ---
+// Imports dels mòduls necessaris
 import { initOnboarding } from "./ui/onboarding.js";
 import { openDatabase } from "./db/indexedDbDietRepository.js";
 import {
@@ -31,11 +31,11 @@ import { setupNameAndVehicleInputSanitizers } from "./utils/validation.js";
 import { setupNotesSelectedService } from "./services/notesService.js";
 import { initCookieConsentService } from "./services/cookieConsentService.js";
 
-// --- Constants Específiques d'Inicialització ---
+// Constants per la inicialització
 const DONATION_LINK_ID = "openDonation";
-const LS_SERVICE_TYPE_KEY = "userSelectedServiceType"; // Clau per a localStorage
+const LS_SERVICE_TYPE_KEY = "userSelectedServiceType"; // Clau per localStorage
 
-// --- Funcions Privades d'Inicialització ---
+// Funcions internes d'inicialització
 function setupDonationLink() {
   const donationLink = document.getElementById(DONATION_LINK_ID);
   if (!donationLink) return console.warn("No s'ha trobat l'enllaç de donació.");
@@ -73,18 +73,18 @@ export async function initializeApp() {
   try {
     console.log("initializeApp() iniciant...");
 
-    // --- Inicialitzacions bàsiques i dades ---
+    // Prepara dades bàsiques
     setTodayDate();
     setDefaultDietSelect();
     await openDatabase();
 
-    // --- Inicialització de Serveis de Fons ---
+    // Llança serveis interns
     initServices();
     initSignature();
     dotacionService.init();
     initCameraOcr();
 
-    // --- Configuració de la Interfície d'Usuari (UI) ---
+    // Configura interfície d'usuari
     initOnboarding();
     setupTabs();
     setupMainButtons();
@@ -97,14 +97,14 @@ export async function initializeApp() {
     initThemeSwitcher();
     setupDonationLink();
 
-    // --- Configuració de Lògica de Formulari i Validacions ---
+    // Prepara validacions i listeners del formulari
     setupServiceNumberRestrictions();
     setupNameAndVehicleInputSanitizers();
     formService.addInputListeners();
     formService.addServiceTypeListener();
     formService.addDoneBehavior();
 
-    // Lògica per a la preferència de tipus de servei
+    // Carrega preferència de tipus de servei
     const serviceTypeSelect = document.getElementById("service-type");
     if (serviceTypeSelect) {
       const savedServiceType = localStorage.getItem(LS_SERVICE_TYPE_KEY);
@@ -117,14 +117,14 @@ export async function initializeApp() {
       updateServicePanelsForServiceType(serviceTypeSelect.value);
     }
 
-    // Captura l'estat inicial del formulari
+    // Guardo estat inicial del formulari
     formService.captureInitialFormState();
 
-    // --- Altres ---
+    // Altres coses
     easterEgg();
     initCookieConsentService();
 
-    // --- Indicador Offline ---
+    // Indicador de connexió
     setupOfflineIndicator();
 
     console.log("initializeApp() completada.");

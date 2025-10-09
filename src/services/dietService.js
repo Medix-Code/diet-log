@@ -1,8 +1,4 @@
-/**
- * @file dietService.js
- * @description Gestió de dietes amb validacions, guardat i càrrega.
- * @module dietService
- */
+// Servei per gestionar dietes: guardar, carregar, validar
 
 import { pseudoId } from "../utils/pseudoId.js";
 
@@ -60,44 +56,13 @@ import {
   SERVICE_FIELD_SELECTORS,
 } from "../config/constants.js";
 
-// Variables de estado para controlar el guardado con mutex
+// Variables per controlar el guardat amb mutex
 let savingPromise = Promise.resolve();
 let needsAnotherSave = false;
 let debouncedAutoSave = null;
 
-// --- Classe Diet ---
-export class Diet {
-  constructor({
-    id = "",
-    date = "",
-    dietType = "",
-    vehicleNumber = "",
-    person1 = "",
-    person2 = "",
-    signatureConductor = "",
-    signatureAjudant = "",
-    services = [],
-    serviceType = "TSU",
-    timeStampDiet = new Date().toISOString(),
-  } = {}) {
-    this.id = String(id);
-    this.date = String(date);
-    this.dietType = String(dietType);
-    this.vehicleNumber = String(vehicleNumber);
-    this.person1 = String(person1);
-    this.person2 = String(person2);
-    this.signatureConductor = String(signatureConductor);
-    this.signatureAjudant = String(signatureAjudant);
-    this.services = Array.isArray(services) ? services : [];
-    this.serviceType = String(serviceType);
-    this.timeStampDiet = String(timeStampDiet);
-  }
-}
-
-// dietService.js (fragment)
-
 async function buildDietObject(generalData, servicesData, dietId) {
-  /* ---------- 1. Validacions bàsiques ---------- */
+  // Validacions bàsiques
   if (!generalData || !Array.isArray(servicesData) || !dietId) {
     throw new Error("Datos incompletos para construir la dieta.");
   }
@@ -114,16 +79,16 @@ async function buildDietObject(generalData, servicesData, dietId) {
     }
   }
 
-  /* ---------- 2. Pseudonimització ---------- */
+  // Pseudonimització de l'ID
   const hashedDietId = await pseudoId(dietId);
 
-  /* ---------- 3. Timestamp ---------- */
+  // Agafar timestamp existent o nou
   const existingDiet = await getDiet(hashedDietId);
   const timeStampDiet = existingDiet
     ? existingDiet.timeStampDiet
     : new Date().toISOString();
 
-  /* ---------- 4. Construcció segura ---------- */
+  // Construir objecte seguretat
   const dietData = {
     id: hashedDietId,
     date: sanitizeText(generalData.date),
@@ -237,7 +202,7 @@ function populateFormWithDietData(diet) {
 }
 
 async function performSave(isManual) {
-  // Use promise chain to prevent race conditions
+  // Evitar races amb promise chaining
   savingPromise = savingPromise.then(async () => {
     const { generalData, servicesData } = gatherAllData();
     const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";

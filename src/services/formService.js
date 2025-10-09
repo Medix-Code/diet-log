@@ -1,12 +1,5 @@
-/**
- * @file formService.js
- * @description Gestiona l'estat del formulari, detecció de canvis i autoguardat amb feedback.
- * @module formService
- */
-
-// ────────────────────────────────────────────────────────────
-// IMPORTS
-// ────────────────────────────────────────────────────────────
+// Gestiona formularis: estats, canvis, autoguardat
+// Imports necessaris
 
 import { sanitizeText } from "../utils/validation.js";
 import {
@@ -26,9 +19,7 @@ import {
   indicateSaveError,
 } from "../ui/saveIndicator.js";
 
-// ────────────────────────────────────────────────────────────
-// CONSTANTS
-// ────────────────────────────────────────────────────────────
+// Constants bàsiques
 const SERVICE_CONTAINER_SELECTOR = ".service";
 const FORM_CONTAINER_ID = "main-content";
 
@@ -55,14 +46,12 @@ const SERVICE_FIELD_SELECTORS = {
 
 const CHIP_ACTIVE_CLASS = "chip-active";
 
-// ─ Temps i animacions
+// Temps i animacions
 const INPUT_CHANGE_DEBOUNCE_MS = 800; // Augmentat de 150ms a 800 per donar temps a escriure números llargs
 const AUTOSAVE_DELAY_MS = 1000;
 const MIN_SPINNER_VISIBLE_MS = 300;
 
-// ────────────────────────────────────────────────────────────
-// CLASSE PRINCIPAL
-// ────────────────────────────────────────────────────────────
+// Classe principal
 class FormService {
   constructor() {
     this.initialFormDataStr = "";
@@ -77,10 +66,7 @@ class FormService {
     );
   }
 
-  /**
-   * És prou complet per guardar?
-   * @returns {boolean}
-   */
+  // Comprova si el formulari està llest per guardar
   isFormReadyForSave() {
     try {
       const dateOk = !!document.getElementById(IDS.DATE)?.value.trim();
@@ -94,20 +80,14 @@ class FormService {
     }
   }
 
-  /**
-   * Hi ha canvis pendents?
-   * @returns {boolean}
-   */
+  // Comprova si hi ha canvis pendents
   hasPendingChanges() {
     return (
       JSON.stringify(this.getFormDataObject() || {}) !== this.initialFormDataStr
     );
   }
 
-  /**
-   * Construeix objecte amb dades del formulari.
-   * @returns {Object|null}
-   */
+  // Recull dades del formulari en objecte
   getFormDataObject() {
     try {
       const generalData = {
@@ -149,9 +129,7 @@ class FormService {
     }
   }
 
-  /**
-   * Guarda amb spinner i errors.
-   */
+  // Activa autoguardat amb feedback
   async triggerAutoSave() {
     if (!this.isFormReadyForSave() || !this.hasPendingChanges()) return;
 
@@ -171,18 +149,13 @@ class FormService {
     }
   }
 
-  /**
-   * Captura estat inicial.
-   */
+  // Guarda estat inicial del formulari
   captureInitialFormState() {
     this.initialFormDataStr = JSON.stringify(this.getFormDataObject() || {});
     this.handleFormChange();
   }
 
-  /**
-   * Estat del botó de guardar.
-   * @param {boolean} enabled
-   */
+  // Actualitza estat del botó guardar
   setSaveButtonState(enabled) {
     const b = document.getElementById(IDS.SAVE_BTN);
     if (!b) return;
@@ -191,9 +164,7 @@ class FormService {
     b.classList.toggle("is-disabled", !enabled);
   }
 
-  /**
-   * Maneja canvis al formulari.
-   */
+  // Gestiona canvis al formulari
   handleFormChange() {
     this.debouncedAutoSave.cancel();
 
@@ -213,16 +184,12 @@ class FormService {
     }
   }
 
-  /**
-   * Lògica de validació i autoguardat.
-   */
+  // Manejador de canvis d'input
   handleInputChange() {
     this.handleFormChange();
   }
 
-  /**
-   * Afegeix listeners d'input.
-   */
+  // Afegeix listeners per inputs i canvis
   addInputListeners() {
     const container = document.getElementById(FORM_CONTAINER_ID);
     if (!container) return;
@@ -256,9 +223,7 @@ class FormService {
     });
   }
 
-  /**
-   * Listener per tipus de servei.
-   */
+  // Listener per canvi de tipus de servei
   addServiceTypeListener() {
     const select = document.getElementById(IDS.SERVICE_TYPE);
     if (!select) return;

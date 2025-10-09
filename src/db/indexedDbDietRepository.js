@@ -1,24 +1,14 @@
-/**
- * @file indexedDbDietRepository.js
- * @description Repositori IndexedDB per a dietes.
- * @module indexedDbDietRepository
- */
+// Gestió de dietes amb IndexedDB
 
-/** @constant {string} DB_NAME - Nom de la base de dades IndexedDB */
+// Constants de la base de dades
 const DB_NAME = "DietasDB";
-
-/** @constant {number} DB_VERSION - Versió actual de la base de dades */
 const DB_VERSION = 1;
-
-/** @constant {string} STORE_NAME - Nom de l'object store per dietes */
 const STORE_NAME = "dietas";
-
-/** @constant {string} INDEX_DATE - Nom de l'índex per dates */
 const INDEX_DATE = "dateIndex";
 
 let dbInstance = null;
 
-/*──────────────────── Connexió i upgrade ────────────────────*/
+// Funcions internes per connexió
 function openInternal() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -74,13 +64,7 @@ function waitTx(tx) {
   });
 }
 
-/**
- * Afegix una dieta nova a IndexedDB.
- * Gestiona errors de quota en cas de que no hi hagi espai.
- * @param {Diet} diet - Objecte Diet a afegir
- * @returns {string} - ID de la dieta afegida
- * @throws {Error} Quan falla l'operació (inclòs quota exceeded)
- */
+// Afegeix dieta nova a IndexedDB
 export async function addDiet(diet) {
   try {
     const tx = await getTx("readwrite");
