@@ -5,6 +5,7 @@
   "main": "index.html",
   "scripts": {
     "inject-version": "node inject-version.js",
+    "release": "node release.js",
     "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --outfile=dist/bundle.js",
     "test": "vitest",
     "dev": "echo 'Serve index.html with compression'"
