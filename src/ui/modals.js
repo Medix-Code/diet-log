@@ -9,6 +9,11 @@ import { getDietDisplayInfo, capitalizeFirstLetter } from "../utils/utils.js";
 import { getAllDiets } from "../db/indexedDbDietRepository.js";
 import { downloadDietPDF } from "../services/pdfService.js";
 import { dotacionService } from "../services/dotacion.js";
+import {
+  setSwipeEnabled,
+  removeSwipeListeners,
+  addSwipeListeners,
+} from "../ui/tabs.js";
 // --- Constants ---
 const CSS_CLASSES = {
   MODAL_VISIBLE: "visible",
@@ -65,10 +70,12 @@ let confirmTitleElement = null;
 let confirmYesBtn = null;
 let confirmNoBtn = null;
 let currentConfirmResolve = null;
-let activeModalElement = null;
 let previousActiveElement = null;
 let currentOutsideClickListener = null;
 let currentEscapeKeyListener = null;
+
+// Export activeModalElement for tabs.js to check if modal is open
+export let activeModalElement = null;
 
 // --- Funcions Privades ---
 
@@ -89,7 +96,31 @@ function _openGenericModal(modalElement) {
 
   activeModalElement = modalElement;
   modalElement.style.display = "block";
+  modalElement.style.position = "fixed";
+  modalElement.style.top = "0";
+  modalElement.style.left = "0";
+  modalElement.style.width = "100%";
+  modalElement.style.height = "100vh";
+  modalElement.style.background = "rgba(0,0,0,0.5)";
   document.body.classList.add(CSS_CLASSES.MODAL_OPEN_BODY);
+
+  // Disable tab swipes while modal is open
+  removeSwipeListeners();
+  setSwipeEnabled(false);
+  document.body.style.setProperty("pointer-events", "none");
+  modalElement.style.setProperty("pointer-events", "auto");
+
+  // Prevent touches on modal background to block swipes, but allow on content
+  modalElement.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.target === modalElement) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    { passive: false }
+  );
 
   if (!currentOutsideClickListener) {
     currentOutsideClickListener = (event) => {
@@ -146,6 +177,10 @@ function _closeGenericModal() {
   );
   if (!anotherModalIsOpen) {
     document.body.classList.remove(CSS_CLASSES.MODAL_OPEN_BODY);
+    // Re-enable tab swipes when no modals are open
+    setSwipeEnabled(true);
+    addSwipeListeners();
+    document.body.style.removeProperty("pointer-events");
   }
 
   if (!isConfirmModalClosing && previousActiveElement) {

@@ -21,7 +21,7 @@ const filesToPatch = [
 ];
 
 // 3. Expresión regular para detectar números de versión (ej: "1.2.7", "2.0.1", etc.)
-const versionRegex = /(\d+)\.(\d+)\.(\d+)/g;
+const versionRegex = /(\d+(?:\.\d+)+)/g;
 
 // 4. Función para extraer la primera versión encontrada en un archivo (excluyendo CDN)
 function extractFirstVersion(content) {

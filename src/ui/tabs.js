@@ -5,6 +5,7 @@
  */
 
 import { updateExternalStylesForCurrentService } from "../services/servicesPanelManager.js";
+import { activeModalElement } from "../ui/modals.js";
 
 // --- Constants ---
 const TABS = {
@@ -32,6 +33,8 @@ let currentTab = TABS.DADES;
 let touchStartX = 0;
 let touchStartY = 0;
 let isSwipeEnabled = true;
+let swipeTouchStartHandler = null;
+let swipeTouchEndHandler = null;
 
 // --- Funcions Públiques ---
 
@@ -133,14 +136,52 @@ function _setupSwipeListeners() {
   const contentArea = document.getElementById(DOM_IDS.MAIN_CONTENT_AREA);
   if (!contentArea) return;
 
-  contentArea.addEventListener("touchstart", _handleTouchStart, {
+  swipeTouchStartHandler = _handleTouchStart;
+  swipeTouchEndHandler = _handleTouchEnd;
+
+  contentArea.addEventListener("touchstart", swipeTouchStartHandler, {
     passive: true,
   });
-  contentArea.addEventListener("touchend", _handleTouchEnd, { passive: true });
+  contentArea.addEventListener("touchend", swipeTouchEndHandler, {
+    passive: true,
+  });
+}
+
+export function removeSwipeListeners() {
+  const contentArea = document.getElementById(DOM_IDS.MAIN_CONTENT_AREA);
+  if (!contentArea || !swipeTouchStartHandler || !swipeTouchEndHandler) return;
+
+  contentArea.removeEventListener("touchstart", swipeTouchStartHandler, {
+    passive: true,
+  });
+  contentArea.removeEventListener("touchend", swipeTouchEndHandler, {
+    passive: true,
+  });
+
+  // Set to null so that re-add works
+  swipeTouchStartHandler = null;
+  swipeTouchEndHandler = null;
+}
+
+export function addSwipeListeners() {
+  const contentArea = document.getElementById(DOM_IDS.MAIN_CONTENT_AREA);
+  if (!contentArea) return;
+
+  if (!swipeTouchStartHandler) {
+    swipeTouchStartHandler = _handleTouchStart;
+    swipeTouchEndHandler = _handleTouchEnd;
+
+    contentArea.addEventListener("touchstart", swipeTouchStartHandler, {
+      passive: true,
+    });
+    contentArea.addEventListener("touchend", swipeTouchEndHandler, {
+      passive: true,
+    });
+  }
 }
 
 function _handleTouchStart(event) {
-  if (!isSwipeEnabled) return;
+  if (!isSwipeEnabled || activeModalElement) return;
   const firstTouch = event.touches[0];
   touchStartX = firstTouch.clientX;
   touchStartY = firstTouch.clientY;
