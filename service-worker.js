@@ -4,7 +4,7 @@
 // =================================================================================
 
 // Versió actual de l'app
-const VERSION = "__APP_VERSION__";
+const VERSION = "1.2.6";
 
 // Noms dels caches amb versionat
 const CACHE_NAMES = {
