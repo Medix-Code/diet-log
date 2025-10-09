@@ -354,6 +354,7 @@ export async function deleteDietHandler(id, dietDate, dietType) {
 
     showToast("Dieta eliminada", "success", 5000, {
       priority: 2,
+      queueable: false,
       undoCallback: async () => {
         await addDiet(dietBackup);
 

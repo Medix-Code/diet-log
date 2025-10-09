@@ -380,6 +380,7 @@ class DotacionService {
     updateDotacioListVisibility();
 
     showToast("Dotación eliminada.", "success", 5000, {
+      queueable: false,
       undoCallback: () => {
         this.savedDotacions.splice(dotBackup.originalIndex, 0, dotBackup);
         this.saveDotacionsToStorage();
