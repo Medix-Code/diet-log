@@ -23,9 +23,18 @@ const filesToPatch = [
 // 3. Expresión regular para detectar números de versión (ej: "1.2.7", "2.0.1", etc.)
 const versionRegex = /(\d+)\.(\d+)\.(\d+)/g;
 
-// 4. Función para extraer la primera versión encontrada en un archivo
+// 4. Función para extraer la primera versión encontrada en un archivo (excluyendo CDN)
 function extractFirstVersion(content) {
-  const match = content.match(versionRegex);
+  const lines = content.split("\n");
+  const nonCdnLines = lines.filter(
+    (line) =>
+      !line.includes("cdnjs") &&
+      !line.includes("fonts.googleapis") &&
+      !line.includes("unpkg") &&
+      !line.includes("jsdelivr")
+  );
+  const joinedContent = nonCdnLines.join("\n");
+  const match = joinedContent.match(versionRegex);
   return match ? match[0] : null;
 }
 
