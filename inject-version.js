@@ -29,7 +29,7 @@ function extractFirstVersion(content) {
   return match ? match[0] : null;
 }
 
-// 5. Recorremos cada archivo y reemplazamos cualquier versión por la nueva
+// 5. Recorremos cada archivo y reemplazamos versionesa propias (excluyendo CDN)
 filesToPatch.forEach((filePath) => {
   try {
     // Leemos el contenido del archivo
@@ -39,15 +39,33 @@ filesToPatch.forEach((filePath) => {
     const oldVersion = extractFirstVersion(content);
 
     if (oldVersion) {
-      // Reemplazamos todas las ocurrencias de la versión antigua por la nueva
-      const updatedContent = content.replace(
-        new RegExp(oldVersion, "g"),
-        appVersion
-      );
+      // Buscamos versiones en líneas relacionadas con la app (no URLs de CDN)
+      const lines = content.split("\n");
+      let updated = false;
+      const newContent = lines
+        .map((line) => {
+          // Evitar cambios en URLs de CDN que contengan versiones
+          if (
+            (line.includes("cdnjs") ||
+              line.includes("fonts.googleapis") ||
+              line.includes("unpkg") ||
+              line.includes("jsdelivr")) &&
+            line.includes(oldVersion)
+          ) {
+            // Conservar línea original para CDN
+            return line;
+          } else if (line.includes(oldVersion)) {
+            // Actualizar solo versiones de la app
+            updated = true;
+            return line.replace(new RegExp(oldVersion, "g"), appVersion);
+          }
+          return line;
+        })
+        .join("\n");
 
-      // Solo escribimos si ha habido cambios
-      if (updatedContent !== content) {
-        fs.writeFileSync(filePath, updatedContent, "utf8");
+      // Solo escribimos si ha habido cambios reales
+      if (updated) {
+        fs.writeFileSync(filePath, newContent, "utf8");
         console.log(
           `Versión actualizada: ${oldVersion} → ${appVersion} en ${filePath}`
         );
