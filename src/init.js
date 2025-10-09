@@ -1,6 +1,8 @@
 // src/init.js
 
-// Imports dels mòduls necessaris
+// Imports dels mòduls necessaris en ordre: estandard, locals, relatius
+import { DOM_IDS, LS_IDS } from "./config/constants.js";
+import * as formService from "./services/formService.js";
 import { initOnboarding } from "./ui/onboarding.js";
 import { openDatabase } from "./db/indexedDbDietRepository.js";
 import {
@@ -21,7 +23,6 @@ import { setupModalGenerics } from "./ui/modals.js";
 import { setupDatePickers, setupTimePickers } from "./ui/pickers.js";
 import { setupServiceNumberRestrictions } from "./utils/restrictions.js";
 import { initSettingsPanel } from "./ui/settingsPanel.js";
-import * as formService from "./services/formService.js";
 import { initCameraOcr } from "./services/cameraOcr.js";
 import { dotacionService } from "./services/dotacion.js";
 import { getAnonymousUserId } from "./services/userService.js";
@@ -31,13 +32,14 @@ import { setupNameAndVehicleInputSanitizers } from "./utils/validation.js";
 import { setupNotesSelectedService } from "./services/notesService.js";
 import { initCookieConsentService } from "./services/cookieConsentService.js";
 
-// Constants per la inicialització
-const DONATION_LINK_ID = "openDonation";
-const LS_SERVICE_TYPE_KEY = "userSelectedServiceType"; // Clau per localStorage
-
-// Funcions internes d'inicialització
+/**
+ * Funcions internes d'inicialització
+ */
+/**
+ * Configura l'enllaç de donació amb ID anònim de l'usuari
+ */
 function setupDonationLink() {
-  const donationLink = document.getElementById(DONATION_LINK_ID);
+  const donationLink = document.getElementById(DOM_IDS.DONATION_LINK_ID);
   if (!donationLink) return console.warn("No s'ha trobat l'enllaç de donació.");
 
   const userId = getAnonymousUserId();
@@ -51,17 +53,16 @@ function setupDonationLink() {
   }
 }
 
+/**
+ * Gestiona l'indicador d'offline, actualitzant segons navigator.onLine
+ */
 function setupOfflineIndicator() {
   const offlineIndicator = document.getElementById("offline-indicator");
   if (!offlineIndicator) return;
 
-  function updateOfflineStatus() {
-    if (!navigator.onLine) {
-      offlineIndicator.hidden = false;
-    } else {
-      offlineIndicator.hidden = true;
-    }
-  }
+  const updateOfflineStatus = () => {
+    offlineIndicator.hidden = !navigator.onLine;
+  };
 
   updateOfflineStatus();
 
@@ -107,7 +108,9 @@ export async function initializeApp() {
     // Carrega preferència de tipus de servei
     const serviceTypeSelect = document.getElementById("service-type");
     if (serviceTypeSelect) {
-      const savedServiceType = localStorage.getItem(LS_SERVICE_TYPE_KEY);
+      const savedServiceType = localStorage.getItem(
+        LS_IDS.USER_SELECTED_SERVICE_TYPE
+      );
       if (savedServiceType === "TSU" || savedServiceType === "TSNU") {
         serviceTypeSelect.value = savedServiceType;
         console.log(

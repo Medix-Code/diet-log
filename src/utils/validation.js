@@ -5,33 +5,12 @@
  */
 
 import { showToast } from "../ui/toast.js";
-
-// --- Constantes ---
-const DOM_IDS = {
-  DATE_INPUT: "date",
-  DIET_TYPE_SELECT: "diet-type",
-  SERVICE_NUMBER_PREFIX: "service-number-",
-  VEHICLE_INPUT: "vehicle-number",
-  PERSON1_INPUT: "person1",
-  PERSON2_INPUT: "person2",
-};
-
-const CSS_CLASSES = {
-  INPUT_ERROR: "input-error",
-};
-
-const VALIDATION_RULES = {
-  SERVICE_NUMBER_LENGTH: 9,
-  VEHICLE_MAX_LENGTH: 6,
-  PERSON_NAME_MAX_LENGTH: 28,
-  LOCATION_MAX_LENGTH: 35,
-  PERSON_NAME_ALLOWED_CHARS:
-    /^[a-zA-Z\s'’áéíóúàèìòùäëïöüñçÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÑÇ]+$/u,
-};
-
-const SELECTORS = {
-  PERSON_INPUT_GROUP: ".input-with-icon",
-};
+import {
+  DOM_IDS,
+  CSS_CLASSES,
+  VALIDATION_RULES,
+  SELECTORS,
+} from "../config/constants.js";
 
 // --- Funciones Internas de Ayuda ---
 
@@ -522,11 +501,6 @@ export function setupNameAndVehicleInputSanitizers() {
     }
   }
 
-  // Funciones auxiliares
-  function handlePaste(e) {
-    // Allow paste and sanitise in input event
-  }
-
   // Aplica als inputs de noms (conductor i ajudant).
   const nameInputs = [
     document.getElementById(DOM_IDS.PERSON1_INPUT),
@@ -547,12 +521,16 @@ export function setupNameAndVehicleInputSanitizers() {
     input.addEventListener("keypress", handleLocationKeypress);
   });
 
-  function handleVehicleInput(e) {
-    if (e.target.value.length > VALIDATION_RULES.VEHICLE_MAX_LENGTH) {
-      e.target.value = e.target.value.slice(
-        0,
-        VALIDATION_RULES.VEHICLE_MAX_LENGTH
-      );
-    }
+  // Aplica restricció de longitud màxima al camp vehicle
+  const vehicleInput = document.getElementById(DOM_IDS.VEHICLE_INPUT);
+  if (vehicleInput) {
+    vehicleInput.addEventListener("input", (e) => {
+      if (e.target.value.length > VALIDATION_RULES.VEHICLE_MAX_LENGTH) {
+        e.target.value = e.target.value.slice(
+          0,
+          VALIDATION_RULES.VEHICLE_MAX_LENGTH
+        );
+      }
+    });
   }
 }

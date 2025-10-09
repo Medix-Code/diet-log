@@ -1,8 +1,12 @@
-// Carrega les funciones bàsiques de l'app
+/**
+ * Carrega les funcions bàsiques de l'app
+ */
 import { initializeApp } from "./init.js";
 import { initPwaInstall } from "./services/pwaInstallHandler.js";
 
-// Inicia l'aplicació principal
+/**
+ * Inicia l'aplicació principal de manera asíncrona
+ */
 async function startApp() {
   try {
     // Evita FOUC marcant que l'app està llesta
@@ -20,14 +24,14 @@ async function startApp() {
   }
 }
 
-// Espera que el DOM estigui llest per iniciar
+/**
+ * Inicialitza l'app quan el DOM està llest, esperant DOMContentLoaded o executant immediatament
+ */
 function initializeOnDOMReady() {
-  const start = () => startApp();
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start, { once: true });
+    document.addEventListener("DOMContentLoaded", startApp, { once: true });
   } else {
-    start();
+    startApp();
   }
 }
 
