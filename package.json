@@ -1,6 +1,6 @@
 {
   "name": "diet-log",
-  "version": "1.2.6",
+  "version": "1.2.8",
   "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
   "main": "index.html",
   "scripts": {
@@ -13,7 +13,7 @@
   "author": "MisDietas",
   "license": "ISC",
   "dependencies": {
-    "pdf-lib": "1.23.7",
+    "pdf-lib": "^1.17.1",
     "tesseract.js": "^6.0.1"
   },
   "devDependencies": {

@@ -56,7 +56,7 @@ _Captura de pantalla de la versió mòbil_
 
 - **🟨 JavaScript Vanilla**: Lògica principal sense frameworks pesats per major control i rendiment.
 - **🗄️ IndexedDB**: Base de dades local del navegador per persistència offline i segura.
-- **📋 PDF-lib (1.23.7)**: Generació i manipulació de PDFs amb signatures i layouts professionals.
+- **📋 PDF-lib (^1.17.1)**: Generació i manipulació de PDFs amb signatures i layouts professionals.
 - **📷 Tesseract.js (v6)**: Reconnaixement òptic de caràcters (OCR) per càmera i imatges.
 - **🎨 HTML5 & SCSS/CSS**: Estructura, estils i animacions responsives, amb minificació automàtica.
 - **🔧 Vite + Vitest**: Eines per desenvolupament ràpid, builds i tests unitaris.
