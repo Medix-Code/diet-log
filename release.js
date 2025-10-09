@@ -30,7 +30,10 @@ try {
   console.log(`💾 Committing: ${commitMessage}`);
   execSync(`git commit -m ${commitMessage}`, { stdio: "inherit" });
 
-  // Step 5: Push to remote
+  // Step 5: Pull first to avoid rejection, then push
+  console.log("📥 Pulling latest changes...");
+  execSync("git pull origin main --rebase", { stdio: "inherit" });
+
   console.log("🚀 Pushing to origin main...");
   execSync("git push origin main", { stdio: "inherit" });
 
