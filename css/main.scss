@@ -1749,8 +1749,8 @@ button {
 }
 
 .modal-bottom-text {
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--text-color);
 }
 
@@ -2073,11 +2073,12 @@ button {
   gap: 20px;
   width: 100%;
   max-width: 100%;
-  padding: 0 0 15px 5px;
+  padding: 0 15px 15px 5px;
 
   overflow-x: hidden;
   flex-grow: 1;
   overflow-y: auto;
+  scroll-padding-right: 15px; /* Evita que elements quedin tallats pel scrollbar */
   @include custom-scrollbar-style;
   -webkit-overflow-scrolling: touch;
 }

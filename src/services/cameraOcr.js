@@ -226,17 +226,43 @@ async function _preprocessImage(blob) {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("No contexto 2D.");
 
-    // Neteja EXIF per privacitat (elimina metadades sensibles com GPS)
-    ctx.drawImage(img, 0, 0);
+    try {
+      // Neteja EXIF per privacitat (elimina metadades sensibles com GPS)
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+    } catch (drawError) {
+      // Si falla drawImage inicial, mostra missatge simple i continua
+      if (drawError.message && drawError.message.includes("detached")) {
+        throw new Error("Error al procesar la imagen. Inténtalo de nuevo.");
+      }
+      throw drawError;
+    }
+
     img.close();
 
     // Aplica filtres per millorar OCR sense preservar metadades originals
     ctx.filter = "grayscale(100%) contrast(180%) brightness(110%)";
-    ctx.drawImage(img, 0, 0);
+    try {
+      ctx.drawImage(canvas, 0, 0);
+    } catch (filterDrawError) {
+      // Fallback sense filtres si falla aplicant-los
+      console.warn("OCR: Fallback sense filtres:", filterDrawError);
+    }
 
-    return new Promise((resolve) => canvas.toBlob(resolve, IMAGE_TYPE, 1.0));
+    return new Promise((resolve) =>
+      canvas.toBlob(resolve, IMAGE_TYPE, IMAGE_QUALITY)
+    );
   } catch (error) {
-    showToast("Error al mejorar la imagen.", "error");
+    // Missatges d'error més amigables per l'usuari
+    if (error.message.includes("procesar la imagen")) {
+      showToast(error.message, "error");
+    } else if (error.message.includes("detached")) {
+      showToast(
+        "La imagen no se puede procesar. Inténtalo con otra foto.",
+        "error"
+      );
+    } else {
+      showToast("Error al procesar la imagen. Inténtalo de nuevo.", "error");
+    }
     throw error;
   }
 }
@@ -419,10 +445,16 @@ async function _handleFileChange(event) {
   let worker = null;
 
   try {
+    _updateOcrProgress(2, "Analizando imagen...");
     let imageBlob = await _resizeImage(file);
+
+    _updateOcrProgress(15, "Eliminando metadades...");
     imageBlob = await _preprocessImage(imageBlob);
 
-    _updateOcrProgress(5, "Cargando motor OCR...");
+    _updateOcrProgress(30, "Mejorando la imagen...");
+    await new Promise((resolve) => setTimeout(resolve, 100)); // Petit delay visual
+
+    _updateOcrProgress(40, "Cargando motor OCR...");
 
     // Carrega Tesseract dinàmicament sols quan s'usi
     if (!tesseractScriptLoaded) {
@@ -440,19 +472,28 @@ async function _handleFileChange(event) {
       });
     }
 
+    _updateOcrProgress(60, "Cargando modelo de idioma...");
+
     worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
       logger: (m) => {
         if (m.status === "recognizing text") {
-          const percent = Math.max(10, Math.floor(m.progress * 100));
-          _updateOcrProgress(percent, `Reconociendo texto ${percent}%...`);
+          const percent = Math.max(70, Math.floor(m.progress * 100 * 0.3 + 70));
+          _updateOcrProgress(
+            percent,
+            `Reconociendo texto ${Math.floor(m.progress * 100)}%...`
+          );
         } else if (m.status === "loading language model") {
-          _updateOcrProgress(5, "Cargando modelo de idioma...");
+          _updateOcrProgress(70, "Cargando modelo de idioma...");
         }
       },
     });
+
+    _updateOcrProgress(80, "Configurando OCR...");
+
     await worker.setParameters(TESSERACT_PARAMS);
 
-    _updateOcrProgress(10, "Reconociendo texto 10%...");
+    _updateOcrProgress(85, "Iniciando reconocimiento...");
+
     const {
       data: { text: ocrText },
     } = await worker.recognize(imageBlob);
@@ -460,7 +501,16 @@ async function _handleFileChange(event) {
 
     _processAndFillForm(ocrText);
   } catch (error) {
-    showToast(`Error de escaneo: ${error.message || "Desconocido"}`, "error");
+    // Missatges d'error simples i amigables per l'usuari
+    let userFriendlyMessage = "Error al escanear. Inténtalo de nuevo.";
+    if (error.message && error.message.includes("detached")) {
+      userFriendlyMessage =
+        "Error al procesar la imagen. Inténtalo con otra foto.";
+    } else if (error.message && error.message.includes("recognition")) {
+      userFriendlyMessage =
+        "No se pudo leer el texto. Asegúrate de que la imagen sea clara.";
+    }
+    showToast(userFriendlyMessage, "error");
     _updateOcrProgress(0, "Error en el escaneo.");
   } finally {
     if (worker) await worker.terminate();

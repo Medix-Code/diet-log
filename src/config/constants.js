@@ -198,6 +198,18 @@ export const SELECTORS = {
   SERVICE_NUMBER_INPUT: ".service-number",
 };
 
+// --- Service Field Selectors for dietService.js ---
+export const SERVICE_FIELD_SELECTORS = {
+  serviceNumber: ".service-number",
+  origin: ".origin",
+  destination: ".destination",
+  originTime: ".origin-time",
+  destinationTime: ".destination-time",
+  endTime: ".end-time",
+  mode: ".chip-active",
+  notes: "", // notes are not directly in form, handled separately
+};
+
 // --- Validation Rules ---
 export const VALIDATION_RULES = {
   SERVICE_NUMBER_LENGTH: 9,
@@ -218,6 +230,10 @@ export const TIMEOUTS = {
 // --- Service Types ---
 export const SERVICE_TYPES = ["3.6", "3.51", "3.22", "3.11"];
 export const DIET_TYPES = { LUNCH: "lunch", DINNER: "dinner" };
+
+// --- Service-specific exports for dietService.js compatibility ---
+export const SERVICE_CONTAINER_SELECTOR = SELECTORS.SERVICE_CONTAINER_SELECTOR;
+// export const SERVICE_FIELD_SELECTORS = {...}; // Already above, but for clarity
 
 // --- Messages ---
 export const MESSAGES = {
