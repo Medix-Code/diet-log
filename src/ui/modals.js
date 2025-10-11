@@ -95,20 +95,12 @@ function _openGenericModal(modalElement) {
   }
 
   activeModalElement = modalElement;
-  modalElement.style.display = "block";
-  modalElement.style.position = "fixed";
-  modalElement.style.top = "0";
-  modalElement.style.left = "0";
-  modalElement.style.width = "100%";
-  modalElement.style.height = "100vh";
-  modalElement.style.background = "rgba(0,0,0,0.5)";
+  modalElement.classList.add("is-open");
   document.body.classList.add(CSS_CLASSES.MODAL_OPEN_BODY);
 
   // Disable tab swipes while modal is open
   removeSwipeListeners();
   setSwipeEnabled(false);
-  document.body.style.setProperty("pointer-events", "none");
-  modalElement.style.setProperty("pointer-events", "auto");
 
   // Prevent touches on modal background to block swipes, but allow on content
   modalElement.addEventListener(
@@ -166,21 +158,19 @@ function _closeGenericModal() {
     currentEscapeKeyListener = null;
   }
 
-  activeModalElement.style.display = "none";
+  activeModalElement.classList.remove("is-open");
+  activeModalElement.style.display = "none"; // Keep for immediate hiding before class removal
 
   const isConfirmModalClosing = activeModalElement.id === DOM_IDS.CONFIRM_MODAL;
 
   activeModalElement = null;
 
-  const anotherModalIsOpen = document.querySelector(
-    '.modal[style*="display: block"]'
-  );
+  const anotherModalIsOpen = document.querySelector(".modal.is-open");
   if (!anotherModalIsOpen) {
     document.body.classList.remove(CSS_CLASSES.MODAL_OPEN_BODY);
     // Re-enable tab swipes when no modals are open
     setSwipeEnabled(true);
     addSwipeListeners();
-    document.body.style.removeProperty("pointer-events");
   }
 
   if (!isConfirmModalClosing && previousActiveElement) {
@@ -468,11 +458,10 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     const diff = startX - currentX;
 
     dietItem.classList.remove(CSS_CLASSES.DIET_ITEM_SWIPING);
-    dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+    dietItem.classList.add("diet-item-swiping-transform");
 
     if (diff > 50) {
-      dietItem.style.transform = "translateX(-100%)";
-      dietItem.style.opacity = "0";
+      dietItem.classList.add("swiping-reveal");
 
       setTimeout(async () => {
         dietItem.remove(); // Elimina per tancar gap
@@ -480,13 +469,16 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
         await deleteDietHandler(dietId, dietDate, dietType);
       }, 300);
     } else {
-      dietItem.style.transform = "translateX(0)";
-      dietItem.style.opacity = "1";
+      dietItem.classList.add("swiping-reset");
     }
 
     setTimeout(() => {
-      dietItem.style.transition = "";
-      dietItem.style.opacity = "";
+      dietItem.classList.remove(
+        "diet-item-swiping-transform",
+        "swiping-reveal",
+        "swiping-reset"
+      );
+      dietItem.style.transform = ""; // Clear inline style
     }, 300);
   });
 }
@@ -730,7 +722,7 @@ function updateDotacioListVisibility() {
     dotacioOptionsList.classList.add("hidden");
     noDotacioText.classList.remove("hidden");
     // Assegurem que el text és el correcte
-    noDotacioText.innerHTML = `No hay dotaciones, guarde antes: <img src="assets/icons/save_green.svg" alt="Guardar" class="save-icon" />`;
+    noDotacioText.innerHTML = `No hay dotaciones, guarde abans: <img src="assets/icons/save_green.svg" alt="Guardar" class="save-icon" />`;
   } else {
     dotacioOptionsList.classList.remove("hidden");
     noDotacioText.classList.add("hidden");
