@@ -1,47 +1,86 @@
+// =============================================================================
 // VARIABLES CSS PER TEMES (LIGHT i DARK)
+// =============================================================================
+
 :root {
+  // Colors principals
   --primary-color: #004aad;
   --secondary-color: #004aad;
   --secondary-color-hover: #0056b3;
   --text-color: #333333;
   --subtext-color: #444444;
+  --black: #000000;
+  --light-grey: #f5f5f5;
+
+  // Colors d'estat
+  --textfield-error: #ec1710;
+  --textfield-error-bg: #f5e9e9;
+  --input-border: #ced4da;
+  --border-textfield-focus: rgb(80, 80, 80);
+  --textfield-warning: #ff9f0a;
+  --textfield-warning-bg: #fff8e1;
+
+  // Colors de modals i botons
+  --bg-transp-modal: rgba(0, 0, 0, 0.6);
+  --btt-confirm: #004aad;
+  --bg-confirm: #2d71bb;
+  --bg-confirm-no: #dc3545;
+  --bg-confirm-no-hover: #e24a5a;
+  --txt-btn-confirm: #ffffff;
+  --bg-btn-confirm-about: #004aad;
+
+  // Colors de serveis
+  --service-1-bg: #e9f7ef;
+  --service-1-border: #8ddfd0;
+  --service-2-bg: #e8f4fd;
+  --service-2-border: #bad7f9;
+  --service-3-bg: #fdf0e6;
+  --service-3-border: #f0cdaa;
+  --service-4-bg: #f9e6ff;
+  --service-4-border: #e1b6f4;
+  --border-btn-service: #363333;
+
+  // Colors per accions (PDF i Cargar)
+  --color-pdf-bg: #eceffc;
+  --color-pdf-bg-hover: #dce0fa;
+  --color-pdf-text: #004aad;
+  --color-load-bg: #e9ecef;
+  --color-load-bg-hover: #dee2e6;
+  --color-load-text: #6c757d;
+  --color-close-bg: #004aad;
+  --color-close-bg-hover: #0056b3;
+  --color-close-text: #fff;
 
   // TopBar
-  --border-bottom-topbar: #f21f1f1; // Borde sota TopBar
-  --title-color: #f1f1f1; // Color del títol
+  --border-bottom-topbar: #f21f1f1;
+  --title-color: #f1f1f1;
 
   // Pestanyes (Tabs)
-  --bg-tab-active: #fefeff; // Fons de la pestanya activa
-  --bg-tab-noactive: #f3f3f3; // Fons de les pestanyes inactives
-  --txtcolor-tab-active: #333333; // Text pestanya activa
-  --txtcolor-tab-noactive: #4a4a4a; // Text pestanya inactiva
-  --bg-tab-hover: #dee2e6; // Fons en hover
-  --line-tab: #004aad; // Línia sota pestanya activa
+  --bg-tab-active: #fefeff;
+  --bg-tab-noactive: #f3f3f3;
+  --txtcolor-tab-active: #333333;
+  --txtcolor-tab-noactive: #4a4a4a;
+  --bg-tab-hover: #dee2e6;
+  --line-tab: #004aad;
 
   // TextField
-  --textfield: #fefeff; // Fons dels camps
-  --textfield-error: #ec1710; // Borde en error
-  --textfield-error-bg: #f5e9e9; // Fons en error
-  --input-border: #ced4da; // Color de borde dels camps
-  --border-textfield-focus: rgb(80, 80, 80); // Borde en focus
-  --textfield-warning: #ff9f0a; // Un taronja/ambre cridaner
-  --textfield-warning-bg: #fff8e1; // Un groc/crema molt pàl·lid per al fons
+  --textfield: #fefeff;
 
   // Group Tab Datos
-  --btt-card-bg: #004aad; // Btt I-Card
+  --btt-card-bg: #004aad;
 
   // Signature
-  --btt-signature: #f3f3f3; // Botó signature
-  --bg-signature-hover: #c9c9c9; // Fons en hover de signature
+  --btt-signature: #f3f3f3;
+  --bg-signature-hover: #c9c9c9;
 
   // Footer
-  --border-top-footer: #f1f1f1; // Borde superior footer
-  --text-color-footer: #ffffff; // Text footer
-  --bg-footer: #004aad; // Fons footer
+  --border-top-footer: #f1f1f1;
+  --text-color-footer: #ffffff;
+  --bg-footer: #004aad;
 
   // General
-  --bg-color: #fefeff; // Fons general
-  --grey-border: #ddddddea; // Gris per bordes i ombres
+  --bg-color: #fefeff;
+  --grey-border: #ddddddea;
 
   // Botons d'ajustaments
   --bgcolor-hover: #e0e0e0;
@@ -54,18 +93,6 @@
   --border-btt: #f50f0f;
   --bg-dietas: #f8f9fa;
 
-  // Modal general / Botó confirmació
-  --bg-transp-modal: rgba(0, 0, 0, 0.6);
-  --btt-confirm: #004aad;
-  --bg-confirm: #2d71bb;
-  --bg-confirm-no: #dc3545;
-  --bg-confirm-no-hover: #e24a5a;
-  --txt-btn-confirm: #ffffff;
-  --bg-btn-confirm-about: #004aad;
-
-  --black: #000000;
-  --light-grey: #f5f5f5;
-
   // PROMPT
   --prompt_box_shadow: rgba(0, 0, 0, 0.3);
 
@@ -77,25 +104,14 @@
   --toast-text-color: #ffffff;
   --toast-box-shadow: rgba(0, 0, 0, 0.15);
 
-  // Serveis
-  --service-1-bg: #e9f7ef;
-  --service-1-border: #8ddfd0;
-  --service-2-bg: #e8f4fd;
-  --service-2-border: #bad7f9;
-  --service-3-bg: #fdf0e6;
-  --service-3-border: #f0cdaa;
-  --service-4-bg: #f9e6ff;
-  --service-4-border: #e1b6f4;
-  --border-btn-service: #363333;
-
-  // Mides i transicions - Actualitzat per jerarquia visual millorada
+  // Mides i transicions
   --top-bar-height: 60px;
   --tab-height: 60px;
   --font-size-base: 15px;
   --transition-speed: 0.3s;
   --icon-size: 24px;
 
-  // Sistema d'espaiat fluid i coherent (millora jerarquia)
+  // Sistema d'espaiat fluid i coherent
   --space-xs: clamp(4px, 1vw, 8px);
   --space-sm: clamp(8px, 2vw, 16px);
   --space-md: clamp(16px, 3vw, 24px);
@@ -103,7 +119,7 @@
   --space-xl: clamp(32px, 5vw, 48px);
   --space-2xl: clamp(48px, 6vw, 64px);
 
-  // Variants de colors per jerarquia i feedback (millores 2025)
+  // Variants de colors per jerarquia i feedback
   --color-primary-variant: color-mix(in srgb, var(--primary-color) 90%, white);
   --color-primary-variant-hover: color-mix(
     in srgb,
@@ -120,110 +136,32 @@
   --color-interactive-active: rgba(74, 109, 173, 0.15);
   --color-interactive-focus: rgba(74, 109, 173, 0.2);
 
-  // Jerarquia visual clara: Primari (accions principals), Secundari (accions secundàries)
+  // Jerarquia visual clara
   --color-action-primary: var(--primary-color);
   --color-action-primary-hover: var(--secondary-color-hover);
   --color-action-secondary: var(--secondary-color);
   --color-action-secondary-hover: var(--secondary-color-hover);
 
-  // Microinteraccions sofisticades
+  // Transicions avançades
   --timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --timing-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --timing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-
-  // Per PDF (blau)
-  --color-pdf-bg: #eceffc; /* Fons blau suau */
-  --color-pdf-bg-hover: #dce0fa;
-  --color-pdf-text: #004aad; /* Text i icona blau fosc */
-
-  // Per Cargar (taronja)
-  --color-load-bg: rgb(233, 236, 239); /* Fons gris suau */
-  --color-load-bg-hover: rgb(222, 226, 230);
-  --color-load-text: rgb(73, 80, 87);
-
-  // Per botó Cerrar (consistent en ambdós modals)
-  --color-close-bg: #004aad; /* Blau fosc */
-  --color-close-bg-hover: #0056b3;
-  --color-close-text: #fff; /* Blanc per contrast */
-
-  // Per botó Cargar (gris neutre, igual en dietas i dotaciones)
-  --color-load-bg: #e9ecef; /* Gris suau */
-  --color-load-bg-hover: #dee2e6;
-  --color-load-text: #6c757d; /* Gris fosc */
 }
 
 .theme-dark {
-  // Sobre-escrivim les variables per al tema fosc
+  // Sobre-escriptura variables per tema fosc
   --primary-color: #343a40;
   --secondary-color: #1470c2;
   --secondary-color-hover: #0056b3;
   --text-color: #000000;
   --subtext-color: #000000;
+  --border-btn-service: #747474;
 
   --border-bottom-topbar: #f1f1f1;
   --title-color: #f1f1f1;
-
-  --bg-tab-active: #fefeff;
-  --bg-tab-noactive: #f3f3f3;
-  --txtcolor-tab-active: #333333;
-  --txtcolor-tab-noactive: #4a4a4a;
-  --bg-tab-hover: #dee2e6;
   --line-tab: #343a40;
-
-  --textfield: #fefeff;
-  --textfield-error: #ec1710;
-  --textfield-error-bg: #f5e9e9;
-  --input-border: #ced4da;
-  --border-textfield-focus: rgb(80, 80, 80);
-  --textfield-warning: #ff9f0a;
-  --textfield-warning-bg: #fff8e1;
-
-  --btt-signature: #f3f3f3;
-  --bg-signature-hover: #c9c9c9;
-
-  --border-top-footer: #f1f1f1;
-  --text-color-footer: #ffffff;
   --bg-footer: #343a40;
-
-  --bg-color: #fefeff;
-  --grey-border: #ddddddea;
-
-  --bgcolor-hover: #e0e0e0;
-  --bgcolor-active: #d5d5d5;
-  --bg-transp-ajustes: rgba(0, 0, 0, 0.15);
-  --border-btn-ajustes: rgba(204, 204, 204, 0.3);
-  --bg-btn-ajustes: #fefeff;
-
-  --border-btt: #f50f0f;
   --bg-dietas: #f7f7f7;
-
-  --bg-transp-modal: rgba(0, 0, 0, 0.6);
-  --btt-confirm: #004aad;
-  --bg-confirm: #2d71bb;
-  --bg-confirm-no: #dc3545;
-  --bg-confirm-no-hover: #e24a5a;
-  --txt-btn-confirm: #ffffff;
-  --bg-btn-confirm-about: #004aad;
-
-  --black: #000000;
-  --light-grey: #f5f5f5;
-
-  --prompt_box_shadow: rgba(0, 0, 0, 0.3);
-
-  --toast-success-bg: #28a745;
-  --toast-error-bg: #dc3545;
-  --toast-text-color: #ffffff;
-  --toast-box-shadow: rgba(0, 0, 0, 0.15);
-
-  --service-1-bg: #e9f7ef;
-  --service-1-border: #8ddfd0;
-  --service-2-bg: #e8f4fd;
-  --service-2-border: #bad7f9;
-  --service-3-bg: #fdf0e6;
-  --service-3-border: #f0cdaa;
-  --service-4-bg: #f9e6ff;
-  --service-4-border: #e1b6f4;
-  --border-btn-service: #747474;
 }
 
 @mixin custom-scrollbar-style {
@@ -259,7 +197,9 @@
   }
 }
 
-// ESTILS BASE & GLOBALS
+// =============================================================================
+// ESTILS BASE I GLOBALS
+// =============================================================================
 html {
   font-size: 16px;
   color-scheme: light dark;
@@ -286,6 +226,10 @@ main {
   flex: 1;
   padding-top: 100px;
 }
+
+// =============================================================================
+// LAYOUT COMPONENTS
+// =============================================================================
 
 // TOP BAR (CAPÇALERA)
 .top-bar {
@@ -708,6 +652,10 @@ button {
     color: var(--txtcolor-tab-noactive);
   }
 }
+
+// =============================================================================
+// COMPONENTS I FORMULARIS
+// =============================================================================
 
 // FORMULARIS
 .form-group {
@@ -1255,19 +1203,20 @@ button {
   --size: clamp(40px, 5vw, 50px);
   inline-size: var(--size);
   block-size: var(--size);
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px; /* 2025 modern rounding */
   font-size: 16px;
   font-weight: 700;
   line-height: 1;
   padding: 0;
   box-sizing: border-box;
-  box-shadow: 0 2px 4px var(--bg-transp-ajustes);
-  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Much more subtle shadow */
+  border: 1px solid rgba(0, 0, 0, 0.06); /* Extremely subtle border */
   color: var(--text-color);
   cursor: pointer;
-  transition: filter 0.2s ease, transform 0.2s ease;
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   will-change: transform; /* Optimització render 2025 */
 
   &.service-1 {
@@ -1285,6 +1234,7 @@ button {
 
   &:active {
     transform: scale(0.96);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); /* Slight shadow increase on press */
     /* Feedback hàptic virtual - polsació visual en prémer */
     animation: haptic-pulse 0.1s ease-out;
   }
@@ -1292,7 +1242,8 @@ button {
 
 .service-button.active-square {
   filter: none;
-  border: 1px solid var(--border-btn-service);
+  border: 1px solid rgba(0, 74, 173, 0.25); /* More subtle active border with primary color */
+  box-shadow: 0 2px 4px rgba(0, 74, 173, 0.15); /* Slight elevation shadow on active */
   transform: scale(1.05);
 }
 
@@ -2801,7 +2752,9 @@ button .icon {
   }
 }
 
-// MEDIA QUERIES RESPONSIVES
+// =============================================================================
+// RESPONSIVE DESIGN & MEDIA QUERIES
+// =============================================================================
 @media (max-width: 1024px) and (min-width: 769px) {
   .top-bar {
     height: calc(var(--top-bar-height) - 4px);

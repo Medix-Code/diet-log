@@ -1,5 +1,9 @@
 // Servei per gestionar dietes: guardar, carregar, validar
 
+// Import/export directe per compatibilitat amb tests CommonJS
+import { Diet } from "../models/diet.js";
+export { Diet };
+
 import { pseudoId } from "../utils/pseudoId.js";
 
 import { timeAgo } from "../utils/relativeTime.js";
@@ -391,3 +395,6 @@ export function renderLastSaved() {
 setInterval(() => {
   if (lastSavedDate) renderLastSaved();
 }, 60000);
+
+// --- Export de la classe Diet necessària per tests ---
+export { Diet };

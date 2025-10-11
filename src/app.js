@@ -4,6 +4,9 @@
 import { initializeApp } from "./init.js";
 import { initPwaInstall } from "./services/pwaInstallHandler.js";
 
+// Components React incrementals (2025)
+import { initReactComponents } from "./react-components.js";
+
 /**
  * Inicia l'aplicació principal de manera asíncrona
  */
@@ -18,6 +21,9 @@ async function startApp() {
 
     // Prepara els prompts d'instal·lació PWA
     initPwaInstall();
+
+    // Inicialitza components React incrementals (fallback-safe)
+    initReactComponents();
   } catch (error) {
     console.error("Critical error during app startup:", error);
     // TODO: Consider implementing user-friendly error display for production
