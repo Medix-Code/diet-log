@@ -395,6 +395,3 @@ export function renderLastSaved() {
 setInterval(() => {
   if (lastSavedDate) renderLastSaved();
 }, 60000);
-
-// --- Export de la classe Diet necessària per tests ---
-export { Diet };
