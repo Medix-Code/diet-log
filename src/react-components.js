@@ -8,6 +8,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
+// Export OCR Feedback component and hook
+export { OCRFeedback, useOCRFeedback } from "./components/OCRFeedback.js";
+
 /**
  * Component d'indicador d'estat de connectivitat PWA
  * Mostra online/offline status en temps real

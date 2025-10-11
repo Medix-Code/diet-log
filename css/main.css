@@ -3343,4 +3343,494 @@ body.app-ready #main-content {
 .connection-indicator.offline:hover {
   background: rgb(255, 87, 34);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}/* =============================================================================
+   OCR FEEDBACK COMPONENT - Modern 2025 UX
+   Glass morphism, smooth animations, and accessible design
+   ============================================================================= */
+
+/* Container & Overlay */
+.ocr-feedback-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.ocr-feedback-container {
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 74, 173, 0.3) transparent;
+}
+
+.ocr-feedback-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ocr-feedback-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ocr-feedback-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 74, 173, 0.3);
+  border-radius: 3px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .ocr-feedback-container {
+    background: rgba(30, 30, 30, 0.95);
+    color: #e0e0e0;
+  }
+}
+
+/* Image Preview */
+.ocr-image-preview {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.ocr-image-wrapper {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+}
+
+.ocr-captured-image {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+  border-radius: 16px;
+}
+
+.ocr-image-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 74, 173, 0.9);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 74, 173, 0.3);
+}
+
+.ocr-camera-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Progress Bar */
+.ocr-progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 74, 173, 0.1);
+}
+
+.ocr-progress-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(0, 74, 173, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ocr-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #004aad, #0a96e7);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ocr-progress-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shine 2s infinite;
+}
+
+@keyframes shine {
+  to {
+    left: 100%;
+  }
+}
+
+.ocr-progress-percentage {
+  font-size: 13px;
+  font-weight: 700;
+  color: #004aad;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Messages Panel - Glass Morphism */
+.ocr-messages-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 16px;
+  border: 1px solid rgba(0, 74, 173, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.ocr-messages-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ocr-ai-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #004aad;
+}
+
+.ocr-ai-pulse {
+  width: 8px;
+  height: 8px;
+  background: #4caf50;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.ocr-close-btn {
+  background: rgba(220, 53, 69, 0.1);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ocr-close-btn:hover {
+  background: rgba(220, 53, 69, 0.2);
+  transform: scale(1.1);
+}
+
+.ocr-close-icon {
+  width: 18px;
+  height: 18px;
+  color: #dc3545;
+}
+
+/* Messages List */
+.ocr-messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 74, 173, 0.2) transparent;
+}
+
+.ocr-messages-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ocr-messages-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 74, 173, 0.2);
+  border-radius: 2px;
+}
+
+/* Individual Message */
+.ocr-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.ocr-message:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateX(2px);
+}
+
+.ocr-message.info {
+  border-left: 3px solid #004aad;
+}
+
+.ocr-message.success {
+  border-left: 3px solid #4caf50;
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.ocr-message.warning {
+  border-left: 3px solid #ff9f0a;
+  background: rgba(255, 159, 10, 0.05);
+}
+
+.ocr-message.error {
+  border-left: 3px solid #dc3545;
+  background: rgba(220, 53, 69, 0.05);
+}
+
+.ocr-message-icon {
+  font-size: 16px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.ocr-message.info .ocr-message-icon {
+  color: #004aad;
+}
+
+.ocr-message.success .ocr-message-icon {
+  color: #4caf50;
+}
+
+.ocr-message.warning .ocr-message-icon {
+  color: #ff9f0a;
+}
+
+.ocr-message.error .ocr-message-icon {
+  color: #dc3545;
+}
+
+.ocr-message-text {
+  flex: 1;
+  font-weight: 500;
+  color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ocr-message-text {
+    color: #e0e0e0;
+  }
+}
+
+/* Success Ripple Effect */
+.ocr-success-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(76, 175, 80, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  to {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* Loading Dots */
+.ocr-loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 0;
+}
+
+.ocr-dot {
+  width: 8px;
+  height: 8px;
+  background: #004aad;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.ocr-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.ocr-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Completion Badge */
+.ocr-completion-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  color: white;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+}
+
+.ocr-check-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pop-in {
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ocr-feedback-overlay {
+    padding: 12px;
+  }
+
+  .ocr-feedback-container {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .ocr-captured-image {
+    max-height: 200px;
+  }
+
+  .ocr-messages-list {
+    max-height: 250px;
+  }
+
+  .ocr-message {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Styles */
+.ocr-close-btn:focus-visible {
+  outline: 2px solid #004aad;
+  outline-offset: 2px;
 }
