@@ -58,7 +58,7 @@ const OCR_PATTERNS = {
     label: "Hora movilización",
     fieldIdSuffix: "origin-time",
     // Updated regex for better accuracy
-    lineKeywordRegex: /movilizaci|ltat|desplaza/i,
+    lineKeywordRegex: /movilizaci|mobilitzat|desplaza/i,
   },
   DESTINATION_TIME: {
     id: "destinationTime",
@@ -116,7 +116,12 @@ function _openCameraModal() {
   lastPressOcr = Date.now();
 
   if (!cameraGalleryModal || !modalContentElement) return;
+
+  // Gestió de pointer-events per evitar bloquejos
   document.body.classList.add("modal-open");
+  document.body.style.setProperty("pointer-events", "none");
+  cameraGalleryModal.style.setProperty("pointer-events", "auto");
+  modalContentElement.style.setProperty("pointer-events", "auto");
 
   const currentServiceIdx = getCurrentServiceIndex();
   const currentColorClass = CSS_CLASSES.SERVICE_COLORS[currentServiceIdx] || "";
@@ -131,7 +136,15 @@ function _openCameraModal() {
 
 function _closeCameraModal() {
   if (!cameraGalleryModal) return;
+
+  // Neteja de pointer-events
   document.body.classList.remove("modal-open");
+  document.body.style.removeProperty("pointer-events");
+  cameraGalleryModal.style.removeProperty("pointer-events");
+  if (modalContentElement) {
+    modalContentElement.style.removeProperty("pointer-events");
+  }
+
   cameraGalleryModal.classList.remove(CSS_CLASSES.VISIBLE);
   setTimeout(
     () => cameraGalleryModal.classList.add(CSS_CLASSES.HIDDEN),

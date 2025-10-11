@@ -95,12 +95,20 @@ function _openGenericModal(modalElement) {
   }
 
   activeModalElement = modalElement;
-  modalElement.classList.add("is-open");
+  modalElement.style.display = "block";
+  modalElement.style.position = "fixed";
+  modalElement.style.top = "0";
+  modalElement.style.left = "0";
+  modalElement.style.width = "100%";
+  modalElement.style.height = "100vh";
+  modalElement.style.background = "rgba(0,0,0,0.5)";
   document.body.classList.add(CSS_CLASSES.MODAL_OPEN_BODY);
 
   // Disable tab swipes while modal is open
   removeSwipeListeners();
   setSwipeEnabled(false);
+  document.body.style.setProperty("pointer-events", "none");
+  modalElement.style.setProperty("pointer-events", "auto");
 
   // Prevent touches on modal background to block swipes, but allow on content
   modalElement.addEventListener(
@@ -158,19 +166,21 @@ function _closeGenericModal() {
     currentEscapeKeyListener = null;
   }
 
-  activeModalElement.classList.remove("is-open");
-  activeModalElement.style.display = "none"; // Keep for immediate hiding before class removal
+  activeModalElement.style.display = "none";
 
   const isConfirmModalClosing = activeModalElement.id === DOM_IDS.CONFIRM_MODAL;
 
   activeModalElement = null;
 
-  const anotherModalIsOpen = document.querySelector(".modal.is-open");
+  const anotherModalIsOpen = document.querySelector(
+    '.modal[style*="display: block"]'
+  );
   if (!anotherModalIsOpen) {
     document.body.classList.remove(CSS_CLASSES.MODAL_OPEN_BODY);
     // Re-enable tab swipes when no modals are open
     setSwipeEnabled(true);
     addSwipeListeners();
+    document.body.style.removeProperty("pointer-events");
   }
 
   if (!isConfirmModalClosing && previousActiveElement) {
@@ -458,10 +468,11 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     const diff = startX - currentX;
 
     dietItem.classList.remove(CSS_CLASSES.DIET_ITEM_SWIPING);
-    dietItem.classList.add("diet-item-swiping-transform");
+    dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
 
     if (diff > 50) {
-      dietItem.classList.add("swiping-reveal");
+      dietItem.style.transform = "translateX(-100%)";
+      dietItem.style.opacity = "0";
 
       setTimeout(async () => {
         dietItem.remove(); // Elimina per tancar gap
@@ -469,16 +480,13 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
         await deleteDietHandler(dietId, dietDate, dietType);
       }, 300);
     } else {
-      dietItem.classList.add("swiping-reset");
+      dietItem.style.transform = "translateX(0)";
+      dietItem.style.opacity = "1";
     }
 
     setTimeout(() => {
-      dietItem.classList.remove(
-        "diet-item-swiping-transform",
-        "swiping-reveal",
-        "swiping-reset"
-      );
-      dietItem.style.transform = ""; // Clear inline style
+      dietItem.style.transition = "";
+      dietItem.style.opacity = "";
     }, 300);
   });
 }

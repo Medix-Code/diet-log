@@ -112,6 +112,11 @@ class FormService {
       ).map((panel, index) => {
         const s = {};
         for (const [k, sel] of Object.entries(SERVICE_FIELD_SELECTORS)) {
+          // Salta selectors buits (com 'notes' que es gestiona per separat)
+          if (!sel) {
+            s[k] = "";
+            continue;
+          }
           s[k] = sanitizeText(panel.querySelector(sel)?.value);
         }
         const activeChip = panel.querySelector(`.chip.${CHIP_ACTIVE_CLASS}`);

@@ -181,6 +181,9 @@ function populateFormWithDietData(diet) {
     if (!element) return;
 
     Object.entries(SERVICE_FIELD_SELECTORS).forEach(([field, selector]) => {
+      // Salta selectors buits (com 'notes' que es gestiona per separat)
+      if (!selector) return;
+
       const input = element.querySelector(selector);
       if (input) input.value = serviceData[field] || "";
     });
@@ -196,6 +199,9 @@ function populateFormWithDietData(diet) {
     const element = serviceElements[i];
     if (!element) continue;
     Object.values(SERVICE_FIELD_SELECTORS).forEach((selector) => {
+      // Salta selectors buits
+      if (!selector) return;
+
       const input = element.querySelector(selector);
       if (input) input.value = "";
     });

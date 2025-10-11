@@ -166,7 +166,9 @@ class DotacionService {
   openDotacioModal() {
     if (!this.dotacioModalElement) return;
     this.dotacioModalElement.style.display = "block";
+    this.dotacioModalElement.style.pointerEvents = "auto";
     document.body.classList.add(CSS_CLASSES.MODAL_OPEN);
+    document.body.style.setProperty("pointer-events", "none");
     this.displayDotacioOptions();
   }
 
@@ -176,7 +178,9 @@ class DotacionService {
   closeDotacioModal() {
     if (!this.dotacioModalElement) return;
     this.dotacioModalElement.style.display = "none";
+    this.dotacioModalElement.style.pointerEvents = "";
     document.body.classList.remove(CSS_CLASSES.MODAL_OPEN);
+    document.body.style.removeProperty("pointer-events");
     document.getElementById(DOM_IDS.OPEN_MODAL_BTN)?.focus();
   }
 
