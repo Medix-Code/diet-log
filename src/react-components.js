@@ -40,56 +40,32 @@ function ConnectionIndicator() {
 
   if (!show) return null;
 
-  const statusStyle = {
-    position: "fixed",
-    top: "50px",
-    right: "20px",
-    padding: isOnline ? "4px 8px" : "8px 12px",
-    borderRadius: "20px",
-    fontSize: isOnline ? "10px" : "12px",
-    fontWeight: "bold",
-    backdropFilter: "blur(10px)",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-    zIndex: 1000,
-    transition: "all 0.3s ease",
-    cursor: isOnline ? "none" : "pointer",
-  };
-
-  if (isOnline) {
-    return (
-      <div
-        style={{
-          ...statusStyle,
-          background: "rgba(76,175,80,0.95)",
-          color: "white",
-        }}
-      >
-        🟢 Online
-      </div>
-    );
-  }
-
   return (
-    <div
-      style={{
-        ...statusStyle,
-        background: "rgba(255,87,34,0.95)",
-        color: "white",
-      }}
-      onClick={() => {
-        // Opcional: Show helpful tips when clicked
-        if (
-          confirm(
-            "En modo offline algunas funciones pueden estar limitadas. ¿Quieres recargar la app?"
-          )
-        ) {
-          window.location.reload();
+    <>
+      <div
+        className={`connection-indicator ${isOnline ? "online" : "offline"}`}
+        onClick={
+          !isOnline
+            ? () => {
+                if (
+                  confirm(
+                    "En modo offline algunas funciones pueden estar limitadas. ¿Quieres recargar la app?"
+                  )
+                ) {
+                  window.location.reload();
+                }
+              }
+            : undefined
         }
-      }}
-      title="Haz clic para recargar (algunas funciones requieren conexión)"
-    >
-      ⚠️ Offline - Funciones limitadas
-    </div>
+        title={
+          !isOnline
+            ? "Haz clic para recargar (algunas funciones requieren conexión)"
+            : undefined
+        }
+      >
+        {isOnline ? "🟢 Online" : "⚠️ Offline - Funciones limitadas"}
+      </div>
+    </>
   );
 }
 
