@@ -77,10 +77,19 @@
     var(--primary-color) 70%,
     white
   );
+  --color-secondary-variant: color-mix(
+    in srgb,
+    var(--secondary-color) 90%,
+    white
+  );
   --color-text-on-primary: #ffffff;
   --color-interactive-hover: rgba(74, 109, 173, 0.1);
   --color-interactive-active: rgba(74, 109, 173, 0.15);
   --color-interactive-focus: rgba(74, 109, 173, 0.2);
+  --color-action-primary: var(--primary-color);
+  --color-action-primary-hover: var(--secondary-color-hover);
+  --color-action-secondary: var(--secondary-color);
+  --color-action-secondary-hover: var(--secondary-color-hover);
   --timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --timing-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --timing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
@@ -1082,6 +1091,7 @@ button .fa {
   color: var(--text-color);
   cursor: pointer;
   transition: filter 0.2s ease, transform 0.2s ease;
+  will-change: transform; /* Optimització render 2025 */
 }
 .service-button.service-1 {
   background: var(--service-1-border);
@@ -1097,6 +1107,8 @@ button .fa {
 }
 .service-button:active {
   transform: scale(0.96);
+  /* Feedback hàptic virtual - polsació visual en prémer */
+  animation: haptic-pulse 0.1s ease-out;
 }
 
 .service-button.active-square {
@@ -1109,6 +1121,18 @@ button .fa {
   opacity: 0.5;
 }
 
+/* Haptic feedback visual - simulació per mòbils sense vibrator */
+@keyframes haptic-pulse {
+  0% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(0.96);
+  }
+}
 .service {
   padding-top: clamp(10px, 2vw, 20px);
   padding-bottom: clamp(15px, 3vw, 30px);
