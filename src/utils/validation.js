@@ -369,7 +369,7 @@ export function validateServiceTimesConsistency() {
     const endMinutes = timeToMinutes(endTimeEl?.value || "");
 
     // Validacions bàsiques
-    if (originMinutes !== NaN && endMinutes !== NaN) {
+    if (!Number.isNaN(originMinutes) && !Number.isNaN(endMinutes)) {
       if (endMinutes <= originMinutes) {
         errorMessages.push(
           `Servicio ${serviceNumber}: La hora de finalización debe ser posterior a la hora de movilización.`
@@ -383,8 +383,8 @@ export function validateServiceTimesConsistency() {
     if (
       mode === "3.6" &&
       destinationMinutes !== null &&
-      destinationMinutes !== NaN &&
-      originMinutes !== NaN &&
+      !Number.isNaN(destinationMinutes) &&
+      !Number.isNaN(originMinutes) &&
       destinationMinutes <= originMinutes
     ) {
       errorMessages.push(
