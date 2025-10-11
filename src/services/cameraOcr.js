@@ -22,11 +22,16 @@ const MODAL_TRANSITION_DURATION = 300;
 const PROGRESS_HIDE_DELAY = 1000;
 const OCR_SEARCH_WINDOW = 200;
 
+// Paràmetres d'inicialització (només es poden passar durant la creació del worker)
+const INIT_ONLY_PARAMS = {
+  load_system_dawg: "0",
+  load_freq_dawg: "0",
+};
+
+// Paràmetres runtime (es poden modificar amb setParameters)
 const TESSERACT_PARAMS = {
   tessedit_char_whitelist: TESSERACT_CHAR_WHITELIST,
   tessedit_pageseg_mode: 6,
-  load_system_dawg: false,
-  load_freq_dawg: false,
 };
 
 const DOM_SELECTORS = {
@@ -82,6 +87,7 @@ let isInitialized = false;
 let tesseractScriptLoaded = false;
 let lastPressOcr = 0;
 let ocrFeedback = null; // Nou gestor de feedback OCR
+let currentProgress = 0; // Seguiment del progrés actual per evitar que baixi
 
 // --- Funcions ---
 
@@ -160,17 +166,34 @@ function _getActiveServicePanelElement() {
   return document.querySelector(".service:not(.hidden)");
 }
 
+// Genera el text de la llista de camps
+function _generateFieldsListText(fieldsStatus) {
+  const fields = Object.entries(fieldsStatus).filter(([_, info]) => !info.skip);
+  const detected = fields.filter(([_, info]) => info.detected).length;
+  const total = fields.length;
+  return `${detected}/${total} campos detectados`;
+}
+
 // Funcions de progrés OCR - ara utilitzen el nou sistema React
 function _updateOcrProgress(percent, statusText) {
   if (!ocrFeedback) {
     ocrFeedback = getOCRFeedbackManager();
   }
-  ocrFeedback.update(percent, statusText);
+  // Assegurem que el progrés només pugi, mai baixi
+  if (percent > currentProgress) {
+    currentProgress = percent;
+  }
+  const normalizedStatus =
+    currentProgress >= 100
+      ? statusText || "Texto reconocido correctamente"
+      : "Reconociendo texto...";
+  ocrFeedback.update(currentProgress, normalizedStatus);
 }
 
 function _hideOcrProgress() {
   // El nou sistema es tanca automàticament
   // No cal fer res aquí
+  currentProgress = 0; // Reset per a la propera vegada
 }
 
 async function _resizeImage(file) {
@@ -266,16 +289,38 @@ function _safeSetFieldValue(fieldId, value, fieldName) {
   }
 }
 
-function _processAndFillForm(ocrText) {
+function _processAndFillForm(ocrText, updateFieldsCallback = null) {
   if (!ocrText || !ocrText.trim()) {
     showToast("No se reconoció texto.", "warning");
-    return;
+    return false;
   }
 
   const currentServiceIndex = getCurrentServiceIndex();
   const currentMode = getModeForService(currentServiceIndex) || "3.6";
   const suffix = `-${currentServiceIndex + 1}`;
-  let filledFields = {};
+  const filledFields = {};
+
+  // Inicialitza l'estat de tots els camps
+  const allFieldsStatus = {
+    originTime: {
+      label: "Hora activación",
+      detected: false,
+    },
+    destinationTime: {
+      label: "Hora destino",
+      detected: false,
+      skip: currentMode === "3.11" || currentMode === "3.22",
+    },
+    endTime: {
+      label: "Hora final",
+      detected: false,
+    },
+  };
+
+  // Mostra l'estat inicial si hi ha callback
+  if (updateFieldsCallback) {
+    updateFieldsCallback(allFieldsStatus);
+  }
 
   const lines = ocrText.split("\n");
   const processedText = ocrText.toLowerCase().replace(/ +/g, " ");
@@ -314,6 +359,15 @@ function _processAndFillForm(ocrText) {
         const fieldId = `${pattern.fieldIdSuffix}${suffix}`;
         _safeSetFieldValue(fieldId, extractedValue, pattern.label);
         filledFields[pattern.id] = pattern;
+
+        // Actualitza l'estat del camp detectat
+        if (allFieldsStatus[pattern.id]) {
+          allFieldsStatus[pattern.id].detected = true;
+          // Notifica el canvi si hi ha callback
+          if (updateFieldsCallback) {
+            updateFieldsCallback(allFieldsStatus);
+          }
+        }
       }
     }
   });
@@ -342,14 +396,14 @@ function _processAndFillForm(ocrText) {
   }
 
   const filledCount = Object.keys(filledFields).length;
-  if (filledCount > 0) {
-    const filledLabels = Object.values(filledFields).map(
-      (pattern) => pattern.label
-    );
-    showToast(`Campos actualizados: ${filledLabels.join(", ")}.`, "success");
-  } else {
-    showToast("No se encontraron horas relevantes.", "info");
-  }
+
+  // Retorna informació detallada sobre els camps detectats
+  return {
+    hasData: filledCount > 0,
+    count: filledCount,
+    fields: filledFields,
+    allFieldsStatus,
+  };
 }
 
 export function initCameraOcr() {
@@ -425,31 +479,35 @@ async function _handleFileChange(event) {
   isProcessing = true;
   setControlsDisabled(true);
 
+  // Reinicia el seguiment de progrés
+  currentProgress = 0;
+
   // Inicia el nou sistema de feedback OCR amb la imatge
   if (!ocrFeedback) {
     ocrFeedback = getOCRFeedbackManager();
   }
   ocrFeedback.start(file);
-  _updateOcrProgress(0, "Preparant imatge...");
+  _updateOcrProgress(0);
 
   _scrollToBottom();
 
   let worker = null;
 
   try {
-    _updateOcrProgress(2, "Analitzant imatge...");
+    _updateOcrProgress(5);
     let imageBlob = await _resizeImage(file);
 
-    _updateOcrProgress(15, "Eliminant metadades...");
+    _updateOcrProgress(20);
     imageBlob = await _preprocessImage(imageBlob);
 
-    _updateOcrProgress(30, "Millorant la imatge...");
+    _updateOcrProgress(35);
     await new Promise((resolve) => setTimeout(resolve, 100)); // Petit delay visual
 
-    _updateOcrProgress(40, "Carregant motor OCR...");
+    _updateOcrProgress(45);
 
     // Carrega Tesseract dinàmicament sols quan s'usi
     if (!tesseractScriptLoaded) {
+      _updateOcrProgress(50); // Indica que està carregant la llibreria
       await new Promise((resolve, reject) => {
         const script = document.createElement("script");
         applyCspNonce(script);
@@ -464,45 +522,59 @@ async function _handleFileChange(event) {
       });
     }
 
-    _updateOcrProgress(60, "Carregant model d'idioma...");
+    _updateOcrProgress(60);
 
     worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
       logger: (m) => {
         if (m.status === "recognizing text") {
-          const percent = Math.max(70, Math.floor(m.progress * 100 * 0.3 + 70));
-          _updateOcrProgress(
-            percent,
-            `Reconeixent text ${Math.floor(m.progress * 100)}%...`
+          // Progressió més suau: de 85% a 100%
+          const percent = Math.max(
+            85,
+            Math.floor(m.progress * 100 * 0.15 + 85)
           );
+          _updateOcrProgress(percent);
         } else if (m.status === "loading language model") {
-          _updateOcrProgress(70, "Carregant model d'idioma...");
+          _updateOcrProgress(65);
         }
       },
+      init: INIT_ONLY_PARAMS, // Paràmetres d'inicialització (load_system_dawg, load_freq_dawg)
     });
 
-    _updateOcrProgress(80, "Configurant OCR...");
+    _updateOcrProgress(75);
 
     await worker.setParameters(TESSERACT_PARAMS);
 
-    _updateOcrProgress(85, "Iniciant reconeixement...");
+    _updateOcrProgress(80);
 
     const {
       data: { text: ocrText },
     } = await worker.recognize(imageBlob);
 
-    // Marca el procés com a completat amb èxit
-    ocrFeedback.complete("✓ Text reconegut correctament");
+    // Funció callback per actualitzar els camps en temps real
+    const updateFieldsCallback = (fieldsStatus) => {
+      const statusMessage = _generateFieldsListText(fieldsStatus);
+      ocrFeedback.update(95, statusMessage);
+    };
 
-    _processAndFillForm(ocrText);
+    const ocrResult = _processAndFillForm(ocrText, updateFieldsCallback);
+
+    // Missatge final segons els camps detectats
+    if (ocrResult.hasData) {
+      const message = _generateFieldsListText(ocrResult.allFieldsStatus);
+      ocrFeedback.complete(message, "done");
+    } else {
+      const message = _generateFieldsListText(ocrResult.allFieldsStatus);
+      ocrFeedback.complete(message, "warning");
+    }
   } catch (error) {
     // Missatges d'error simples i amigables per l'usuari
-    let userFriendlyMessage = "Error en escanejar. Torna-ho a provar.";
+    let userFriendlyMessage = "Error al escanear. Vuelve a intentarlo.";
     if (error.message && error.message.includes("detached")) {
       userFriendlyMessage =
-        "Error en processar la imatge. Prova amb una altra foto.";
+        "Error al procesar la imagen. Prueba con otra foto.";
     } else if (error.message && error.message.includes("recognition")) {
       userFriendlyMessage =
-        "No s'ha pogut llegir el text. Assegura't que la imatge sigui clara.";
+        "No se pudo leer el texto. Asegúrate de que la imagen sea clara.";
     }
     showToast(userFriendlyMessage, "error");
 

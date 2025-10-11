@@ -53,23 +53,6 @@ function setupDonationLink() {
   }
 }
 
-/**
- * Gestiona l'indicador d'offline, actualitzant segons navigator.onLine
- */
-function setupOfflineIndicator() {
-  const offlineIndicator = document.getElementById("offline-indicator");
-  if (!offlineIndicator) return;
-
-  const updateOfflineStatus = () => {
-    offlineIndicator.hidden = !navigator.onLine;
-  };
-
-  updateOfflineStatus();
-
-  window.addEventListener("online", updateOfflineStatus);
-  window.addEventListener("offline", updateOfflineStatus);
-}
-
 export async function initializeApp() {
   try {
     console.log("initializeApp() iniciant...");
@@ -126,9 +109,6 @@ export async function initializeApp() {
     // Altres coses
     easterEgg();
     initCookieConsentService();
-
-    // Indicador de connexió
-    setupOfflineIndicator();
 
     console.log("initializeApp() completada.");
   } catch (error) {

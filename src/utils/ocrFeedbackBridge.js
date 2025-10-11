@@ -21,6 +21,25 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { OCRFeedback } from "../components/OCRFeedback.js";
 
+const DEFAULT_PROCESSING_TEXT = "Reconociendo texto";
+const STATUS_FALLBACKS = {
+  done: "✓ Texto reconocido correctamente",
+  warning: "Revisa la información detectada",
+  error: "Error al escanear",
+};
+
+const sanitizeStatusMessage = (text, fallback = DEFAULT_PROCESSING_TEXT) => {
+  if (!text) return fallback;
+  const withoutPercent = text.replace(/\d{1,3}%/g, "");
+  const withoutDots = withoutPercent.replace(/\.\.+$/g, "");
+  // Preserva \n però normalitza espais en blanc dins de cada línia
+  const normalized = withoutDots
+    .split("\n")
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .join("\n");
+  return normalized || fallback;
+};
+
 /**
  * Crea un gestor de feedback OCR que fa de pont entre JavaScript vanilla i React
  * @param {string} containerId - ID de l'element contenidor
@@ -40,8 +59,9 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
   let state = {
     imageUrl: null,
     isProcessing: false,
-    messages: [],
     progress: 0,
+    status: "idle",
+    statusText: DEFAULT_PROCESSING_TEXT,
   };
 
   /**
@@ -56,8 +76,9 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
       <OCRFeedback
         imageUrl={state.imageUrl}
         isProcessing={state.isProcessing}
-        messages={state.messages}
         progress={state.progress}
+        status={state.status}
+        statusText={state.statusText}
         onClose={() => manager.reset()}
       />
     );
@@ -72,14 +93,18 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
      * @param {File|Blob|string} imageFile - Fitxer d'imatge o URL
      */
     start(imageFile) {
+      if (state.imageUrl && state.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(state.imageUrl);
+      }
       if (imageFile instanceof File || imageFile instanceof Blob) {
         state.imageUrl = URL.createObjectURL(imageFile);
       } else if (typeof imageFile === "string") {
         state.imageUrl = imageFile;
       }
       state.isProcessing = true;
-      state.messages = [];
       state.progress = 0;
+      state.status = "processing";
+      state.statusText = DEFAULT_PROCESSING_TEXT;
       render();
     },
 
@@ -91,15 +116,25 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
      */
     update(progress, message = null, type = "info") {
       state.progress = Math.min(100, Math.max(0, progress));
-      if (message) {
-        state.messages = [
-          ...state.messages,
-          {
-            text: message,
-            type: type,
-            timestamp: Date.now(),
-          },
-        ];
+      const sanitizedMessage =
+        message !== null ? sanitizeStatusMessage(message) : null;
+
+      if (type === "error") {
+        state.status = "error";
+        state.statusText = sanitizedMessage || "Error al escanear";
+        state.isProcessing = false;
+      } else if (type === "warning") {
+        state.status = "warning";
+        state.statusText = sanitizedMessage || state.statusText;
+        state.isProcessing = true;
+      } else {
+        state.status = "processing";
+        if (sanitizedMessage) {
+          state.statusText = sanitizedMessage;
+        } else if (!state.statusText) {
+          state.statusText = DEFAULT_PROCESSING_TEXT;
+        }
+        state.isProcessing = true;
       }
       render();
     },
@@ -110,14 +145,17 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
      * @param {string} type - Tipus de missatge ('info', 'success', 'warning', 'error')
      */
     addMessage(message, type = "info") {
-      state.messages = [
-        ...state.messages,
-        {
-          text: message,
-          type: type,
-          timestamp: Date.now(),
-        },
-      ];
+      if (type === "error") {
+        manager.error(message);
+        return;
+      }
+      if (type === "success") {
+        manager.complete(message || STATUS_FALLBACKS.done, "done");
+        return;
+      }
+      state.status = type === "warning" ? "warning" : "processing";
+      state.statusText = sanitizeStatusMessage(message);
+      state.isProcessing = true;
       render();
     },
 
@@ -125,23 +163,22 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
      * Marca el procés OCR com a completat
      * @param {string} message - Missatge d'èxit
      */
-    complete(message = "Procés completat") {
+    complete(message = null, status = "done") {
       state.progress = 100;
-      state.messages = [
-        ...state.messages,
-        {
-          text: message,
-          type: "success",
-          timestamp: Date.now(),
-        },
-      ];
+      const normalizedStatus = ["done", "warning", "error"].includes(status)
+        ? status
+        : "done";
+      state.status = normalizedStatus;
+      const fallbackMessage =
+        STATUS_FALLBACKS[normalizedStatus] || STATUS_FALLBACKS.done;
+      state.statusText = sanitizeStatusMessage(message, fallbackMessage);
       state.isProcessing = false;
       render();
 
-      // Tanca automàticament després de 3 segons
+      // Tanca automàticament després de 2.5 segons
       setTimeout(() => {
         manager.reset();
-      }, 3000);
+      }, 2500);
     },
 
     /**
@@ -149,14 +186,8 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
      * @param {string} message - Missatge d'error
      */
     error(message = "Error en el procés") {
-      state.messages = [
-        ...state.messages,
-        {
-          text: message,
-          type: "error",
-          timestamp: Date.now(),
-        },
-      ];
+      state.status = "error";
+      state.statusText = sanitizeStatusMessage(message, "Error al escanear");
       state.isProcessing = false;
       render();
     },
@@ -166,14 +197,9 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
      * @param {string} message - Missatge d'advertència
      */
     warning(message) {
-      state.messages = [
-        ...state.messages,
-        {
-          text: message,
-          type: "warning",
-          timestamp: Date.now(),
-        },
-      ];
+      state.status = "warning";
+      state.statusText = sanitizeStatusMessage(message, "Revisa la informació");
+      state.isProcessing = true;
       render();
     },
 
@@ -189,8 +215,9 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
       state = {
         imageUrl: null,
         isProcessing: false,
-        messages: [],
         progress: 0,
+        status: "idle",
+        statusText: DEFAULT_PROCESSING_TEXT,
       };
 
       render();

@@ -19,15 +19,16 @@ import React, { useState, useEffect, useRef } from "react";
 export function OCRFeedback({
   imageUrl = null,
   isProcessing = false,
-  messages = [],
   progress = 0,
+  status = "idle",
+  statusText = "Reconociendo texto",
   onClose = null,
 }) {
-  const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   const [animatedProgress, setAnimatedProgress] = useState(0);
+  const [dots, setDots] = useState("");
 
-  // Animació suau del progrés
+  // Suavitza els canvis de progrés per evitar salts sobtats
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimatedProgress(progress);
@@ -35,17 +36,33 @@ export function OCRFeedback({
     return () => clearTimeout(timer);
   }, [progress]);
 
-  // Auto-scroll al darrer missatge
+  // Animació de punts suspensius mentre es processa
   useEffect(() => {
-    if (messages.length > 0 && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
+    if (status !== "processing") {
+      setDots("");
+      return;
     }
-  }, [messages]);
+    setDots(".");
+    const interval = setInterval(() => {
+      setDots((prevDots) => {
+        if (prevDots.length >= 3) return ".";
+        return `${prevDots}.`;
+      });
+    }, 500);
+    return () => clearInterval(interval);
+  }, [status]);
 
-  if (!imageUrl && !isProcessing) return null;
+  const shouldRender =
+    Boolean(imageUrl) || isProcessing || (status && status !== "idle");
+  if (!shouldRender) return null;
+
+  const cleanedStatusText =
+    statusText
+      ?.replace(/\s+\d{1,3}%/, "")
+      .replace(/\.{2,}$/, "")
+      .trim() || "Reconociendo texto";
+  const displayStatus =
+    status === "processing" ? `${cleanedStatusText}${dots}` : statusText;
 
   return (
     <div
@@ -56,133 +73,44 @@ export function OCRFeedback({
       aria-label="OCR en progreso"
     >
       <div className="ocr-feedback-container" ref={containerRef}>
-        {/* Secció de vista prèvia d'imatge */}
         {imageUrl && (
           <div className="ocr-image-preview fade-in">
-            <div className="ocr-image-wrapper">
-              <img
-                src={imageUrl}
-                alt="Imatge capturada per a OCR"
-                className="ocr-captured-image"
-                loading="eager"
-              />
-              <div className="ocr-image-badge">
-                <svg
-                  className="ocr-camera-icon"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2s-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2 1.43 3.2 3.2 3.2zm0-5.4c1.21 0 2.2.99 2.2 2.2s-.99 2.2-2.2 2.2-2.2-.99-2.2-2.2.99-2.2 2.2-2.2z" />
-                  <path d="M20 5h-3.2L15 3H9L7.2 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h3.6l1.8-2h5.2l1.8 2H20v12z" />
-                </svg>
-                Imatge capturada
-              </div>
-            </div>
+            <img
+              src={imageUrl}
+              alt="Imagen capturada para OCR"
+              className="ocr-captured-image"
+              loading="eager"
+            />
           </div>
         )}
 
-        {/* Barra de progrés */}
-        {isProcessing && (
-          <div
-            className="ocr-progress-bar-container fade-in"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <div className="ocr-progress-bar-track">
-              <div
-                className="ocr-progress-bar-fill"
-                style={{ width: `${animatedProgress}%` }}
-                role="progressbar"
-                aria-valuenow={animatedProgress}
-                aria-valuemin="0"
-                aria-valuemax="100"
-              >
-                <div className="ocr-progress-shine"></div>
-              </div>
-            </div>
-            <span className="ocr-progress-percentage">
-              {Math.round(animatedProgress)}%
-            </span>
-          </div>
-        )}
-
-        {/* Secció de missatges amb Glass Morphism */}
-        {messages.length > 0 && (
-          <div
-            className="ocr-messages-panel fade-in"
-            style={{ animationDelay: "0.2s" }}
-            role="log"
-            aria-live="polite"
-            aria-atomic="false"
-          >
-            <div className="ocr-messages-header">
-              <div className="ocr-ai-badge">
-                <div className="ocr-ai-pulse"></div>
-                <span>AI treballant</span>
-              </div>
-              {onClose && !isProcessing && (
-                <button
-                  className="ocr-close-btn"
-                  onClick={onClose}
-                  aria-label="Tancar vista OCR"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="ocr-close-icon"
-                  >
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                  </svg>
-                </button>
-              )}
-            </div>
-
-            <div className="ocr-messages-list">
-              {messages.map((msg, index) => (
+        {(isProcessing ||
+          status === "done" ||
+          status === "error" ||
+          status === "warning") && (
+          <div className="ocr-progress-section fade-in">
+            <div className="ocr-progress-bar-container">
+              <div className="ocr-progress-bar-track">
                 <div
-                  key={index}
-                  className={`ocr-message slide-up ${msg.type || "info"}`}
-                  style={{ animationDelay: `${index * 0.05}s` }}
+                  className="ocr-progress-bar-fill"
+                  style={{ width: `${animatedProgress}%` }}
+                  role="progressbar"
+                  aria-valuenow={animatedProgress}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
                 >
-                  <div className="ocr-message-icon">
-                    {msg.type === "success"
-                      ? "✓"
-                      : msg.type === "error"
-                      ? "✗"
-                      : msg.type === "warning"
-                      ? "⚠"
-                      : "→"}
-                  </div>
-                  <span className="ocr-message-text">{msg.text}</span>
-                  {msg.type === "success" && (
-                    <div className="ocr-success-ripple"></div>
-                  )}
+                  <div className="ocr-progress-shine"></div>
                 </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Animació de punts de càrrega */}
-            {isProcessing && (
-              <div className="ocr-loading-dots">
-                <span className="ocr-dot"></span>
-                <span className="ocr-dot"></span>
-                <span className="ocr-dot"></span>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Insígnia de completat */}
-        {!isProcessing && messages.length > 0 && progress === 100 && (
-          <div className="ocr-completion-badge pop-in">
-            <svg
-              className="ocr-check-icon"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-            </svg>
-            <span>Completat</span>
+              <span className="ocr-progress-percentage">
+                {Math.round(animatedProgress)}%
+              </span>
+            </div>
+            <div className={`ocr-status-line ${status}`}>
+              {displayStatus
+                ?.split("\n")
+                .map((line, i) => <div key={i}>{line}</div>) || ""}
+            </div>
           </div>
         )}
       </div>
@@ -197,68 +125,74 @@ export function OCRFeedback({
 export function useOCRFeedback() {
   const [imageUrl, setImageUrl] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [messages, setMessages] = useState([]);
   const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState("idle");
+  const [statusText, setStatusText] = useState("Reconociendo texto");
+
+  const revokeBlobUrl = (url) => {
+    if (url && url.startsWith("blob:")) {
+      URL.revokeObjectURL(url);
+    }
+  };
 
   const startOCR = (image) => {
+    revokeBlobUrl(imageUrl);
     if (typeof image === "string") {
       setImageUrl(image);
     } else if (image instanceof Blob || image instanceof File) {
-      setImageUrl(URL.createObjectURL(image));
+      const nextUrl = URL.createObjectURL(image);
+      setImageUrl(nextUrl);
     }
     setIsProcessing(true);
-    setMessages([]);
     setProgress(0);
-  };
-
-  const addMessage = (text, type = "info") => {
-    setMessages((prev) => [...prev, { text, type, timestamp: Date.now() }]);
+    setStatus("processing");
+    setStatusText("Reconociendo texto");
   };
 
   const updateProgress = (value, message = null) => {
     setProgress(Math.min(100, Math.max(0, value)));
     if (message) {
-      addMessage(message, value === 100 ? "success" : "info");
+      setStatusText(message);
     }
+    setStatus((prev) => {
+      if (prev === "error" || prev === "done") return prev;
+      return "processing";
+    });
   };
 
-  const completeOCR = (successMessage = "Procés completat") => {
+  const completeOCR = (successMessage = "✓ Texto reconocido correctamente") => {
     setProgress(100);
-    addMessage(successMessage, "success");
+    setStatus("done");
+    setStatusText(successMessage);
     setIsProcessing(false);
   };
 
-  const errorOCR = (errorMessage = "Error en el procés") => {
-    addMessage(errorMessage, "error");
+  const errorOCR = (errorMessage = "Error al escanear") => {
+    setStatus("error");
+    setStatusText(errorMessage);
     setIsProcessing(false);
   };
 
   const reset = () => {
-    if (imageUrl && imageUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(imageUrl);
-    }
+    revokeBlobUrl(imageUrl);
     setImageUrl(null);
     setIsProcessing(false);
-    setMessages([]);
     setProgress(0);
+    setStatus("idle");
+    setStatusText("Reconociendo texto");
   };
 
-  // Neteja la URL del blob en desmuntar
   useEffect(() => {
-    return () => {
-      if (imageUrl && imageUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(imageUrl);
-      }
-    };
+    return () => revokeBlobUrl(imageUrl);
   }, [imageUrl]);
 
   return {
     imageUrl,
     isProcessing,
-    messages,
     progress,
+    status,
+    statusText,
     startOCR,
-    addMessage,
     updateProgress,
     completeOCR,
     errorOCR,
