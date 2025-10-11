@@ -7,6 +7,18 @@ import { initPwaInstall } from "./services/pwaInstallHandler.js";
 // Components React incrementals (2025)
 import { initReactComponents } from "./react-components.js";
 
+// Exporta les funcions OCR globalment per poder-les utilitzar des de l'HTML
+import {
+  getOCRFeedbackManager,
+  createOCRFeedbackManager,
+  destroyOCRFeedbackManager,
+} from "./utils/ocrFeedbackBridge.js";
+
+// Fa les funcions disponibles globalment
+window.getOCRFeedbackManager = getOCRFeedbackManager;
+window.createOCRFeedbackManager = createOCRFeedbackManager;
+window.destroyOCRFeedbackManager = destroyOCRFeedbackManager;
+
 /**
  * Inicia l'aplicació principal de manera asíncrona
  */

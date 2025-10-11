@@ -553,6 +553,9 @@ button .fa {
   box-sizing: border-box;
   text-align: left;
 }
+.form-group select {
+  padding-right: 40px;
+}
 .form-group select option {
   font-family: "Roboto Serif", serif;
   font-size: 15px;
@@ -3045,6 +3048,7 @@ button .icon {
   select {
     text-align: center;
     line-height: normal;
+    padding-right: 36px;
   }
   select option {
     font-family: "Roboto Serif", serif;
@@ -3343,11 +3347,12 @@ body.app-ready #main-content {
 .connection-indicator.offline:hover {
   background: rgb(255, 87, 34);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-}/* =============================================================================
+}
+
+/* =============================================================================
    OCR FEEDBACK COMPONENT - Modern 2025 UX
    Glass morphism, smooth animations, and accessible design
    ============================================================================= */
-
 /* Container & Overlay */
 .ocr-feedback-overlay {
   position: fixed;
@@ -3372,8 +3377,8 @@ body.app-ready #main-content {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
+  gap: 8px;
+  padding: 14px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 24px;
@@ -3402,7 +3407,6 @@ body.app-ready #main-content {
     color: #e0e0e0;
   }
 }
-
 /* Image Preview */
 .ocr-image-preview {
   position: relative;
@@ -3452,11 +3456,11 @@ body.app-ready #main-content {
 .ocr-progress-bar-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid rgba(0, 74, 173, 0.1);
 }
 
@@ -3484,12 +3488,7 @@ body.app-ready #main-content {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
   animation: shine 2s infinite;
 }
 
@@ -3498,7 +3497,6 @@ body.app-ready #main-content {
     left: 100%;
   }
 }
-
 .ocr-progress-percentage {
   font-size: 13px;
   font-weight: 700;
@@ -3512,7 +3510,7 @@ body.app-ready #main-content {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px);
   border-radius: 20px;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid rgba(0, 74, 173, 0.1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
@@ -3521,7 +3519,7 @@ body.app-ready #main-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .ocr-ai-badge {
@@ -3551,7 +3549,6 @@ body.app-ready #main-content {
     transform: scale(1.2);
   }
 }
-
 .ocr-close-btn {
   background: rgba(220, 53, 69, 0.1);
   border: none;
@@ -3580,7 +3577,7 @@ body.app-ready #main-content {
 .ocr-messages-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1px;
   max-height: 300px;
   overflow-y: auto;
   padding-right: 8px;
@@ -3601,12 +3598,12 @@ body.app-ready #main-content {
 .ocr-message {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 5px;
+  padding: 5px 8px;
   background: rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.6;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.2;
   position: relative;
   overflow: hidden;
   transition: all 0.2s ease;
@@ -3669,7 +3666,6 @@ body.app-ready #main-content {
     color: #e0e0e0;
   }
 }
-
 /* Success Ripple Effect */
 .ocr-success-ripple {
   position: absolute;
@@ -3690,7 +3686,6 @@ body.app-ready #main-content {
     opacity: 0;
   }
 }
-
 /* Loading Dots */
 .ocr-loading-dots {
   display: flex;
@@ -3725,7 +3720,6 @@ body.app-ready #main-content {
     opacity: 1;
   }
 }
-
 /* Completion Badge */
 .ocr-completion-badge {
   display: flex;
@@ -3755,7 +3749,6 @@ body.app-ready #main-content {
     opacity: 1;
   }
 }
-
 .fade-in {
   animation: fadeIn 0.4s ease-out;
 }
@@ -3770,7 +3763,6 @@ body.app-ready #main-content {
     transform: translateY(0);
   }
 }
-
 .slide-up {
   animation: slideUp 0.3s ease-out;
 }
@@ -3788,7 +3780,6 @@ body.app-ready #main-content {
     transform: scale(1);
   }
 }
-
 .pop-in {
   animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -3798,26 +3789,23 @@ body.app-ready #main-content {
   .ocr-feedback-overlay {
     padding: 12px;
   }
-
   .ocr-feedback-container {
     padding: 16px;
     border-radius: 20px;
   }
-
   .ocr-captured-image {
     max-height: 200px;
   }
-
   .ocr-messages-list {
     max-height: 250px;
+    gap: 1px;
   }
-
   .ocr-message {
-    font-size: 12px;
-    padding: 8px 12px;
+    font-size: 11.5px;
+    padding: 4px 7px;
+    gap: 4px;
   }
 }
-
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -3828,7 +3816,6 @@ body.app-ready #main-content {
     transition-duration: 0.01ms !important;
   }
 }
-
 /* Focus Styles */
 .ocr-close-btn:focus-visible {
   outline: 2px solid #004aad;

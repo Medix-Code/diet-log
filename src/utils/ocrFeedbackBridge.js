@@ -1,19 +1,19 @@
 /**
  * @file ocrFeedbackBridge.js
- * @description Bridge between vanilla JS (cameraOcr) and React (OCRFeedback)
+ * @description Pont entre JavaScript vanilla (cameraOcr) i React (OCRFeedback)
  *
- * Allows legacy vanilla JavaScript code to control React components
- * without needing to rewrite everything in React.
+ * Permet que el codi JavaScript vanilla llegat controli components React
+ * sense necessitat de reescriure-ho tot en React.
  *
- * Usage:
+ * Ús:
  * ```js
  * import { createOCRFeedbackManager } from './ocrFeedbackBridge.js';
  *
  * const ocrFeedback = createOCRFeedbackManager();
  *
  * ocrFeedback.start(imageFile);
- * ocrFeedback.update(50, 'Processing...');
- * ocrFeedback.complete('Done!');
+ * ocrFeedback.update(50, 'Processant...');
+ * ocrFeedback.complete('Fet!');
  * ```
  */
 
@@ -22,14 +22,14 @@ import ReactDOM from "react-dom/client";
 import { OCRFeedback } from "../components/OCRFeedback.js";
 
 /**
- * Creates an OCR feedback manager that bridges vanilla JS with React
- * @param {string} containerId - ID of the container element
- * @returns {Object} Manager object with control methods
+ * Crea un gestor de feedback OCR que fa de pont entre JavaScript vanilla i React
+ * @param {string} containerId - ID de l'element contenidor
+ * @returns {Object} Objecte gestor amb mètodes de control
  */
 export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
   let container = document.getElementById(containerId);
 
-  // Create container if it doesn't exist
+  // Crea el contenidor si no existeix
   if (!container) {
     container = document.createElement("div");
     container.id = containerId;
@@ -45,7 +45,7 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
   };
 
   /**
-   * Renders the React component with current state
+   * Renderitza el component React amb l'estat actual
    */
   const render = () => {
     if (!root) {
@@ -64,12 +64,12 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
   };
 
   /**
-   * Manager object with control methods
+   * Objecte gestor amb mètodes de control
    */
   const manager = {
     /**
-     * Starts OCR process and shows image preview
-     * @param {File|Blob|string} imageFile - Image file or URL
+     * Inicia el procés OCR i mostra la vista prèvia de la imatge
+     * @param {File|Blob|string} imageFile - Fitxer d'imatge o URL
      */
     start(imageFile) {
       if (imageFile instanceof File || imageFile instanceof Blob) {
@@ -84,10 +84,10 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
     },
 
     /**
-     * Updates progress and optionally adds a message
-     * @param {number} progress - Progress percentage (0-100)
-     * @param {string} message - Optional message to display
-     * @param {string} type - Message type ('info', 'success', 'warning', 'error')
+     * Actualitza el progrés i opcionalment afegeix un missatge
+     * @param {number} progress - Percentatge de progrés (0-100)
+     * @param {string} message - Missatge opcional a mostrar
+     * @param {string} type - Tipus de missatge ('info', 'success', 'warning', 'error')
      */
     update(progress, message = null, type = "info") {
       state.progress = Math.min(100, Math.max(0, progress));
@@ -105,9 +105,9 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
     },
 
     /**
-     * Adds a message without updating progress
-     * @param {string} message - Message text
-     * @param {string} type - Message type ('info', 'success', 'warning', 'error')
+     * Afegeix un missatge sense actualitzar el progrés
+     * @param {string} message - Text del missatge
+     * @param {string} type - Tipus de missatge ('info', 'success', 'warning', 'error')
      */
     addMessage(message, type = "info") {
       state.messages = [
@@ -122,10 +122,10 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
     },
 
     /**
-     * Marks OCR process as complete
-     * @param {string} message - Success message
+     * Marca el procés OCR com a completat
+     * @param {string} message - Missatge d'èxit
      */
-    complete(message = "Proceso completado") {
+    complete(message = "Procés completat") {
       state.progress = 100;
       state.messages = [
         ...state.messages,
@@ -138,17 +138,17 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
       state.isProcessing = false;
       render();
 
-      // Auto-close after 3 seconds
+      // Tanca automàticament després de 3 segons
       setTimeout(() => {
         manager.reset();
       }, 3000);
     },
 
     /**
-     * Marks OCR process as failed
-     * @param {string} message - Error message
+     * Marca el procés OCR com a fallat
+     * @param {string} message - Missatge d'error
      */
-    error(message = "Error en el proceso") {
+    error(message = "Error en el procés") {
       state.messages = [
         ...state.messages,
         {
@@ -162,8 +162,8 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
     },
 
     /**
-     * Adds a warning message
-     * @param {string} message - Warning message
+     * Afegeix un missatge d'advertència
+     * @param {string} message - Missatge d'advertència
      */
     warning(message) {
       state.messages = [
@@ -178,10 +178,10 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
     },
 
     /**
-     * Resets the OCR feedback state and cleans up
+     * Reinicia l'estat del feedback OCR i neteja recursos
      */
     reset() {
-      // Clean up blob URL to prevent memory leaks
+      // Neteja la URL del blob per prevenir fuites de memòria
       if (state.imageUrl && state.imageUrl.startsWith("blob:")) {
         URL.revokeObjectURL(state.imageUrl);
       }
@@ -197,15 +197,15 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
     },
 
     /**
-     * Gets current state (for debugging)
-     * @returns {Object} Current state
+     * Obté l'estat actual (per depuració)
+     * @returns {Object} Estat actual
      */
     getState() {
       return { ...state };
     },
 
     /**
-     * Checks if OCR is currently processing
+     * Comprova si l'OCR està processant actualment
      * @returns {boolean}
      */
     isProcessing() {
@@ -217,13 +217,13 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
 }
 
 /**
- * Singleton pattern - single instance for the entire app
+ * Patró Singleton - una sola instància per a tota l'aplicació
  */
 let _globalOCRManager = null;
 
 /**
- * Gets or creates the global OCR feedback manager
- * @returns {Object} OCR feedback manager
+ * Obté o crea el gestor global de feedback OCR
+ * @returns {Object} Gestor de feedback OCR
  */
 export function getOCRFeedbackManager() {
   if (!_globalOCRManager) {
@@ -233,7 +233,7 @@ export function getOCRFeedbackManager() {
 }
 
 /**
- * Destroys the global OCR feedback manager
+ * Destrueix el gestor global de feedback OCR
  */
 export function destroyOCRFeedbackManager() {
   if (_globalOCRManager) {

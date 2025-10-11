@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test OCR Feedback</title>
+    <link rel="stylesheet" href="css/main.min.css" />
+    <style>
+      body {
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+      }
+      .test-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-btn {
+        background: #004aad;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 10px 5px;
+      }
+      .test-btn:hover {
+        background: #0056b3;
+      }
+      h1 {
+        color: #004aad;
+      }
+      .info {
+        background: #f0f0f0;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🔬 Test del Component OCR Feedback</h1>
+
+      <div class="info">
+        <p><strong>Instruccions:</strong></p>
+        <ul>
+          <li>Prem "Simular OCR" per veure el component en acció</li>
+          <li>Veuràs la vista prèvia de la imatge capturada</li>
+          <li>Els missatges es mostraran en temps real</li>
+          <li>La barra de progrés s'actualitzarà automàticament</li>
+        </ul>
+      </div>
+
+      <div>
+        <button class="test-btn" onclick="simulateOCR()">🔍 Simular OCR</button>
+        <button class="test-btn" onclick="simulateError()">
+          ❌ Simular Error
+        </button>
+      </div>
+    </div>
+
+    <!-- Carrega React i ReactDOM -->
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+
+    <!-- Carrega el bundle de l'app -->
+    <script src="dist/bundle.js"></script>
+
+    <script>
+      // Funció per simular el procés OCR
+      async function simulateOCR() {
+        // Crea una imatge de test
+        const canvas = document.createElement("canvas");
+        canvas.width = 400;
+        canvas.height = 300;
+        const ctx = canvas.getContext("2d");
+
+        // Dibuixa una imatge de prova
+        ctx.fillStyle = "#f0f0f0";
+        ctx.fillRect(0, 0, 400, 300);
+        ctx.fillStyle = "#004aad";
+        ctx.font = "24px Arial";
+        ctx.fillText("Test OCR Image", 100, 150);
+
+        // Converteix a blob
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve));
+
+        // Importa el gestor OCR
+        const { getOCRFeedbackManager } = window;
+        if (!getOCRFeedbackManager) {
+          alert("Error: No s'ha carregat el bundle.js correctament");
+          return;
+        }
+
+        const ocrManager = getOCRFeedbackManager();
+
+        // Inicia el procés
+        ocrManager.start(blob);
+
+        // Simula el progrés
+        await delay(500);
+        ocrManager.update(10, "Preparant imatge...");
+
+        await delay(800);
+        ocrManager.update(25, "Analitzant imatge...");
+
+        await delay(1000);
+        ocrManager.update(50, "Carregant motor OCR...");
+
+        await delay(1200);
+        ocrManager.update(75, "Reconeixent text 50%...");
+
+        await delay(1000);
+        ocrManager.update(90, "Reconeixent text 90%...");
+
+        await delay(800);
+        ocrManager.complete("✓ Text reconegut correctament!");
+      }
+
+      async function simulateError() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 400;
+        canvas.height = 300;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ff0000";
+        ctx.fillRect(0, 0, 400, 300);
+
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve));
+
+        const { getOCRFeedbackManager } = window;
+        const ocrManager = getOCRFeedbackManager();
+
+        ocrManager.start(blob);
+
+        await delay(500);
+        ocrManager.update(20, "Processant...");
+
+        await delay(1000);
+        ocrManager.error(
+          "❌ No s'ha pogut reconèixer el text. Prova amb una imatge més clara."
+        );
+      }
+
+      function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+    </script>
+  </body>
+</html>

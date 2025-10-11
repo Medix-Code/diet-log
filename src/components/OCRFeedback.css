@@ -27,8 +27,8 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
+  gap: 8px;
+  padding: 14px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 24px;
@@ -107,11 +107,11 @@
 .ocr-progress-bar-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid rgba(0, 74, 173, 0.1);
 }
 
@@ -167,7 +167,7 @@
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px);
   border-radius: 20px;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid rgba(0, 74, 173, 0.1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
@@ -176,7 +176,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .ocr-ai-badge {
@@ -236,7 +236,7 @@
 .ocr-messages-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1px;
   max-height: 300px;
   overflow-y: auto;
   padding-right: 8px;
@@ -257,12 +257,12 @@
 .ocr-message {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 5px;
+  padding: 5px 8px;
   background: rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.6;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.2;
   position: relative;
   overflow: hidden;
   transition: all 0.2s ease;

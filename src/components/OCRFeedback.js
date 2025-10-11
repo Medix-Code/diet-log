@@ -1,20 +1,20 @@
 /**
  * @file OCRFeedback.js
- * @description Modern OCR feedback component with live preview and progress (2025 UX)
+ * @description Component modern de feedback OCR amb vista prèvia en temps real i progrés (2025 UX)
  *
- * Features:
- * - Live image preview with elegant card design
- * - Real-time OCR progress messages with auto-scroll
- * - Smooth animations and micro-interactions
- * - Accessibility-first (ARIA live regions, semantic HTML)
- * - Glass morphism design with soft colors
+ * Característiques:
+ * - Vista prèvia d'imatge en directe amb disseny elegant de targeta
+ * - Missatges de progrés OCR en temps real amb auto-scroll
+ * - Animacions suaus i micro-interaccions
+ * - Accessibilitat prioritària (regions ARIA live, HTML semàntic)
+ * - Disseny glass morphism amb colors suaus
  */
 
 import React, { useState, useEffect, useRef } from "react";
 
 /**
- * OCRFeedback Component
- * Shows captured image + live OCR progress with smooth auto-scroll
+ * Component OCRFeedback
+ * Mostra la imatge capturada + progrés OCR en temps real amb auto-scroll suau
  */
 export function OCRFeedback({
   imageUrl = null,
@@ -27,7 +27,7 @@ export function OCRFeedback({
   const containerRef = useRef(null);
   const [animatedProgress, setAnimatedProgress] = useState(0);
 
-  // Smooth progress animation
+  // Animació suau del progrés
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimatedProgress(progress);
@@ -35,7 +35,7 @@ export function OCRFeedback({
     return () => clearTimeout(timer);
   }, [progress]);
 
-  // Auto-scroll to latest message
+  // Auto-scroll al darrer missatge
   useEffect(() => {
     if (messages.length > 0 && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
@@ -56,13 +56,13 @@ export function OCRFeedback({
       aria-label="OCR en progreso"
     >
       <div className="ocr-feedback-container" ref={containerRef}>
-        {/* Image Preview Section */}
+        {/* Secció de vista prèvia d'imatge */}
         {imageUrl && (
           <div className="ocr-image-preview fade-in">
             <div className="ocr-image-wrapper">
               <img
                 src={imageUrl}
-                alt="Imagen capturada para OCR"
+                alt="Imatge capturada per a OCR"
                 className="ocr-captured-image"
                 loading="eager"
               />
@@ -75,13 +75,13 @@ export function OCRFeedback({
                   <path d="M12 15.2c1.77 0 3.2-1.43 3.2-3.2s-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2 1.43 3.2 3.2 3.2zm0-5.4c1.21 0 2.2.99 2.2 2.2s-.99 2.2-2.2 2.2-2.2-.99-2.2-2.2.99-2.2 2.2-2.2z" />
                   <path d="M20 5h-3.2L15 3H9L7.2 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h3.6l1.8-2h5.2l1.8 2H20v12z" />
                 </svg>
-                Imagen capturada
+                Imatge capturada
               </div>
             </div>
           </div>
         )}
 
-        {/* Progress Bar */}
+        {/* Barra de progrés */}
         {isProcessing && (
           <div
             className="ocr-progress-bar-container fade-in"
@@ -105,7 +105,7 @@ export function OCRFeedback({
           </div>
         )}
 
-        {/* Messages Section with Glass Morphism */}
+        {/* Secció de missatges amb Glass Morphism */}
         {messages.length > 0 && (
           <div
             className="ocr-messages-panel fade-in"
@@ -117,13 +117,13 @@ export function OCRFeedback({
             <div className="ocr-messages-header">
               <div className="ocr-ai-badge">
                 <div className="ocr-ai-pulse"></div>
-                <span>AI trabajando</span>
+                <span>AI treballant</span>
               </div>
               {onClose && !isProcessing && (
                 <button
                   className="ocr-close-btn"
                   onClick={onClose}
-                  aria-label="Cerrar vista OCR"
+                  aria-label="Tancar vista OCR"
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -161,7 +161,7 @@ export function OCRFeedback({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Loading Dots Animation */}
+            {/* Animació de punts de càrrega */}
             {isProcessing && (
               <div className="ocr-loading-dots">
                 <span className="ocr-dot"></span>
@@ -172,7 +172,7 @@ export function OCRFeedback({
           </div>
         )}
 
-        {/* Completion Checkmark */}
+        {/* Insígnia de completat */}
         {!isProcessing && messages.length > 0 && progress === 100 && (
           <div className="ocr-completion-badge pop-in">
             <svg
@@ -182,7 +182,7 @@ export function OCRFeedback({
             >
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
             </svg>
-            <span>Completado</span>
+            <span>Completat</span>
           </div>
         )}
       </div>
@@ -191,8 +191,8 @@ export function OCRFeedback({
 }
 
 /**
- * Hook for managing OCR state
- * @returns {Object} OCR state and control functions
+ * Hook per gestionar l'estat de l'OCR
+ * @returns {Object} Estat de l'OCR i funcions de control
  */
 export function useOCRFeedback() {
   const [imageUrl, setImageUrl] = useState(null);
@@ -222,13 +222,13 @@ export function useOCRFeedback() {
     }
   };
 
-  const completeOCR = (successMessage = "Proceso completado") => {
+  const completeOCR = (successMessage = "Procés completat") => {
     setProgress(100);
     addMessage(successMessage, "success");
     setIsProcessing(false);
   };
 
-  const errorOCR = (errorMessage = "Error en el proceso") => {
+  const errorOCR = (errorMessage = "Error en el procés") => {
     addMessage(errorMessage, "error");
     setIsProcessing(false);
   };
@@ -243,7 +243,7 @@ export function useOCRFeedback() {
     setProgress(0);
   };
 
-  // Cleanup blob URL on unmount
+  // Neteja la URL del blob en desmuntar
   useEffect(() => {
     return () => {
       if (imageUrl && imageUrl.startsWith("blob:")) {
