@@ -1210,7 +1210,7 @@ button {
   font-size: 16px;
   font-weight: 700;
   line-height: 1;
-  padding: 0;
+  padding: 2px 0 0 0; /* Padding superior para compensar alineación de la fuente */
   box-sizing: border-box;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Much more subtle shadow */
   border: 1px solid rgba(0, 0, 0, 0.06); /* Extremely subtle border */

@@ -21,70 +21,45 @@ const filesToPatch = [
 ];
 
 // 3. Expresión regular para detectar números de versión (ej: "1.2.7", "2.0.1", etc.)
-const versionRegex = /(\d+(?:\.\d+)+)/g;
+const versionRegex = /(\d+\.\d+\.\d+)/;
 
-// 4. Función para extraer la primera versión encontrada en un archivo (excluyendo CDN)
-function extractFirstVersion(content) {
-  const lines = content.split("\n");
-  const nonCdnLines = lines.filter(
-    (line) =>
-      !line.includes("cdnjs") &&
-      !line.includes("fonts.googleapis") &&
-      !line.includes("unpkg") &&
-      !line.includes("jsdelivr")
-  );
-  const joinedContent = nonCdnLines.join("\n");
-  const match = joinedContent.match(versionRegex);
-  return match ? match[0] : null;
-}
-
-// 5. Recorremos cada archivo y reemplazamos versionesa propias (excluyendo CDN)
+// 4. Recorremos cada archivo y reemplazamos versiones propias
 filesToPatch.forEach((filePath) => {
   try {
     // Leemos el contenido del archivo
     let content = fs.readFileSync(filePath, "utf8");
 
-    // Extraemos la primera versión encontrada
-    const oldVersion = extractFirstVersion(content);
+    const lines = content.split("\n");
+    let updated = false;
+    let oldVersion = null;
 
-    if (oldVersion) {
-      // Buscamos versiones en líneas relacionadas con la app (no URLs de CDN)
-      const lines = content.split("\n");
-      let updated = false;
-      const newContent = lines
-        .map((line) => {
-          // Evitar cambios en URLs de CDN que contengan versiones
-          if (
-            (line.includes("cdnjs") ||
-              line.includes("fonts.googleapis") ||
-              line.includes("unpkg") ||
-              line.includes("jsdelivr")) &&
-            line.includes(oldVersion)
-          ) {
-            // Conservar línea original para CDN
-            return line;
-          } else if (line.includes(oldVersion)) {
-            // Actualizar solo versiones de la app
+    const newContent = lines
+      .map((line) => {
+        // Solo actualizar líneas que contengan "version-text", "const VERSION" o "const CACHE_VERSION"
+        if (
+          line.includes('class="version-text"') ||
+          line.includes("const VERSION =") ||
+          line.includes("const CACHE_VERSION")
+        ) {
+          const match = line.match(versionRegex);
+          if (match && match[0] !== appVersion) {
+            if (!oldVersion) oldVersion = match[0];
             updated = true;
-            return line.replace(new RegExp(oldVersion, "g"), appVersion);
+            return line.replace(match[0], appVersion);
           }
-          return line;
-        })
-        .join("\n");
+        }
+        return line;
+      })
+      .join("\n");
 
-      // Solo escribimos si ha habido cambios reales
-      if (updated) {
-        fs.writeFileSync(filePath, newContent, "utf8");
-        console.log(
-          `Versión actualizada: ${oldVersion} → ${appVersion} en ${filePath}`
-        );
-      } else {
-        console.log(
-          `No se encontraron versiones que actualizar en ${filePath}`
-        );
-      }
+    // Solo escribimos si ha habido cambios reales
+    if (updated) {
+      fs.writeFileSync(filePath, newContent, "utf8");
+      console.log(
+        `Versión actualizada: ${oldVersion} → ${appVersion} en ${filePath}`
+      );
     } else {
-      console.warn(`AVISO: No se ha encontrado ninguna versión en ${filePath}`);
+      console.log(`No se encontraron versiones que actualizar en ${filePath}`);
     }
   } catch (error) {
     console.error(`Error procesando el archivo ${filePath}:`, error);
