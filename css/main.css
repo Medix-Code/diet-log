@@ -65,6 +65,25 @@
   --font-size-base: 15px;
   --transition-speed: 0.3s;
   --icon-size: 24px;
+  --space-xs: clamp(4px, 1vw, 8px);
+  --space-sm: clamp(8px, 2vw, 16px);
+  --space-md: clamp(16px, 3vw, 24px);
+  --space-lg: clamp(24px, 4vw, 32px);
+  --space-xl: clamp(32px, 5vw, 48px);
+  --space-2xl: clamp(48px, 6vw, 64px);
+  --color-primary-variant: color-mix(in srgb, var(--primary-color) 90%, white);
+  --color-primary-variant-hover: color-mix(
+    in srgb,
+    var(--primary-color) 70%,
+    white
+  );
+  --color-text-on-primary: #ffffff;
+  --color-interactive-hover: rgba(74, 109, 173, 0.1);
+  --color-interactive-active: rgba(74, 109, 173, 0.15);
+  --color-interactive-focus: rgba(74, 109, 173, 0.2);
+  --timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --timing-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --timing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --color-pdf-bg: #eceffc; /* Fons blau suau */
   --color-pdf-bg-hover: #dce0fa;
   --color-pdf-text: #004aad; /* Text i icona blau fosc */
@@ -207,8 +226,8 @@ main {
 .button-group {
   position: relative;
   display: flex;
-  gap: 10px;
-  padding-right: 20px;
+  gap: var(--space-sm);
+  padding-right: var(--space-md);
 }
 
 .ajustes-btn {
@@ -220,31 +239,45 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
+  transition: all var(--transition-speed) var(--timing-smooth);
   position: relative;
   overflow: hidden;
   border-radius: 50%;
+  transform: scale(1);
+}
+.ajustes-btn:focus-visible {
+  outline: 2px solid var(--color-interactive-focus);
+  outline-offset: 2px;
+}
+.ajustes-btn:hover {
+  background-color: var(--color-interactive-hover);
+  transform: scale(1.1);
+}
+.ajustes-btn:active {
+  transform: scale(0.95);
 }
 .ajustes-btn::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
   border-radius: 50%;
   background-color: transparent;
-  transform: scale(0);
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s var(--timing-bounce), height 0.6s var(--timing-bounce);
   z-index: -1;
 }
 .ajustes-btn.has-changes::before {
   background-color: #ffc107;
-  transform: scale(1);
+  width: 100%;
+  height: 100%;
 }
 .ajustes-btn.saving::before {
   background-color: var(--primary-color);
-  transform: scale(1);
+  width: 100%;
+  height: 100%;
 }
 .ajustes-btn.saving .hamburger {
   animation: spin-hamburger 1s linear infinite;
