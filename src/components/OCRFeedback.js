@@ -52,8 +52,26 @@ export function OCRFeedback({
     return () => clearInterval(interval);
   }, [status]);
 
+  // DEBUG: Log de l'estat
+  console.log("🔍 OCR State:", {
+    status,
+    imageUrl: !!imageUrl,
+    isProcessing,
+    progress,
+  });
+
+  // El component NO es mostra mai en cas d'error o idle
+  if (status === "error" || status === "idle") {
+    console.log("🚫 Component NO renderitza - status:", status);
+    return null;
+  }
+
+  // El component es renderitza si:
+  // - Està processant (isProcessing = true)
+  // - Té una imatge i està en estat "done" o "warning" (per mostrar el resultat)
   const shouldRender =
-    Boolean(imageUrl) || isProcessing || (status && status !== "idle");
+    (Boolean(imageUrl) && isProcessing) ||
+    (Boolean(imageUrl) && (status === "done" || status === "warning"));
   if (!shouldRender) return null;
 
   const cleanedStatusText =
@@ -103,7 +121,7 @@ export function OCRFeedback({
                 </div>
               </div>
               <span className="ocr-progress-percentage">
-                {Math.round(animatedProgress)}%
+                {status === "error" ? "" : `${Math.round(animatedProgress)}%`}
               </span>
             </div>
             <div className={`ocr-status-line ${status}`}>

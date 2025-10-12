@@ -8,8 +8,11 @@
 //       options.queueable     →  true (defecte). Si false, substitueix el toast viu.
 //    cancelAllToasts()        →  Tanca i buida la cua.
 // -----------------------------------------------------------------------------
+//  Extres (nou):
+//    window.__muteToasts      →  si true, no es mostra CAP toast.
+//    window.__toastBlocklist  →  Array de RegExp/String per bloquejar missatges concrets.
+//
 
-// ───────────────────────── Configuració ─────────────────────────────────────
 const CONFIG = {
   CONTAINER_ID: "toast-container",
   TOAST_CLASS: "toast",
@@ -34,6 +37,25 @@ const state = {
 const sanitize = (s) =>
   s && typeof s === "string" ? s.replace(/[<>&]/g, "") : "";
 
+/** Guard general: mute + blocklist */
+function shouldBlockToast(message) {
+  // Mute global
+  if (window.__muteToasts === true) return true;
+
+  // Blocklist configurable
+  const bl = window.__toastBlocklist;
+  if (!bl || !Array.isArray(bl) || bl.length === 0) return false;
+
+  for (const rule of bl) {
+    if (rule instanceof RegExp && typeof message === "string") {
+      if (rule.test(message)) return true;
+    } else if (typeof rule === "string") {
+      if (String(message) === rule) return true;
+    }
+  }
+  return false;
+}
+
 function validateParams(message, type, duration) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error(
@@ -48,7 +70,7 @@ function validateParams(message, type, duration) {
     );
   }
   if (!Number.isInteger(duration) || duration < 0 || duration > 60000) {
-    throw new Error("La durada ha d'estar entre 0 i 60000 ms.");
+    throw new Error("La durada ha d'estar entre 0 i 60000 ms.");
   }
 }
 
@@ -136,6 +158,9 @@ export function showToast(
   duration = CONFIG.DEFAULT_DURATION,
   options = {}
 ) {
+  // 🔇 Guard immediat: no entra ni a validar si està mutetjat o bloquejat
+  if (shouldBlockToast(message)) return;
+
   validateParams(message, type, duration);
 
   const priority = options.priority ?? CONFIG.DEFAULT_PRIORITY;

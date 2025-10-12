@@ -1,6 +1,5 @@
 // Mòdul per gestionar OCR amb càmera o galeria
 
-import { showToast } from "../ui/toast.js";
 import {
   getCurrentServiceIndex,
   getModeForService,
@@ -8,6 +7,7 @@ import {
 import { setControlsDisabled } from "../ui/uiControls.js";
 import { applyCspNonce } from "../utils/utils.js";
 import { getOCRFeedbackManager } from "../utils/ocrFeedbackBridge.js";
+import { showToast } from "../ui/toast.js";
 
 // --- Constants ---
 const OCR_LANGUAGE = "spa";
@@ -57,7 +57,6 @@ const OCR_PATTERNS = {
     id: "originTime",
     label: "Hora movilización",
     fieldIdSuffix: "origin-time",
-    // Updated regex for better accuracy
     lineKeywordRegex: /movilizaci|mobilitzat|desplaza/i,
   },
   DESTINATION_TIME: {
@@ -93,7 +92,6 @@ let currentProgress = 0; // Seguiment del progrés actual per evitar que baixi
 
 function _normalizeTime(timeStr) {
   if (!timeStr) return "";
-  // Neteja de caràcters no numèrics, mantenint : i -
   let cleaned = timeStr.replace(/[^\d:\-]/g, "");
   cleaned = cleaned.replace(/-/g, ":");
   const match = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
@@ -117,7 +115,6 @@ function _openCameraModal() {
 
   if (!cameraGalleryModal || !modalContentElement) return;
 
-  // Gestió de pointer-events per evitar bloquejos
   document.body.classList.add("modal-open");
   document.body.style.setProperty("pointer-events", "none");
   cameraGalleryModal.style.setProperty("pointer-events", "auto");
@@ -137,7 +134,6 @@ function _openCameraModal() {
 function _closeCameraModal() {
   if (!cameraGalleryModal) return;
 
-  // Neteja de pointer-events
   document.body.classList.remove("modal-open");
   document.body.style.removeProperty("pointer-events");
   cameraGalleryModal.style.removeProperty("pointer-events");
@@ -192,7 +188,6 @@ function _updateOcrProgress(percent, statusText) {
   if (!ocrFeedback) {
     ocrFeedback = getOCRFeedbackManager();
   }
-  // Assegurem que el progrés només pugi, mai baixi
   if (percent > currentProgress) {
     currentProgress = percent;
   }
@@ -204,9 +199,7 @@ function _updateOcrProgress(percent, statusText) {
 }
 
 function _hideOcrProgress() {
-  // El nou sistema es tanca automàticament
-  // No cal fer res aquí
-  currentProgress = 0; // Reset per a la propera vegada
+  currentProgress = 0;
 }
 
 async function _resizeImage(file) {
@@ -234,7 +227,6 @@ async function _resizeImage(file) {
       canvas.toBlob(resolve, IMAGE_TYPE, IMAGE_QUALITY)
     );
   } catch (error) {
-    showToast("Error al procesar la imagen.", "error");
     throw error;
   }
 }
@@ -249,24 +241,21 @@ async function _preprocessImage(blob) {
     if (!ctx) throw new Error("No contexto 2D.");
 
     try {
-      // Neteja EXIF per privacitat (elimina metadades sensibles com GPS)
+      // Neteja EXIF per privacitat
       ctx.drawImage(img, 0, 0, img.width, img.height);
     } catch (drawError) {
-      // Si falla drawImage inicial, mostra missatge simple i continua
       if (drawError.message && drawError.message.includes("detached")) {
         throw new Error("Error al procesar la imagen. Inténtalo de nuevo.");
       }
       throw drawError;
     }
-
     img.close();
 
-    // Aplica filtres per millorar OCR sense preservar metadades originals
+    // Filtres per millorar OCR
     ctx.filter = "grayscale(100%) contrast(180%) brightness(110%)";
     try {
       ctx.drawImage(canvas, 0, 0);
     } catch (filterDrawError) {
-      // Fallback sense filtres si falla aplicant-los
       console.warn("OCR: Fallback sense filtres:", filterDrawError);
     }
 
@@ -274,17 +263,6 @@ async function _preprocessImage(blob) {
       canvas.toBlob(resolve, IMAGE_TYPE, IMAGE_QUALITY)
     );
   } catch (error) {
-    // Missatges d'error més amigables per l'usuari
-    if (error.message.includes("procesar la imagen")) {
-      showToast(error.message, "error");
-    } else if (error.message.includes("detached")) {
-      showToast(
-        "La imagen no se puede procesar. Inténtalo con otra foto.",
-        "error"
-      );
-    } else {
-      showToast("Error al procesar la imagen. Inténtalo de nuevo.", "error");
-    }
     throw error;
   }
 }
@@ -304,8 +282,7 @@ function _safeSetFieldValue(fieldId, value, fieldName) {
 
 function _processAndFillForm(ocrText, updateFieldsCallback = null) {
   if (!ocrText || !ocrText.trim()) {
-    showToast("No se reconoció texto.", "warning");
-    return false;
+    return { hasData: false, allFieldsStatus: [] };
   }
 
   const currentServiceIndex = getCurrentServiceIndex();
@@ -313,7 +290,6 @@ function _processAndFillForm(ocrText, updateFieldsCallback = null) {
   const suffix = `-${currentServiceIndex + 1}`;
   const filledFields = {};
 
-  // Inicialitza l'estat de tots els camps
   const allFieldsStatus = {
     originTime: {
       label: "Hora activación",
@@ -330,7 +306,6 @@ function _processAndFillForm(ocrText, updateFieldsCallback = null) {
     },
   };
 
-  // Mostra l'estat inicial si hi ha callback
   if (updateFieldsCallback) {
     updateFieldsCallback(allFieldsStatus);
   }
@@ -373,10 +348,8 @@ function _processAndFillForm(ocrText, updateFieldsCallback = null) {
         _safeSetFieldValue(fieldId, extractedValue, pattern.label);
         filledFields[pattern.id] = pattern;
 
-        // Actualitza l'estat del camp detectat
         if (allFieldsStatus[pattern.id]) {
           allFieldsStatus[pattern.id].detected = true;
-          // Notifica el canvi si hi ha callback
           if (updateFieldsCallback) {
             updateFieldsCallback(allFieldsStatus);
           }
@@ -410,7 +383,6 @@ function _processAndFillForm(ocrText, updateFieldsCallback = null) {
 
   const filledCount = Object.keys(filledFields).length;
 
-  // Retorna informació detallada sobre els camps detectats
   return {
     hasData: filledCount > 0,
     count: filledCount,
@@ -466,42 +438,28 @@ function _scrollToBottom() {
 }
 
 async function _handleFileChange(event) {
-  if (isProcessing) {
-    showToast("Proceso OCR ya en marcha.", "warning");
-    return;
-  }
+  if (isProcessing) return;
+
   const file = event.target.files?.[0];
   if (!file) return;
   if (!file.type.startsWith("image/")) {
-    showToast("Selecciona una imagen.", "error");
     if (cameraInput) cameraInput.value = "";
     return;
   }
 
-  // Validació de mida d'imatge per prevenció de malware
   const maxSizeBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
   if (file.size > maxSizeBytes) {
-    showToast(
-      `La imagen es demasiado grande (máx. ${MAX_IMAGE_SIZE_MB} MB).`,
-      "error"
-    );
     if (cameraInput) cameraInput.value = "";
     return;
   }
 
   isProcessing = true;
   setControlsDisabled(true);
-
-  // Reinicia el seguiment de progrés
   currentProgress = 0;
 
-  // Inicia el nou sistema de feedback OCR amb la imatge
-  if (!ocrFeedback) {
-    ocrFeedback = getOCRFeedbackManager();
-  }
+  if (!ocrFeedback) ocrFeedback = getOCRFeedbackManager();
   ocrFeedback.start(file);
   _updateOcrProgress(0);
-
   _scrollToBottom();
 
   let worker = null;
@@ -514,13 +472,12 @@ async function _handleFileChange(event) {
     imageBlob = await _preprocessImage(imageBlob);
 
     _updateOcrProgress(35);
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Petit delay visual
+    await new Promise((r) => setTimeout(r, 100));
 
     _updateOcrProgress(45);
 
-    // Carrega Tesseract dinàmicament sols quan s'usi
     if (!tesseractScriptLoaded) {
-      _updateOcrProgress(50); // Indica que està carregant la llibreria
+      _updateOcrProgress(50);
       await new Promise((resolve, reject) => {
         const script = document.createElement("script");
         applyCspNonce(script);
@@ -540,7 +497,6 @@ async function _handleFileChange(event) {
     worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
       logger: (m) => {
         if (m.status === "recognizing text") {
-          // Progressió més suau: de 85% a 100%
           const percent = Math.max(
             85,
             Math.floor(m.progress * 100 * 0.15 + 85)
@@ -550,20 +506,17 @@ async function _handleFileChange(event) {
           _updateOcrProgress(65);
         }
       },
-      init: INIT_ONLY_PARAMS, // Paràmetres d'inicialització (load_system_dawg, load_freq_dawg)
+      init: INIT_ONLY_PARAMS,
     });
 
     _updateOcrProgress(75);
-
     await worker.setParameters(TESSERACT_PARAMS);
-
     _updateOcrProgress(80);
 
     const {
       data: { text: ocrText },
     } = await worker.recognize(imageBlob);
 
-    // Funció callback per actualitzar els camps en temps real
     const updateFieldsCallback = (fieldsStatus) => {
       const statusMessage = _generateFieldsListText(fieldsStatus);
       ocrFeedback.update(95, statusMessage);
@@ -571,33 +524,35 @@ async function _handleFileChange(event) {
 
     const ocrResult = _processAndFillForm(ocrText, updateFieldsCallback);
 
-    // Missatge final segons els camps detectats
     if (ocrResult.hasData) {
       const message = _generateFieldsListText(ocrResult.allFieldsStatus);
       ocrFeedback.complete(message, "done");
     } else {
-      const message = _generateFieldsListText(ocrResult.allFieldsStatus);
-      ocrFeedback.complete(message, "warning");
+      // Sense text detectat → mostra TOAST d'error i espera abans de tancar
+      showToast("Error al escanear. Imagen no válida", "error");
+      ocrFeedback?.reset?.();
+      // Espera 3 segons perquè es llegeixi el TOAST abans de tancar modal
+      setTimeout(() => _closeCameraModal(), 1000);
     }
   } catch (error) {
-    // Missatges d'error simples i amigables per l'usuari
-    let userFriendlyMessage = "Error al escanear. Vuelve a intentarlo.";
-    if (error.message && error.message.includes("detached")) {
-      userFriendlyMessage =
-        "Error al procesar la imagen. Prueba con otra foto.";
-    } else if (error.message && error.message.includes("recognition")) {
-      userFriendlyMessage =
-        "No se pudo leer el texto. Asegúrate de que la imagen sea clara.";
-    }
-    showToast(userFriendlyMessage, "error");
-
-    // Marca el procés com a error
-    ocrFeedback.error(userFriendlyMessage);
+    console.error("❌ OCR Error:", error);
+    // Error inesperat → mostra TOAST d'error i tanquem modal suaument
+    showToast("Error al escanear. Imagen no válida", "error");
+    ocrFeedback?.reset?.();
+    // Espera 3 segons perquè es llegeixi el TOAST abans de tancar modal
+    setTimeout(() => {
+      console.log("🔍 Tancant modal OCR després de timeout");
+      _closeCameraModal();
+    }, 3000);
   } finally {
-    if (worker) await worker.terminate();
+    try {
+      if (worker) await worker.terminate();
+    } catch {}
     if (cameraInput) cameraInput.value = "";
     _hideOcrProgress();
     setControlsDisabled(false);
     isProcessing = false;
   }
 }
+
+export {};
