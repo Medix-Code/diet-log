@@ -15,8 +15,8 @@
   "dependencies": {
     "pdf-lib": "^1.17.1",
     "tesseract.js": "^6.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@vitest/ui": "^3.2.4",
