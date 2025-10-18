@@ -27,7 +27,7 @@ let pillEl = null;
 let textEl = null;
 let hideTimer = null;
 let unsavedTimer = null;
-let lastSavedT = 0; // quan s’ha mostrat ✔︎
+
 let isDirty = false;
 
 // Helpers ──────────────────────────────────────────────────
@@ -100,7 +100,6 @@ export function indicateSaving(msg = "Guardando…") {
 export function indicateSaved() {
   clearTimeout(unsavedTimer);
   isDirty = false;
-  lastSavedT = Date.now();
   showPill("Guardado", CSS.HAS_SAVED);
 
   clearTimeout(hideTimer);

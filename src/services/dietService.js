@@ -86,11 +86,8 @@ async function buildDietObject(generalData, servicesData, dietId) {
   // Pseudonimització de l'ID
   const hashedDietId = await pseudoId(dietId);
 
-  // Agafar timestamp existent o nou
-  const existingDiet = await getDiet(hashedDietId);
-  const timeStampDiet = existingDiet
-    ? existingDiet.timeStampDiet
-    : new Date().toISOString();
+  // Sempre actualitzar timestamp a ara
+  const timeStampDiet = new Date().toISOString();
 
   // Construir objecte seguretat
   const dietData = {
@@ -257,8 +254,6 @@ async function performSave(isManual) {
         await updateDiet(dietToSave);
       } else {
         await addDiet(dietToSave);
-        captureInitialFormState();
-        resetDirty();
       }
 
       if (isManual) {
