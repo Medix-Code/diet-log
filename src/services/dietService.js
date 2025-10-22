@@ -256,12 +256,12 @@ async function performSave(isManual) {
         await addDiet(dietToSave);
       }
 
+      lastSavedDate = new Date();
+      renderLastSaved();
+
       if (isManual) {
         showToast("Dieta guardada correctament.", "success");
       }
-
-      lastSavedDate = new Date();
-      renderLastSaved();
 
       captureInitialFormState();
       indicateSaved();
