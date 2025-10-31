@@ -1380,19 +1380,6 @@ export const PUBLIC_HEALTH_CENTERS = [
   "ICO L'Hospitalet",
   "Inst. Guttmann",
   "Pius H. Valls",
-
-  // HOSPITALS ADDICIONALS REALS (segons llista oficial de la Generalitat)
-  "H. Com. Sant Jaume Calella",
-  "H. Com. de la Garrotxa",
-  "H. Com. del Pallars",
-  "H. Com. de Blanes",
-  "H. Com. d'Amposta",
-  "H. Com. Móra d'Ebre",
-  "H. Com. de l'Alt Penedès",
-  "H. Com. Sant Bernabé",
-  "H. Com. de Cerdanya",
-  "Fund. Sant Hospital de la Seu d'Urgell",
-  "H. Com. de Sant Jaume de Calella",
 ];
 
 export const ALL_LOCATIONS = [...MUNICIPALITIES, ...PUBLIC_HEALTH_CENTERS];

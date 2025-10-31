@@ -30,6 +30,70 @@ const normalizeText = (text) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
+const PRIORITY_LOCATIONS = [
+  "Barcelona",
+  "L'Hospitalet de Llobregat",
+  "Badalona",
+  "Terrassa",
+  "Sabadell",
+  "Lleida",
+  "Girona",
+  "Tarragona",
+  "Reus",
+  "Manresa",
+  "Mataró",
+  "Santa Coloma de Gramenet",
+  "Cornellà de Llobregat",
+  "Sant Boi de Llobregat",
+  "Rubí",
+  "Vilanova i la Geltrú",
+  "Viladecans",
+  "El Prat de Llobregat",
+  "Granollers",
+  "Cerdanyola del Vallès",
+  "Mollet del Vallès",
+  "Castelldefels",
+  "Gavà",
+  "Martorell",
+  "Igualada",
+  "Vic",
+  "Figueres",
+  "Olot",
+  "Blanes",
+  "Lloret de Mar",
+  "Cambrils",
+  "Salou",
+  "Sitges",
+  "Roses",
+  "Palafrugell",
+  "Sant Cugat del Vallès",
+  "Esplugues de Llobregat",
+  "Sant Adrià de Besòs",
+  "Sant Feliu de Llobregat",
+  "Sant Joan Despí",
+  "Sant Just Desvern",
+  "Parets del Vallès",
+  "Pineda de Mar",
+  "Calella",
+  "Castellar del Vallès",
+  "Molins de Rei",
+  "Ripollet",
+  "Berga",
+  "La Seu d'Urgell",
+  "Puigcerdà",
+  "Amposta",
+  "Balaguer",
+  "Valls",
+  "La Bisbal d'Empordà",
+  "Palamós",
+  "Platja d'Aro",
+];
+
+const POPULARITY_PRIORITY = new Map(
+  PRIORITY_LOCATIONS.map((name, index) => [normalizeText(name), index])
+);
+const DEFAULT_POPULARITY_RANK = POPULARITY_PRIORITY.size + 100;
+
 /**
  * Expandeix sinònims per fer cerques més intel·ligents
  * Ex: "hospital" també cerca "H."
@@ -79,6 +143,7 @@ class LocationSuggestionsService {
     this.selectedIndex = -1;
     this.inputDebounceTimer = null; // Timer per debounce
     this.scrollAnimationFrame = null;
+    this.visibilityTimeout = null;
 
     this.handleWindowScroll = () => {
       if (!this.currentDropdown || !this.currentInput) return;
@@ -88,11 +153,13 @@ class LocationSuggestionsService {
     this.handleWindowResize = () => {
       if (!this.currentDropdown || !this.currentInput) return;
       this.scheduleDropdownReposition();
+      this.scheduleDropdownVisibilityCheck();
     };
 
     this.handleViewportShift = () => {
       if (!this.currentDropdown || !this.currentInput) return;
       this.scheduleDropdownReposition();
+      this.scheduleDropdownVisibilityCheck();
     };
   }
 
@@ -215,6 +282,119 @@ class LocationSuggestionsService {
       : PUBLIC_HEALTH_CENTERS;
   }
 
+  calculateMatchScore(
+    normalizedValue,
+    locationWords,
+    expandedSearchTerms,
+    originalValue,
+    searchMeta
+  ) {
+    const popularityRank =
+      POPULARITY_PRIORITY.get(normalizedValue) ?? DEFAULT_POPULARITY_RANK;
+    const articlePenalty = /,\s*(el|la|els|les|l')$/i.test(originalValue) ? 1 : 0;
+    const hyphenPenalty = originalValue.includes("-") ? 1 : 0;
+    const multiWordPenalty = locationWords.length > 1 ? 0 : 1;
+
+    if (!expandedSearchTerms.length) {
+      return {
+        category: 0,
+        popularityRank,
+        articlePenalty,
+        hyphenPenalty,
+        multiWordPenalty,
+        prefixLengthPenalty: 0,
+      };
+    }
+
+    const evaluateWord = (word) => {
+      if (!word) {
+        return 3;
+      }
+
+      if (normalizedValue.startsWith(word)) {
+        return 0;
+      }
+
+      if (locationWords.some((locWord) => locWord.startsWith(word))) {
+        return 1;
+      }
+
+      return 2;
+    };
+
+    const bestScore = expandedSearchTerms.reduce((currentBest, variantWords) => {
+      let variantCategory = -Infinity;
+
+      variantWords.forEach((word) => {
+        variantCategory = Math.max(variantCategory, evaluateWord(word));
+      });
+
+      const targetLength =
+        variantWords[0]?.length ?? searchMeta.primaryLength ?? 0;
+      const firstWord = locationWords[0] ?? "";
+      const prefixLengthPenalty =
+        targetLength > 0 && firstWord.startsWith(variantWords[0] ?? "")
+          ? Math.abs(firstWord.length - targetLength)
+          : firstWord.length;
+
+      const candidate = {
+        category: Number.isFinite(variantCategory) ? variantCategory : 3,
+        popularityRank,
+        articlePenalty,
+        hyphenPenalty,
+        multiWordPenalty,
+        prefixLengthPenalty,
+      };
+
+      if (!currentBest) {
+        return candidate;
+      }
+
+      return this.compareScores(candidate, currentBest) < 0
+        ? candidate
+        : currentBest;
+    }, null);
+
+    return (
+      bestScore || {
+        category: 3,
+        popularityRank,
+        articlePenalty,
+        hyphenPenalty,
+        multiWordPenalty,
+        prefixLengthPenalty: locationWords[0]?.length ?? 99,
+      }
+    );
+  }
+
+  compareScores(a, b) {
+    if (a.category !== b.category) {
+      return a.category - b.category;
+    }
+
+    if (a.popularityRank !== b.popularityRank) {
+      return a.popularityRank - b.popularityRank;
+    }
+
+    if (a.articlePenalty !== b.articlePenalty) {
+      return a.articlePenalty - b.articlePenalty;
+    }
+
+    if (a.hyphenPenalty !== b.hyphenPenalty) {
+      return a.hyphenPenalty - b.hyphenPenalty;
+    }
+
+    if (a.multiWordPenalty !== b.multiWordPenalty) {
+      return a.multiWordPenalty - b.multiWordPenalty;
+    }
+
+    if (a.prefixLengthPenalty !== b.prefixLengthPenalty) {
+      return a.prefixLengthPenalty - b.prefixLengthPenalty;
+    }
+
+    return 0;
+  }
+
   /**
    * Construeix les opcions que es mostraran al datalist
    * Requereix mínim 3 caràcters per mostrar suggeriments (excepte recents)
@@ -229,7 +409,25 @@ class LocationSuggestionsService {
     }
 
     // Expandeix els termes de cerca (ex: "hospital" → també cerca "h.")
-    const searchTerms = expandSearchTerms(searchTerm);
+    const expandedSearchTerms = expandSearchTerms(searchTerm)
+      .map((term) =>
+        term
+          .split(/\s+/)
+          .map((word) => word.trim())
+          .filter(Boolean)
+      )
+      .filter((words) => words.length > 0);
+
+    const normalizedSearch = normalizeText(searchTerm.trim());
+    const normalizedSearchWords = normalizedSearch
+      .split(/\s+/)
+      .map((word) => word.trim())
+      .filter(Boolean);
+
+    const searchMeta = {
+      primaryLength:
+        normalizedSearchWords[0]?.length ?? normalizedSearch.length ?? 0,
+    };
 
     // ORIGEN: només municipis
     // DESTÍ: tots els llocs (municipis + centres mèdics)
@@ -241,7 +439,7 @@ class LocationSuggestionsService {
     const optionsArray = [];
     const seen = new Set();
 
-    const pushOption = (option) => {
+    const pushOption = (option, index) => {
       if (!option) return;
       const trimmed = option.trim();
       if (!trimmed) return;
@@ -249,27 +447,46 @@ class LocationSuggestionsService {
       const normalizedValue = normalizeText(trimmed);
 
       // Comprova si TOTS els termes de cerca apareixen al valor (cerca per paraules)
-      const allTermsMatch = searchTerms.every((searchTerm) => {
-        // Divideix el terme de cerca en paraules
-        const searchWords = searchTerm.split(/\s+/).filter(Boolean);
+      const locationWords = normalizedValue
+        .split(/[\s,\/'.-]+/)
+        .map((word) => word.trim())
+        .filter(Boolean);
 
-        // Comprova que totes les paraules del terme apareguin al valor
-        return searchWords.every((word) => normalizedValue.includes(word));
-      });
+      const allVariantsMatch =
+        expandedSearchTerms.length === 0 ||
+        expandedSearchTerms.some((variantWords) =>
+          variantWords.every((word) => normalizedValue.includes(word))
+        );
 
-      if (searchTerms.length > 0 && !allTermsMatch) return;
+      if (!allVariantsMatch) return;
 
       if (seen.has(normalizedValue)) return;
 
       seen.add(normalizedValue);
-      optionsArray.push(trimmed);
+      const score = this.calculateMatchScore(
+        normalizedValue,
+        locationWords,
+        expandedSearchTerms,
+        trimmed,
+        searchMeta
+      );
+      optionsArray.push({ value: trimmed, score, index });
     };
 
     // NOMÉS afegeix les opcions oficials de la base de dades
     // NO afegim storedSuggestions (valors que l'usuari ha escrit)
-    baseLocations.forEach(pushOption);
+    baseLocations.forEach((location, index) => pushOption(location, index));
 
-    return optionsArray.slice(0, MAX_DATALIST_OPTIONS);
+    return optionsArray
+      .sort((a, b) => {
+        const scoreComparison = this.compareScores(a.score, b.score);
+        if (scoreComparison !== 0) {
+          return scoreComparison;
+        }
+        return a.index - b.index;
+      })
+      .slice(0, MAX_DATALIST_OPTIONS)
+      .map((entry) => entry.value);
   }
 
   /**
@@ -365,23 +582,7 @@ class LocationSuggestionsService {
     this.currentInput = input;
     this.selectedIndex = -1;
 
-    // Scroll automàtic més agressiu
-    setTimeout(() => {
-      const viewportHeight = window.innerHeight;
-      const dropdownRect = dropdown.getBoundingClientRect();
-
-      // Si el desplegable està fora de la pantalla (tapat pel teclat)
-      if (dropdownRect.bottom > viewportHeight - 20) {
-        // Calcula quant hem de fer scroll
-        const scrollAmount = dropdownRect.bottom - viewportHeight + 100;
-
-        // Scroll directe amb window.scrollBy
-        window.scrollBy({
-          top: scrollAmount,
-          behavior: "smooth",
-        });
-      }
-    }, 100);
+    this.scheduleDropdownVisibilityCheck();
 
     // Tanca el desplegable si es clica fora
     setTimeout(() => {
@@ -438,6 +639,18 @@ class LocationSuggestionsService {
     });
   }
 
+  scheduleDropdownVisibilityCheck() {
+    if (this.visibilityTimeout) {
+      clearTimeout(this.visibilityTimeout);
+    }
+
+    this.visibilityTimeout = setTimeout(() => {
+      this.visibilityTimeout = null;
+      if (!this.currentDropdown || !this.currentInput) return;
+      this.ensureDropdownVisibility(this.currentDropdown, this.currentInput);
+    }, 160);
+  }
+
   repositionDropdown() {
     if (!this.currentDropdown || !this.currentInput) return;
 
@@ -445,6 +658,48 @@ class LocationSuggestionsService {
     this.currentDropdown.style.top = `${inputRect.bottom}px`;
     this.currentDropdown.style.left = `${inputRect.left}px`;
     this.currentDropdown.style.width = `${inputRect.width}px`;
+  }
+
+  ensureDropdownVisibility(dropdown, input) {
+    const viewport = window.visualViewport;
+    const viewportHeight = viewport?.height ?? window.innerHeight;
+    const viewportTop = viewport?.offsetTop ?? 0;
+    const viewportBottom = viewportTop + viewportHeight;
+
+    const dropdownRect = dropdown.getBoundingClientRect();
+    const dropdownTop = dropdownRect.top + viewportTop;
+    const dropdownBottom = dropdownTop + dropdownRect.height;
+
+    const SAFE_TOP_MARGIN = 12;
+    const SAFE_BOTTOM_MARGIN = 16;
+
+    let scrollNeeded = 0;
+
+    if (dropdownBottom > viewportBottom - SAFE_BOTTOM_MARGIN) {
+      scrollNeeded = dropdownBottom - (viewportBottom - SAFE_BOTTOM_MARGIN);
+    } else if (dropdownTop < viewportTop + SAFE_TOP_MARGIN) {
+      scrollNeeded = dropdownTop - (viewportTop + SAFE_TOP_MARGIN);
+    }
+
+    if (scrollNeeded !== 0) {
+      window.scrollBy({
+        top: scrollNeeded,
+        behavior: "smooth",
+      });
+      return;
+    }
+
+    const inputRect = input.getBoundingClientRect();
+    const inputTop = inputRect.top + viewportTop;
+    const desiredInputTop = viewportTop + 60;
+
+    if (inputTop < desiredInputTop) {
+      const adjust = inputTop - desiredInputTop;
+      window.scrollBy({
+        top: adjust,
+        behavior: "smooth",
+      });
+    }
   }
 
   /**
@@ -474,6 +729,11 @@ class LocationSuggestionsService {
       if (this.scrollAnimationFrame) {
         cancelAnimationFrame(this.scrollAnimationFrame);
         this.scrollAnimationFrame = null;
+      }
+
+      if (this.visibilityTimeout) {
+        clearTimeout(this.visibilityTimeout);
+        this.visibilityTimeout = null;
       }
 
       // Elimina la classe del input per restaurar el border-radius normal
