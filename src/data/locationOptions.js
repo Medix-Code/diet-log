@@ -1026,7 +1026,7 @@ export const PUBLIC_HEALTH_CENTERS = [
   "H. Com. St. Bernabé",
   "H. Com. St. J. Calella",
   "H. Com. Amposta",
-  "H. Com. Blanes",
+  "H. Comarcal. Blanes",
   "H. Com. Alt Penedès",
   "H. Com. Pallars",
   "H. Dos Maig",
