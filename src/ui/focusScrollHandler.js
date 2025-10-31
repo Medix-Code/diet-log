@@ -1,7 +1,7 @@
 // src/ui/focusScrollHandler.js
 
 const FOCUS_SCROLL_DELAY = 250;
-const EXTRA_TOP_MARGIN = 16; // Espai extra per sobre del camp
+const EXTRA_TOP_MARGIN = 30; // Espai extra per sobre del camp
 const MIN_SPACE_BELOW_FOR_LOCATIONS = 320;
 
 const formElements = document.querySelectorAll(
@@ -51,17 +51,12 @@ const ensureSpaceForLocationDropdown = (element) => {
   // Calcula l'alçada de les barres fixes (topbar + tabs)
   const fixedHeadersHeight = getFixedHeadersHeight();
 
-  // IMPORTANT: Les barres fixes NO es mouen amb el scroll
   // El camp ha d'aparèixer VISUALMENT per sota de les barres + marge
-  // Això significa que la seva posició en pantalla (rect.top) ha de ser >= fixedHeadersHeight + marge
   const desiredVisualTop = fixedHeadersHeight + EXTRA_TOP_MARGIN;
 
-  // Per aconseguir que rect.top sigui igual a desiredVisualTop,
-  // necessitem fer scroll fins: absoluteTop - desiredVisualTop
+  // Calculem el scroll necessari
   const maxScroll = Math.max(scrollingElement.scrollHeight - viewportHeight, 0);
-  let targetScroll = clamp(absoluteTop - desiredVisualTop, 0, maxScroll);
-
-  // Ara assegurem que hi ha espai suficient per sota per al dropdown
+  let targetScroll = clamp(absoluteTop - desiredVisualTop, 0, maxScroll); // Ara assegurem que hi ha espai suficient per sota per al dropdown
   // Després del scroll, l'element estarà a desiredVisualTop píxels des de dalt
   const elementVisualBottom = desiredVisualTop + rect.height;
   const spaceBelow = viewportHeight - elementVisualBottom;
