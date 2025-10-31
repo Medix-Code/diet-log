@@ -540,6 +540,34 @@ class LocationSuggestionsService {
   }
 
   /**
+   * Determina el z-index del desplegable perquè quedi sota la topbar i les pestanyes.
+   */
+  calculateDropdownZIndex() {
+    const selectors = [".top-bar", ".tabs-container"];
+    let smallestZIndex = Infinity;
+
+    selectors.forEach((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return;
+
+      const zIndex = Number.parseInt(
+        window.getComputedStyle(element).zIndex,
+        10
+      );
+
+      if (!Number.isNaN(zIndex)) {
+        smallestZIndex = Math.min(smallestZIndex, zIndex);
+      }
+    });
+
+    if (!Number.isFinite(smallestZIndex)) {
+      return 950;
+    }
+
+    return Math.max(smallestZIndex - 1, 0);
+  }
+
+  /**
    * Crea un desplegable personalitzat visual
    */
   createCustomDropdown(input, suggestions) {
@@ -568,7 +596,7 @@ class LocationSuggestionsService {
     dropdown.style.top = `${inputRect.bottom}px`;
     dropdown.style.left = `${inputRect.left}px`;
     dropdown.style.width = `${inputRect.width}px`;
-    dropdown.style.zIndex = "9999";
+    dropdown.style.zIndex = String(this.calculateDropdownZIndex());
 
     // Afegeix classe al input per canviar el border-radius
     input.classList.add("has-dropdown-open");
