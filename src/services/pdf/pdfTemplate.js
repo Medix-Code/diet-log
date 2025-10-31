@@ -17,6 +17,8 @@ export const PDF_SETTINGS = {
   SERVICE_NUMBER_COLOR: "#004aad",
   MODE_PREFIX_TEXT_COLOR: "#8B0000",
   MAX_SIGNATURE_NAME_LENGTH: 31,
+  MAX_ORIGIN_LENGTH: 30, // Màxim caràcters per origen
+  MAX_DESTINATION_LENGTH: 30, // Màxim caràcters per destí
 };
 
 export const FIELD_COORDINATES = {
@@ -28,9 +30,9 @@ export const FIELD_COORDINATES = {
   },
   service: {
     serviceNumber: { x: 130, y: 715, size: 16, color: "#000000" },
-    origin: { x: 232, y: 698, size: 16, color: "#000000" },
+    origin: { x: 229, y: 698, size: 14, color: "#000000" },
     originTime: { x: 441, y: 698, size: 16, color: "#000000" },
-    destination: { x: 232, y: 683, size: 16, color: "#000000" },
+    destination: { x: 229, y: 683, size: 14, color: "#000000" },
     destinationTime: { x: 441, y: 681, size: 16, color: "#000000" },
     endTimeNormal: { x: 441, y: 665, size: 16, color: "#000000" },
     endTimeModeText: {
@@ -88,6 +90,15 @@ function hexToRgb(hex) {
     : { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
+/**
+ * Trunca text si sobrepassa la llargada màxima
+ * Afegeix "..." si s'ha truncat
+ */
+function truncateText(text, maxLength) {
+  if (!text || text.length <= maxLength) return text;
+  return text.substring(0, maxLength - 3) + "...";
+}
+
 export function formatDateForPdf(dateString) {
   if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return "";
   const [yyyy, mm, dd] = dateString.split("-");
@@ -143,9 +154,17 @@ export async function fillPdf(generalData, servicesData) {
       color: rgbFromHex(PDF_SETTINGS.SERVICE_NUMBER_COLOR),
     });
 
-    page.drawText(service.origin || "", {
+    const originText = truncateText(
+      service.origin || "",
+      PDF_SETTINGS.MAX_ORIGIN_LENGTH
+    );
+    const originSize =
+      originText.length > 23 ? 13 : FIELD_COORDINATES.service.origin.size;
+
+    page.drawText(originText, {
       ...FIELD_COORDINATES.service.origin,
       y: FIELD_COORDINATES.service.origin.y - yOffset,
+      size: originSize,
       font: helveticaFont,
       color: rgbFromHex(FIELD_COORDINATES.service.origin.color),
     });
@@ -158,9 +177,19 @@ export async function fillPdf(generalData, servicesData) {
     });
 
     if (serviceMode === "3.6") {
-      page.drawText(service.destination || "", {
+      const destinationText = truncateText(
+        service.destination || "",
+        PDF_SETTINGS.MAX_DESTINATION_LENGTH
+      );
+      const destinationSize =
+        destinationText.length > 23
+          ? 13
+          : FIELD_COORDINATES.service.destination.size;
+
+      page.drawText(destinationText, {
         ...FIELD_COORDINATES.service.destination,
         y: FIELD_COORDINATES.service.destination.y - yOffset,
+        size: destinationSize,
         font: helveticaFont,
         color: rgbFromHex(FIELD_COORDINATES.service.destination.color),
       });

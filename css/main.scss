@@ -4300,6 +4300,114 @@ body.app-ready {
   }
 }
 
+// =============================================================================
+// LOCATION SUGGESTIONS - DESPLEGABLE PERSONALITZAT
+// =============================================================================
+
+/* Elimina completament el datalist natiu */
+input[type="text"].origin,
+input[type="text"].destination {
+  // Elimina completament la fletxa del desplegable
+  &::-webkit-calendar-picker-indicator {
+    display: none !important;
+    -webkit-appearance: none;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  &::-webkit-list-button {
+    display: none !important;
+  }
+
+  // Assegura que no es mostri cap fletxa
+  background-image: none !important;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+
+  // NOMÉS canvia el border-radius quan TÉ el desplegable obert
+  &.has-dropdown-open {
+    border-radius: 4px 4px 0 0 !important;
+  }
+}
+
+/* Desplegable personalitzat */
+.custom-location-dropdown {
+  position: fixed;
+  background-color: var(--bg-color);
+  border: 1px solid var(--input-border); // Border 1px més suau que el camp
+  border-radius: 0 0 4px 4px;
+  border-top: none; // Sense borde superior per semblar que surt del camp
+  margin-top: 0; // Sense margin per enganxar-se perfectament
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: "Roboto", sans-serif;
+  animation: slideDown 0.15s ease-out;
+
+  /* Scroll personalitzat */
+  scrollbar-width: thin;
+  scrollbar-color: var(--input-border) var(--bg-color);
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bg-color);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--input-border);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--border-textfield-focus);
+    }
+  }
+}
+
+/* Opció del desplegable */
+.custom-dropdown-option {
+  padding: 12px 15px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 300;
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:last-child {
+    border-bottom: none;
+    border-radius: 0 0 4px 4px;
+  }
+
+  &:hover,
+  &.selected {
+    background-color: var(--primary-color);
+    color: #ffffff;
+  }
+
+  &:active {
+    background-color: var(--secondary-color-hover);
+  }
+}
+
+/* Animació d'aparició */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,

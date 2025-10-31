@@ -31,6 +31,7 @@ import "./ui/focusScrollHandler.js";
 import { setupNameAndVehicleInputSanitizers } from "./utils/validation.js";
 import { setupNotesSelectedService } from "./services/notesService.js";
 import { initCookieConsentService } from "./services/cookieConsentService.js";
+import { initLocationSuggestions } from "./services/locationSuggestions.js";
 import { logger } from "./utils/logger.js";
 
 const log = logger.withScope("Init");
@@ -70,6 +71,7 @@ export async function initializeApp() {
     initSignature();
     dotacionService.init();
     initCameraOcr();
+    initLocationSuggestions();
 
     // Configura interfície d'usuari
     initOnboarding();
@@ -99,7 +101,9 @@ export async function initializeApp() {
       );
       if (savedServiceType === "TSU" || savedServiceType === "TSNU") {
         serviceTypeSelect.value = savedServiceType;
-        log.debug(`[LocalStorage] Carregat tipus de servei: ${savedServiceType}`);
+        log.debug(
+          `[LocalStorage] Carregat tipus de servei: ${savedServiceType}`
+        );
       }
       updateServicePanelsForServiceType(serviceTypeSelect.value);
     }

@@ -26,7 +26,13 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 
     <!-- Preloads de recursos crítics -->
-    <link rel="preload" href="./dist/bundle.js" as="script" crossorigin />
+    <!-- Preloads de recursos crítics -->
+    <link
+      rel="preload"
+      href="./dist/bundle.js?v=2.5.3"
+      as="script"
+      crossorigin
+    />
     <link
       rel="preload"
       href="assets/icons/moon.svg"
@@ -39,8 +45,8 @@
       as="image"
       type="image/svg+xml"
     />
-    <link rel="preload" href="/css/main.min.css" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css" />
+    <link rel="preload" href="/css/main.min.css?v=2.3.3" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.3.3" />
 
     <!-- Google Analytics Tag (amb Consent Mode v2) - Es carregarà dinàmicament sols si acceptat -->
     <script>
@@ -441,6 +447,7 @@
                 class="origin"
                 maxlength="35"
                 autocomplete="off"
+                list="origin-datalist"
               />
             </div>
             <div class="form-group destination-group">
@@ -454,6 +461,7 @@
                 inputmode="text"
                 maxlength="35"
                 autocomplete="off"
+                list="destination-datalist"
               />
             </div>
             <hr class="section-divider" />
@@ -545,6 +553,7 @@
                 class="origin"
                 maxlength="35"
                 autocomplete="off"
+                list="origin-datalist"
               />
             </div>
             <div class="form-group destination-group">
@@ -558,6 +567,7 @@
                 inputmode="text"
                 autocomplete="off"
                 maxlength="35"
+                list="destination-datalist"
               />
             </div>
             <hr class="section-divider" />
@@ -649,6 +659,7 @@
                 class="origin"
                 maxlength="35"
                 autocomplete="off"
+                list="origin-datalist"
               />
             </div>
             <div class="form-group destination-group">
@@ -662,6 +673,7 @@
                 inputmode="text"
                 autocomplete="off"
                 maxlength="35"
+                list="destination-datalist"
               />
             </div>
             <hr class="section-divider" />
@@ -753,6 +765,7 @@
                 class="origin"
                 autocomplete="off"
                 maxlength="35"
+                list="origin-datalist"
               />
             </div>
             <div class="form-group destination-group">
@@ -766,6 +779,7 @@
                 inputmode="text"
                 autocomplete="off"
                 maxlength="35"
+                list="destination-datalist"
               />
             </div>
             <hr class="section-divider" />
@@ -1181,7 +1195,7 @@
         <span class="pill-icon" aria-hidden="true"></span>
         <span class="pill-text"></span>
       </div>
-      <script type="module" src="./dist/bundle.js"></script>
+      <script type="module" src="./dist/bundle.js?v=2.5.3"></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
     </main>
     <footer class="footer">
@@ -1264,5 +1278,9 @@
       </div>
     </div>
     <!-- FIN DEL BANNER DE COOKIES -->
+
+    <!-- Datalists per suggeriments d'origen i destí -->
+    <datalist id="origin-datalist"></datalist>
+    <datalist id="destination-datalist"></datalist>
   </body>
 </html>
