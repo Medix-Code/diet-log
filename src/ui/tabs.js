@@ -5,7 +5,7 @@
  */
 
 import { updateExternalStylesForCurrentService } from "../services/servicesPanelManager.js";
-import { activeModalElement } from "../ui/modals.js";
+import { isAnyModalOpen } from "../ui/modals.js";
 
 // --- Constants ---
 const TABS = {
@@ -181,7 +181,7 @@ export function addSwipeListeners() {
 }
 
 function _handleTouchStart(event) {
-  if (!isSwipeEnabled || activeModalElement) return;
+  if (!isSwipeEnabled || isAnyModalOpen()) return;
   const firstTouch = event.touches[0];
   touchStartX = firstTouch.clientX;
   touchStartY = firstTouch.clientY;

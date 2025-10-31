@@ -146,6 +146,25 @@ Els tests usen dades fictícies (sense dades reals d'usuaris).
 
 ---
 
+## 🪵 Logging
+
+S'ha incorporat un logger centralitzat (`src/utils/logger.js`) per controlar els missatges. Per utilitzar-lo:
+
+```js
+import { logger } from "../utils/logger.js";
+
+const log = logger.withScope("NomDelMòdul");
+
+log.debug("Missatge de debug");
+log.info("Informació rellevant");
+log.warn("Avís important");
+log.error("Error greu", error);
+```
+
+En entorns de producció es mostren només avisos i errors. Pots canviar el nivell en temps real amb `logger.setLevel("debug")`. Fitxers pendents de migrar encara fan servir `console.*`; consulta `docs/logging.md` per al seguiment.
+
+---
+
 ## 📄 Llicència
 
 Aquest projecte està sota la **Llicència MIT**, permetent ús, modificació i distribució lliure sempre que es mantingui l'autor original.

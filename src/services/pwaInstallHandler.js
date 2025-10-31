@@ -4,6 +4,8 @@
  * @module pwaInstallHandler
  */
 
+import { logger } from "../utils/logger.js";
+
 // --- Constants de Configuració ---
 const LS_KEYS = {
   IS_INSTALLED: "pwa_isInstalled",
@@ -20,6 +22,7 @@ let installButtonElement = null;
 let dismissButtonElement = null;
 let installPromptElement = null;
 let isInitialized = false;
+const log = logger.withScope("PWA");
 
 // --- Funcions de LocalStorage ---
 const getLsNumber = (key, defaultValue = 0) =>
@@ -40,58 +43,55 @@ export function isAppInstalled() {
 }
 
 export function showInstallBanner(forceShow = false) {
-  console.log("[PWA] Intentant mostrar el bàner d'instal·lació...");
+  log.debug("Intentant mostrar el bàner d'instal·lació...");
 
   if (isAppInstalled()) {
-    console.log("[PWA] Bloquejat: L'app ja està instal·lada.");
+    log.debug("Bloquejat: L'app ja està instal·lada.");
     return;
   }
   if (getLsBoolean(LS_KEYS.NEVER_SHOW_AGAIN)) {
-    console.log("[PWA] Bloquejat: L'usuari ha demanat no tornar a mostrar.");
+    log.debug("Bloquejat: L'usuari ha demanat no tornar a mostrar.");
     return;
   }
   if (!deferredInstallPrompt) {
-    console.log("[PWA] Bloquejat: No hi ha cap event d'instal·lació guardat.");
+    log.debug("Bloquejat: No hi ha cap event d'instal·lació guardat.");
     return;
   }
   if (!installPromptElement) {
-    console.log("[PWA] Bloquejat: L'element HTML del bàner no s'ha trobat.");
+    log.debug("Bloquejat: L'element HTML del bàner no s'ha trobat.");
     return;
   }
 
-  console.log("%c[PWA] Mostrant el bàner!", "color: green; font-weight: bold;");
+  log.info("Mostrant el bàner!");
   installPromptElement.classList.add("visible");
   installPromptElement.classList.remove("hidden");
 }
 
 function hideInstallBanner() {
-  console.log("[PWA] Amagant el bàner.");
+  log.debug("Amagant el bàner.");
   installPromptElement?.classList.remove("visible");
   installPromptElement?.classList.add("hidden");
 }
 
 function handleDismissAction() {
-  console.log("[PWA] L'usuari ha descartat el bàner.");
+  log.info("L'usuari ha descartat el bàner.");
   hideInstallBanner();
   let dismissCount = getLsNumber(LS_KEYS.PROMPT_DISMISSED_COUNT);
   dismissCount++;
   setLsValue(LS_KEYS.PROMPT_DISMISSED_COUNT, dismissCount);
-  console.log(`[PWA] Comptador de descartats actualitzat a: ${dismissCount}`);
+  log.debug(`Comptador de descartats actualitzat a: ${dismissCount}`);
 
   if (dismissCount >= MAX_DISMISSALS) {
     setLsValue(LS_KEYS.NEVER_SHOW_AGAIN, true);
-    console.log(
-      "%c[PWA] S'ha assolit el límit de descartats. No es tornarà a mostrar.",
-      "color: orange;"
-    );
+    log.info("S'ha assolit el límit de descartats. No es tornarà a mostrar.");
   }
 }
 
 async function handleInstallAction() {
-  console.log("[PWA] L'usuari ha fet clic a 'Instal·lar'.");
+  log.info("L'usuari ha fet clic a 'Instal·lar'.");
   if (!deferredInstallPrompt) {
-    console.warn(
-      "[PWA] El botó d'instal·lar s'ha premut, però no hi havia cap event guardat."
+    log.warn(
+      "El botó d'instal·lar s'ha premut, però no hi havia cap event guardat."
     );
     return;
   }
@@ -101,25 +101,19 @@ async function handleInstallAction() {
   try {
     deferredInstallPrompt.prompt();
     const { outcome } = await deferredInstallPrompt.userChoice;
-    console.log(`[PWA] Resultat de la decisió de l'usuari: ${outcome}`);
+    log.info(`Resultat de la decisió de l'usuari: ${outcome}`);
 
     if (outcome === "accepted") {
       setLsValue(LS_KEYS.IS_INSTALLED, true);
       setLsValue(LS_KEYS.NEVER_SHOW_AGAIN, true);
-      console.log(
-        "%c[PWA] L'usuari ha acceptat la instal·lació! :)",
-        "color: green; font-weight: bold;"
-      );
+      log.info("L'usuari ha acceptat la instal·lació! :)");
     } else {
-      console.log(
-        "[PWA] L'usuari ha rebutjat la instal·lació des del diàleg del navegador."
+      log.info(
+        "L'usuari ha rebutjat la instal·lació des del diàleg del navegador."
       );
     }
   } catch (error) {
-    console.error(
-      "[PWA] Error durant el procés de prompt d'instal·lació:",
-      error
-    );
+    log.error("Error durant el procés de prompt d'instal·lació:", error);
   } finally {
     deferredInstallPrompt = null;
   }
@@ -128,15 +122,12 @@ async function handleInstallAction() {
 function handleBeforeInstallPrompt(event) {
   event.preventDefault();
   deferredInstallPrompt = event;
-  console.log(
-    "%c[PWA] Event 'beforeinstallprompt' capturat i guardat.",
-    "color: blue;"
-  );
+  log.debug("Event 'beforeinstallprompt' capturat i guardat.");
 }
 
 export function initPwaInstall() {
   if (isInitialized) return;
-  console.log("[PWA] Inicialitzant el gestor d'instal·lació...");
+  log.debug("Inicialitzant el gestor d'instal·lació...");
 
   installPromptElement = document.getElementById("install-prompt");
   installButtonElement = document.getElementById("install-button");
@@ -145,11 +136,9 @@ export function initPwaInstall() {
   if (installPromptElement && installButtonElement && dismissButtonElement) {
     installButtonElement.addEventListener("click", handleInstallAction);
     dismissButtonElement.addEventListener("click", handleDismissAction);
-    console.log("[PWA] Botons del bàner d'instal·lació configurats.");
+    log.debug("Botons del bàner d'instal·lació configurats.");
   } else {
-    console.warn(
-      "[PWA] No s'han trobat tots els elements del bàner d'instal·lació."
-    );
+    log.warn("No s'han trobat tots els elements del bàner d'instal·lació.");
   }
 
   window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -158,37 +147,31 @@ export function initPwaInstall() {
     .matchMedia("(display-mode: standalone)")
     .addEventListener("change", (e) => {
       if (e.matches) {
-        console.log(
-          "[PWA] Detectat canvi a mode 'standalone'. Marcat com instal·lat."
-        );
+        log.info("Detectat canvi a mode 'standalone'. Marcat com instal·lat.");
         setLsValue(LS_KEYS.IS_INSTALLED, true);
         setLsValue(LS_KEYS.NEVER_SHOW_AGAIN, true);
       }
     });
 
   isInitialized = true;
-  console.log("[PWA] Gestor d'instal·lació inicialitzat correctament.");
+  log.debug("Gestor d'instal·lació inicialitzat correctament.");
 }
 
 export function requestInstallPromptAfterAction() {
-  console.log("------------------------------------------");
-  console.log(
-    "[PWA] Comprovant si s'ha de mostrar el bàner després d'una acció..."
-  );
+  log.debug("------------------------------------------");
+  log.debug("Comprovant si s'ha de mostrar el bàner després d'una acció...");
 
   if (isAppInstalled()) {
-    console.log("[PWA Check] No es mostra: L'app ja està instal·lada.");
+    log.debug("[Check] No es mostra: L'app ja està instal·lada.");
     return;
   }
   if (getLsBoolean(LS_KEYS.NEVER_SHOW_AGAIN)) {
-    console.log(
-      "[PWA Check] No es mostra: L'usuari ha demanat no tornar a veure'l."
-    );
+    log.debug("[Check] No es mostra: L'usuari ha demanat no tornar a veure'l.");
     return;
   }
   if (!deferredInstallPrompt) {
-    console.log(
-      "[PWA Check] No es mostra: El navegador no ha ofert la possibilitat d'instal·lar (deferredPrompt és nul)."
+    log.debug(
+      "[Check] No es mostra: El navegador no ha ofert la possibilitat d'instal·lar (deferredPrompt és nul)."
     );
     return;
   }
@@ -196,28 +179,26 @@ export function requestInstallPromptAfterAction() {
   let actionCount = getLsNumber(LS_KEYS.ACTION_TRIGGER_COUNT);
   actionCount++;
   setLsValue(LS_KEYS.ACTION_TRIGGER_COUNT, actionCount);
-  console.log(`[PWA] Comptador d'accions incrementat a: ${actionCount}`);
+  log.debug(`Comptador d'accions incrementat a: ${actionCount}`);
 
   const dismissCount = getLsNumber(LS_KEYS.PROMPT_DISMISSED_COUNT);
-  console.log(`[PWA] Vegades que s'ha descartat el bàner: ${dismissCount}`);
+  log.debug(`Vegades que s'ha descartat el bàner: ${dismissCount}`);
 
   const shouldShowNow =
     (actionCount === 1 && dismissCount === 0) ||
     (actionCount >= TRIGGER_THRESHOLD && dismissCount < MAX_DISMISSALS);
 
-  console.log(
-    `[PWA] Es compleixen les condicions per mostrar? ${shouldShowNow}`
-  );
+  log.debug(`Es compleixen les condicions per mostrar? ${shouldShowNow}`);
 
   if (shouldShowNow) {
     setTimeout(() => showInstallBanner(), 1500);
     if (actionCount >= TRIGGER_THRESHOLD) {
       // Opcional: Resetejar el comptador si volem que ho torni a demanar a les 20, 30...
       // setLsValue(LS_KEYS.ACTION_TRIGGER_COUNT, 0);
-      // console.log("[PWA] Comptador d'accions resetejat (lògica opcional).");
+      // log.debug("Comptador d'accions resetejat (lògica opcional).");
     }
   } else {
-    console.log("[PWA] No es mostra el bàner aquesta vegada.");
+    log.debug("No es mostra el bàner aquesta vegada.");
   }
-  console.log("------------------------------------------");
+  log.debug("------------------------------------------");
 }

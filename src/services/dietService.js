@@ -7,6 +7,7 @@ export { Diet };
 import { pseudoId } from "../utils/pseudoId.js";
 
 import { timeAgo } from "../utils/relativeTime.js";
+import { logger } from "../utils/logger.js";
 import {
   addDiet,
   getAllDiets,
@@ -64,6 +65,7 @@ import {
 let savingPromise = Promise.resolve();
 let needsAnotherSave = false;
 let debouncedAutoSave = null;
+const log = logger.withScope("DietService");
 
 async function buildDietObject(generalData, servicesData, dietId) {
   // Validacions bàsiques
@@ -270,7 +272,7 @@ async function performSave(isManual) {
         await displayDietOptions();
       }
     } catch (error) {
-      console.error("Error en performSave:", error);
+      log.error("Error en performSave:", error);
       indicateSaveError(error.message || "No se pudo guardar");
       if (isManual) {
         showToast(`Error al guardar: ${error.message}`, "error");
@@ -377,7 +379,7 @@ export async function deleteDietHandler(id, dietDate, dietType) {
     captureInitialFormState();
     resetDirty();
   } catch (error) {
-    console.error("Error en deleteDietHandler:", error);
+    log.error("Error en deleteDietHandler:", error);
     showToast("Error al eliminar la dieta", "error");
   }
 }

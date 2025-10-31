@@ -31,6 +31,9 @@ import "./ui/focusScrollHandler.js";
 import { setupNameAndVehicleInputSanitizers } from "./utils/validation.js";
 import { setupNotesSelectedService } from "./services/notesService.js";
 import { initCookieConsentService } from "./services/cookieConsentService.js";
+import { logger } from "./utils/logger.js";
+
+const log = logger.withScope("Init");
 
 /**
  * Funcions internes d'inicialització
@@ -40,22 +43,22 @@ import { initCookieConsentService } from "./services/cookieConsentService.js";
  */
 function setupDonationLink() {
   const donationLink = document.getElementById(DOM_IDS.DONATION_LINK_ID);
-  if (!donationLink) return console.warn("No s'ha trobat l'enllaç de donació.");
+  if (!donationLink) return log.warn("No s'ha trobat l'enllaç de donació.");
 
   const userId = getAnonymousUserId();
   try {
     const url = new URL(donationLink.href);
     url.searchParams.set("custom", userId);
     donationLink.href = url.toString();
-    console.log("Enllaç de donació actualitzat amb ID anònim.");
+    log.info("Enllaç de donació actualitzat amb ID anònim.");
   } catch (error) {
-    console.error("Error modificant l'URL de donació:", error);
+    log.error("Error modificant l'URL de donació:", error);
   }
 }
 
 export async function initializeApp() {
   try {
-    console.log("initializeApp() iniciant...");
+    log.info("initializeApp() iniciant...");
 
     // Prepara dades bàsiques
     setTodayDate();
@@ -96,9 +99,7 @@ export async function initializeApp() {
       );
       if (savedServiceType === "TSU" || savedServiceType === "TSNU") {
         serviceTypeSelect.value = savedServiceType;
-        console.log(
-          `[LocalStorage] Carregat tipus de servei: ${savedServiceType}`
-        );
+        log.debug(`[LocalStorage] Carregat tipus de servei: ${savedServiceType}`);
       }
       updateServicePanelsForServiceType(serviceTypeSelect.value);
     }
@@ -110,8 +111,8 @@ export async function initializeApp() {
     easterEgg();
     initCookieConsentService();
 
-    console.log("initializeApp() completada.");
+    log.info("initializeApp() completada.");
   } catch (error) {
-    console.error("Error en la inicialització de l'app:", error);
+    log.error("Error en la inicialització de l'app:", error);
   }
 }

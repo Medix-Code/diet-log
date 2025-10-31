@@ -8,15 +8,17 @@ import { setControlsDisabled } from "../ui/uiControls.js";
 import { applyCspNonce } from "../utils/utils.js";
 import { getOCRFeedbackManager } from "../utils/ocrFeedbackBridge.js";
 import { showToast } from "../ui/toast.js";
+import { logger } from "../utils/logger.js";
+import {
+  resizeImage,
+  preprocessImage,
+} from "./cameraOcr/imageProcessing.js";
 
 // --- Constants ---
 const OCR_LANGUAGE = "spa";
 const TESSERACT_ENGINE_MODE = 1;
 const TESSERACT_CHAR_WHITELIST =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:/-ÀÉÍÓÚÈÒÀÜÏÇÑ";
-const IMAGE_MAX_DIMENSION = 1500;
-const IMAGE_QUALITY = 0.95;
-const IMAGE_TYPE = "image/png";
 const MAX_IMAGE_SIZE_MB = 10; // Límit de mida d'imatge per prevenció de malware
 const MODAL_TRANSITION_DURATION = 300;
 const PROGRESS_HIDE_DELAY = 1000;
@@ -87,6 +89,7 @@ let tesseractScriptLoaded = false;
 let lastPressOcr = 0;
 let ocrFeedback = null; // Nou gestor de feedback OCR
 let currentProgress = 0; // Seguiment del progrés actual per evitar que baixi
+const log = logger.withScope("CameraOCR");
 
 // --- Funcions ---
 
@@ -200,71 +203,6 @@ function _updateOcrProgress(percent, statusText) {
 
 function _hideOcrProgress() {
   currentProgress = 0;
-}
-
-async function _resizeImage(file) {
-  try {
-    const img = await createImageBitmap(file);
-    const { width: originalWidth, height: originalHeight } = img;
-    if (Math.max(originalWidth, originalHeight) <= IMAGE_MAX_DIMENSION) {
-      img.close();
-      return file;
-    }
-    const ratio = Math.min(
-      IMAGE_MAX_DIMENSION / originalWidth,
-      IMAGE_MAX_DIMENSION / originalHeight
-    );
-    const width = Math.round(originalWidth * ratio);
-    const height = Math.round(originalHeight * ratio);
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("No contexto 2D.");
-    ctx.drawImage(img, 0, 0, width, height);
-    img.close();
-    return new Promise((resolve) =>
-      canvas.toBlob(resolve, IMAGE_TYPE, IMAGE_QUALITY)
-    );
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function _preprocessImage(blob) {
-  try {
-    const img = await createImageBitmap(blob);
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("No contexto 2D.");
-
-    try {
-      // Neteja EXIF per privacitat
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-    } catch (drawError) {
-      if (drawError.message && drawError.message.includes("detached")) {
-        throw new Error("Error al procesar la imagen. Inténtalo de nuevo.");
-      }
-      throw drawError;
-    }
-    img.close();
-
-    // Filtres per millorar OCR
-    ctx.filter = "grayscale(100%) contrast(180%) brightness(110%)";
-    try {
-      ctx.drawImage(canvas, 0, 0);
-    } catch (filterDrawError) {
-      console.warn("OCR: Fallback sense filtres:", filterDrawError);
-    }
-
-    return new Promise((resolve) =>
-      canvas.toBlob(resolve, IMAGE_TYPE, IMAGE_QUALITY)
-    );
-  } catch (error) {
-    throw error;
-  }
 }
 
 function _safeSetFieldValue(fieldId, value, fieldName) {
@@ -466,10 +404,10 @@ async function _handleFileChange(event) {
 
   try {
     _updateOcrProgress(5);
-    let imageBlob = await _resizeImage(file);
+    let imageBlob = await resizeImage(file);
 
     _updateOcrProgress(20);
-    imageBlob = await _preprocessImage(imageBlob);
+    imageBlob = await preprocessImage(imageBlob);
 
     _updateOcrProgress(35);
     await new Promise((r) => setTimeout(r, 100));
@@ -535,13 +473,13 @@ async function _handleFileChange(event) {
       setTimeout(() => _closeCameraModal(), 1000);
     }
   } catch (error) {
-    console.error("❌ OCR Error:", error);
+    log.error("Error durant el processament OCR:", error);
     // Error inesperat → mostra TOAST d'error i tanquem modal suaument
     showToast("Error al escanear. Imagen no válida", "error");
     ocrFeedback?.reset?.();
     // Espera 3 segons perquè es llegeixi el TOAST abans de tancar modal
     setTimeout(() => {
-      console.log("🔍 Tancant modal OCR després de timeout");
+      log.debug("Tancant modal OCR després de timeout");
       _closeCameraModal();
     }, 3000);
   } finally {
