@@ -568,6 +568,26 @@ class LocationSuggestionsService {
   }
 
   /**
+   * Calcula l'espai ocupat pels elements fixos superiors (topbar + pestanyes).
+   */
+  getFixedHeadersOffset() {
+    const selectors = [".top-bar", ".tabs-container"];
+    let maxBottom = 0;
+
+    selectors.forEach((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return;
+
+      const rect = element.getBoundingClientRect();
+      if (rect.bottom > maxBottom) {
+        maxBottom = rect.bottom;
+      }
+    });
+
+    return Math.max(maxBottom, 0);
+  }
+
+  /**
    * Crea un desplegable personalitzat visual
    */
   createCustomDropdown(input, suggestions) {
@@ -693,6 +713,7 @@ class LocationSuggestionsService {
     const viewportHeight = viewport?.height ?? window.innerHeight;
     const viewportTop = viewport?.offsetTop ?? 0;
     const viewportBottom = viewportTop + viewportHeight;
+    const headerOffset = this.getFixedHeadersOffset();
 
     const dropdownRect = dropdown.getBoundingClientRect();
     const dropdownTop = dropdownRect.top + viewportTop;
@@ -705,8 +726,9 @@ class LocationSuggestionsService {
 
     if (dropdownBottom > viewportBottom - SAFE_BOTTOM_MARGIN) {
       scrollNeeded = dropdownBottom - (viewportBottom - SAFE_BOTTOM_MARGIN);
-    } else if (dropdownTop < viewportTop + SAFE_TOP_MARGIN) {
-      scrollNeeded = dropdownTop - (viewportTop + SAFE_TOP_MARGIN);
+    } else if (dropdownTop < viewportTop + headerOffset + SAFE_TOP_MARGIN) {
+      scrollNeeded =
+        dropdownTop - (viewportTop + headerOffset + SAFE_TOP_MARGIN);
     }
 
     if (scrollNeeded !== 0) {
@@ -719,7 +741,7 @@ class LocationSuggestionsService {
 
     const inputRect = input.getBoundingClientRect();
     const inputTop = inputRect.top + viewportTop;
-    const desiredInputTop = viewportTop + 60;
+    const desiredInputTop = viewportTop + headerOffset + SAFE_TOP_MARGIN;
 
     if (inputTop < desiredInputTop) {
       const adjust = inputTop - desiredInputTop;
