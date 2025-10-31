@@ -1,7 +1,7 @@
 // src/ui/focusScrollHandler.js
 
 const FOCUS_SCROLL_DELAY = 250;
-const LOCATION_TOP_MARGIN = 16;
+const EXTRA_TOP_MARGIN = 16; // Espai extra per sobre del camp
 const MIN_SPACE_BELOW_FOR_LOCATIONS = 320;
 
 const formElements = document.querySelectorAll(
@@ -18,6 +18,27 @@ const getViewportMetrics = () => {
   };
 };
 
+/**
+ * Calcula l'alçada total de les barres fixes superiors (topbar + tabs)
+ * per assegurar que el contingut no queda tapat
+ */
+const getFixedHeadersHeight = () => {
+  const topBar = document.querySelector(".top-bar");
+  const tabsContainer = document.querySelector(".tabs-container");
+
+  let totalHeight = 0;
+
+  if (topBar) {
+    totalHeight += topBar.offsetHeight;
+  }
+
+  if (tabsContainer) {
+    totalHeight += tabsContainer.offsetHeight;
+  }
+
+  return totalHeight;
+};
+
 const ensureSpaceForLocationDropdown = (element) => {
   const { height: viewportHeight, top: viewportTop } = getViewportMetrics();
   const rect = element.getBoundingClientRect();
@@ -26,17 +47,21 @@ const ensureSpaceForLocationDropdown = (element) => {
 
   const absoluteTop = window.scrollY + rect.top;
   const absoluteBottom = absoluteTop + rect.height;
-  const desiredTop = viewportTop + LOCATION_TOP_MARGIN;
+
+  // Calcula el marge superior dinàmicament segons les barres fixes
+  const fixedHeadersHeight = getFixedHeadersHeight();
+  const totalTopMargin = fixedHeadersHeight + EXTRA_TOP_MARGIN;
+  const desiredTop = viewportTop + totalTopMargin;
+
   const maxScroll = Math.max(scrollingElement.scrollHeight - viewportHeight, 0);
 
   let targetScroll = clamp(absoluteTop - desiredTop, 0, maxScroll);
 
   const elementBottomAfterScroll = absoluteBottom - targetScroll;
-  const spaceBelow =
-    viewportHeight - (elementBottomAfterScroll - viewportTop);
+  const spaceBelow = viewportHeight - (elementBottomAfterScroll - viewportTop);
 
   const maxSpaceBelow = Math.max(
-    viewportHeight - (LOCATION_TOP_MARGIN + rect.height),
+    viewportHeight - (totalTopMargin + rect.height),
     0
   );
   const desiredSpaceBelow = Math.min(
