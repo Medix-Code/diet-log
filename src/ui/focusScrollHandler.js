@@ -40,7 +40,7 @@ const getFixedHeadersHeight = () => {
 };
 
 const ensureSpaceForLocationDropdown = (element) => {
-  const { height: viewportHeight, top: viewportTop } = getViewportMetrics();
+  const { height: viewportHeight } = getViewportMetrics();
   const rect = element.getBoundingClientRect();
   const scrollingElement =
     document.scrollingElement || document.documentElement || document.body;
@@ -48,20 +48,22 @@ const ensureSpaceForLocationDropdown = (element) => {
   const absoluteTop = window.scrollY + rect.top;
   const absoluteBottom = absoluteTop + rect.height;
 
-  // Calcula el marge superior dinàmicament segons les barres fixes
+  // Calcula l'alçada de les barres fixes (topbar + tabs)
   const fixedHeadersHeight = getFixedHeadersHeight();
-  const totalTopMargin = fixedHeadersHeight + EXTRA_TOP_MARGIN;
-  const desiredTop = viewportTop + totalTopMargin;
 
+  // El camp ha d'estar just per sota de les barres fixes + el marge extra
+  const targetPositionFromTop = fixedHeadersHeight + EXTRA_TOP_MARGIN;
+
+  // Calculem on ha d'estar el scroll perquè el camp quedi a la posició desitjada
   const maxScroll = Math.max(scrollingElement.scrollHeight - viewportHeight, 0);
+  let targetScroll = clamp(absoluteTop - targetPositionFromTop, 0, maxScroll);
 
-  let targetScroll = clamp(absoluteTop - desiredTop, 0, maxScroll);
-
+  // Ara assegurem que hi ha espai suficient per sota per al dropdown
   const elementBottomAfterScroll = absoluteBottom - targetScroll;
-  const spaceBelow = viewportHeight - (elementBottomAfterScroll - viewportTop);
+  const spaceBelow = viewportHeight - elementBottomAfterScroll;
 
   const maxSpaceBelow = Math.max(
-    viewportHeight - (totalTopMargin + rect.height),
+    viewportHeight - (targetPositionFromTop + rect.height),
     0
   );
   const desiredSpaceBelow = Math.min(
