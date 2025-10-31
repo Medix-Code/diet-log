@@ -134,6 +134,7 @@ body {
   flex-direction: column;
   margin: 0;
   padding: 0;
+  scroll-padding-top: calc(var(--top-bar-height) + var(--tab-height) + 12px);
 }
 body.modal-open {
   overflow: hidden !important;
@@ -141,7 +142,12 @@ body.modal-open {
 
 main {
   flex: 1;
-  padding-top: 100px;
+  padding-top: calc(var(--top-bar-height) + var(--tab-height) + var(--space-md) + 10px);
+}
+
+input.origin,
+input.destination {
+  scroll-margin-top: calc(var(--top-bar-height) + var(--tab-height) + 12px);
 }
 
 .top-bar {
@@ -1774,13 +1780,11 @@ button .fa {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
+  line-height: 1.6;
+  padding: 20px 0px 20px;
 }
 #about-modal .modal-scrollable-content p {
   margin: 0 6px 6px;
-}
-#about-modal .modal-scrollable-content {
-  line-height: 1.6;
-  padding: 20px 0px 20px;
 }
 
 /* COLOR en <strong> */
@@ -1903,6 +1907,7 @@ button .fa {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
   scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 .diet-list::-webkit-scrollbar {
   width: 6px;
@@ -1921,9 +1926,6 @@ button .fa {
 }
 .diet-list::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover, rgba(0, 0, 0, 0.4));
-}
-.diet-list {
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Cada ítem: Flex column per text a dalt + botons a sota */
@@ -3904,6 +3906,13 @@ body.app-ready #main-content {
   }
 }
 /* Elimina completament el datalist natiu */
+input[type=text].origin,
+input[type=text].destination {
+  background-image: none !important;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 input[type=text].origin::-webkit-calendar-picker-indicator,
 input[type=text].destination::-webkit-calendar-picker-indicator {
   display: none !important;
@@ -3916,13 +3925,6 @@ input[type=text].destination::-webkit-calendar-picker-indicator {
 input[type=text].origin::-webkit-list-button,
 input[type=text].destination::-webkit-list-button {
   display: none !important;
-}
-input[type=text].origin,
-input[type=text].destination {
-  background-image: none !important;
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
-  appearance: textfield;
 }
 input[type=text].origin.has-dropdown-open,
 input[type=text].destination.has-dropdown-open {
@@ -4009,5 +4011,3 @@ input[type=text].destination.has-dropdown-open {
   outline: 2px solid #004aad;
   outline-offset: 2px;
 }
-
-/*# sourceMappingURL=main.css.map */

@@ -23,20 +23,20 @@ const getViewportMetrics = () => {
  * per assegurar que el contingut no queda tapat
  */
 const getFixedHeadersHeight = () => {
-  const topBar = document.querySelector(".top-bar");
-  const tabsContainer = document.querySelector(".tabs-container");
+  const selectors = [".top-bar", ".tabs-container"];
+  let maxBottom = 0;
 
-  let totalHeight = 0;
+  selectors.forEach((selector) => {
+    const element = document.querySelector(selector);
+    if (!element) return;
 
-  if (topBar) {
-    totalHeight += topBar.offsetHeight;
-  }
+    const rect = element.getBoundingClientRect();
+    if (rect.bottom > maxBottom) {
+      maxBottom = rect.bottom;
+    }
+  });
 
-  if (tabsContainer) {
-    totalHeight += tabsContainer.offsetHeight;
-  }
-
-  return totalHeight;
+  return Math.max(maxBottom, 0);
 };
 
 const ensureSpaceForLocationDropdown = (element) => {

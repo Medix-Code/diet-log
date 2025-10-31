@@ -567,6 +567,23 @@ class LocationSuggestionsService {
     return Math.max(smallestZIndex - 1, 0);
   }
 
+  getFixedHeadersOffset() {
+    const selectors = [".top-bar", ".tabs-container"];
+    let maxBottom = 0;
+
+    selectors.forEach((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return;
+
+      const rect = element.getBoundingClientRect();
+      if (rect.bottom > maxBottom) {
+        maxBottom = rect.bottom;
+      }
+    });
+
+    return Math.max(maxBottom, 0);
+  }
+
   /**
    * Crea un desplegable personalitzat visual
    */
@@ -610,6 +627,7 @@ class LocationSuggestionsService {
     this.currentInput = input;
     this.selectedIndex = -1;
 
+    this.ensureDropdownVisibility(dropdown, input);
     this.scheduleDropdownVisibilityCheck();
 
     // Tanca el desplegable si es clica fora
@@ -693,6 +711,7 @@ class LocationSuggestionsService {
     const viewportHeight = viewport?.height ?? window.innerHeight;
     const viewportTop = viewport?.offsetTop ?? 0;
     const viewportBottom = viewportTop + viewportHeight;
+    const headerOffset = this.getFixedHeadersOffset();
 
     const dropdownRect = dropdown.getBoundingClientRect();
     const dropdownTop = dropdownRect.top + viewportTop;
@@ -705,11 +724,12 @@ class LocationSuggestionsService {
 
     if (dropdownBottom > viewportBottom - SAFE_BOTTOM_MARGIN) {
       scrollNeeded = dropdownBottom - (viewportBottom - SAFE_BOTTOM_MARGIN);
-    } else if (dropdownTop < viewportTop + SAFE_TOP_MARGIN) {
-      scrollNeeded = dropdownTop - (viewportTop + SAFE_TOP_MARGIN);
+    } else if (dropdownTop < viewportTop + headerOffset + SAFE_TOP_MARGIN) {
+      scrollNeeded =
+        viewportTop + headerOffset + SAFE_TOP_MARGIN - dropdownTop;
     }
 
-    if (scrollNeeded !== 0) {
+    if (scrollNeeded > 0) {
       window.scrollBy({
         top: scrollNeeded,
         behavior: "smooth",
@@ -719,10 +739,10 @@ class LocationSuggestionsService {
 
     const inputRect = input.getBoundingClientRect();
     const inputTop = inputRect.top + viewportTop;
-    const desiredInputTop = viewportTop + 60;
+    const desiredInputTop = viewportTop + headerOffset + SAFE_TOP_MARGIN;
 
     if (inputTop < desiredInputTop) {
-      const adjust = inputTop - desiredInputTop;
+      const adjust = desiredInputTop - inputTop;
       window.scrollBy({
         top: adjust,
         behavior: "smooth",
