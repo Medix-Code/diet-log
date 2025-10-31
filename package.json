@@ -5,7 +5,9 @@
   "main": "index.html",
   "scripts": {
     "inject-version": "node inject-version.js",
-    "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --loader:.js=jsx --outfile=dist/bundle.js",
+    "update-hashes": "node update-hashes.js",
+    "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --loader:.js=jsx --outfile=dist/bundle.js && npm run update-hashes",
+    "build:css": "sass css/main.scss css/main.css --style=expanded && sass css/main.scss css/main.min.css --style=compressed && npm run update-hashes",
     "test": "vitest",
     "dev": "echo 'Serve index.html with compression'"
   },

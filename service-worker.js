@@ -16,12 +16,22 @@ const PRECACHE_URLS = [
   "/assets/icons/sun.svg",
 ];
 
-const STATIC_EXTENSIONS = [".js", ".css", ".png", ".svg", ".jpg", ".jpeg", ".webp", ".json", ".ico"];
+const STATIC_EXTENSIONS = [
+  ".js",
+  ".css",
+  ".png",
+  ".svg",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".json",
+  ".ico",
+];
 const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.3":
-    "a712963b80100400820146f7e0705c20cc8ac662ab964b5daf933db6e1cb87999ecc0eecff7eebcaf1eea6f840cedaa4",
+    "23dfc6afafd1bc4fd2f0f4f1610db070ed2dd0e80bf540cfa7db5b29973b9573218547c74a5512d9aa4e1623b53acf28",
   "/css/main.min.css?v=2.3.4":
-    "88ca99a9cd692cfc96f78012923a9cdeaca84d946477e477758bd7ec3391a846ee353ade50973efc0657367aaf6b6e5c",
+    "5f1de8e1b7e5cb2e5e5c982f30c45f0b791e987885200b1e8a3811d97ebc2c79328a29196bb0e2b57ebc4a42b176abb2",
 };
 
 function bufferToHex(buffer) {
