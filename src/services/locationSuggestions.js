@@ -78,6 +78,22 @@ class LocationSuggestionsService {
     this.currentInput = null;
     this.selectedIndex = -1;
     this.inputDebounceTimer = null; // Timer per debounce
+    this.scrollAnimationFrame = null;
+
+    this.handleWindowScroll = () => {
+      if (!this.currentDropdown || !this.currentInput) return;
+      this.scheduleDropdownReposition();
+    };
+
+    this.handleWindowResize = () => {
+      if (!this.currentDropdown || !this.currentInput) return;
+      this.scheduleDropdownReposition();
+    };
+
+    this.handleViewportShift = () => {
+      if (!this.currentDropdown || !this.currentInput) return;
+      this.scheduleDropdownReposition();
+    };
   }
 
   /**
@@ -406,6 +422,31 @@ class LocationSuggestionsService {
     });
   }
 
+  scheduleDropdownReposition() {
+    if (this.scrollAnimationFrame) return;
+
+    this.scrollAnimationFrame = window.requestAnimationFrame(() => {
+      this.scrollAnimationFrame = null;
+
+      if (!this.currentDropdown || !this.currentInput) return;
+      if (!document.body.contains(this.currentInput)) {
+        this.closeDropdown();
+        return;
+      }
+
+      this.repositionDropdown();
+    });
+  }
+
+  repositionDropdown() {
+    if (!this.currentDropdown || !this.currentInput) return;
+
+    const inputRect = this.currentInput.getBoundingClientRect();
+    this.currentDropdown.style.top = `${inputRect.bottom}px`;
+    this.currentDropdown.style.left = `${inputRect.left}px`;
+    this.currentDropdown.style.width = `${inputRect.width}px`;
+  }
+
   /**
    * Actualitza l'opció seleccionada visualment
    */
@@ -429,6 +470,11 @@ class LocationSuggestionsService {
     if (this.currentDropdown) {
       this.currentDropdown.remove();
       this.currentDropdown = null;
+
+      if (this.scrollAnimationFrame) {
+        cancelAnimationFrame(this.scrollAnimationFrame);
+        this.scrollAnimationFrame = null;
+      }
 
       // Elimina la classe del input per restaurar el border-radius normal
       if (this.currentInput) {
@@ -610,24 +656,20 @@ class LocationSuggestionsService {
     // NO guardem els valors que l'usuari escriu
     // Només mostrem la llista oficial de municipis i centres sanitaris
 
-    // Tanca el desplegable quan es fa scroll
-    window.addEventListener(
-      "scroll",
-      () => {
-        this.closeDropdown();
-      },
-      true
-    );
+    // Manté el desplegable alineat mentre es fa scroll o canvia la mida
+    window.addEventListener("scroll", this.handleWindowScroll, true);
+    window.addEventListener("resize", this.handleWindowResize);
 
-    // Reposiciona el desplegable si canvia la mida de la finestra
-    window.addEventListener("resize", () => {
-      if (this.currentDropdown && this.currentInput) {
-        const inputRect = this.currentInput.getBoundingClientRect();
-        this.currentDropdown.style.top = `${inputRect.bottom}px`;
-        this.currentDropdown.style.left = `${inputRect.left}px`;
-        this.currentDropdown.style.width = `${inputRect.width}px`;
-      }
-    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener(
+        "resize",
+        this.handleViewportShift
+      );
+      window.visualViewport.addEventListener(
+        "scroll",
+        this.handleViewportShift
+      );
+    }
   }
 }
 
