@@ -1,4 +1,4 @@
-const VERSION = "2.1.4";
+const VERSION = "2.1.5";
 const CACHE_PREFIX = "misdietas-cache";
 const CACHE_NAME = `${CACHE_PREFIX}-v${VERSION}`;
 
@@ -31,7 +31,7 @@ const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.3":
     "74174e2a586e8924677a96d8e93bb48f1e046d004bacba65b83fefab1574eec28073e8bcd5925854d0a8785e2078fd4e",
   "/css/main.min.css?v=2.3.4":
-    "32e71a085915c7f09ef611487a3905b5e2a225ccd290f524ab0ed303b0862d841185216c2d829c60e032ecf76d4d9590",
+    "a817f6585ccefeb39a1ccf58daec4ce7493acc373b57348be04d79178aa161c1282e9d9bbfb92cc2bbd17e7edf782d9f",
 };
 
 function bufferToHex(buffer) {
