@@ -77,6 +77,7 @@ class LocationSuggestionsService {
     this.currentDropdown = null;
     this.currentInput = null;
     this.selectedIndex = -1;
+    this.inputDebounceTimer = null; // Timer per debounce
   }
 
   /**
@@ -363,6 +364,22 @@ class LocationSuggestionsService {
     this.currentInput = input;
     this.selectedIndex = -1;
 
+    // Scroll automàtic per assegurar que el desplegable sigui visible
+    // Espera un frame per assegurar que el dropdown està renderitzat
+    requestAnimationFrame(() => {
+      const dropdownRect = dropdown.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Si el dropdown està tapat pel teclat (part inferior fora de pantalla)
+      if (dropdownRect.bottom > viewportHeight) {
+        // Scroll suau per mostrar el dropdown
+        input.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    });
+
     // Tanca el desplegable si es clica fora
     setTimeout(() => {
       document.addEventListener("click", this.handleOutsideClick.bind(this));
@@ -523,7 +540,7 @@ class LocationSuggestionsService {
       true
     );
 
-    // Actualitza suggeriments mentre s'escriu
+    // Actualitza suggeriments mentre s'escriu (amb debounce per evitar parpadeig)
     document.addEventListener("input", (event) => {
       const target = event.target;
       if (!(target instanceof HTMLInputElement)) return;
@@ -538,10 +555,18 @@ class LocationSuggestionsService {
       if (type) {
         const value = target.value.trim();
 
+        // Esborra el timer anterior
+        if (this.inputDebounceTimer) {
+          clearTimeout(this.inputDebounceTimer);
+        }
+
         // Només mostra desplegable si té 3+ caràcters
         if (value.length >= MIN_CHARS_FOR_SUGGESTIONS) {
-          const suggestions = this.getSuggestionsForInput(type, value);
-          this.createCustomDropdown(target, suggestions);
+          // Debounce de 200ms per evitar parpadeig
+          this.inputDebounceTimer = setTimeout(() => {
+            const suggestions = this.getSuggestionsForInput(type, value);
+            this.createCustomDropdown(target, suggestions);
+          }, 200);
         } else {
           this.closeDropdown();
         }
