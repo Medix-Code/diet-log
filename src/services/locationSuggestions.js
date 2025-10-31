@@ -310,12 +310,19 @@ class LocationSuggestionsService {
    * Crea un desplegable personalitzat visual
    */
   createCustomDropdown(input, suggestions) {
-    // Elimina desplegable anterior si existeix
-    this.closeDropdown();
-
     if (!suggestions || suggestions.length === 0) {
+      this.closeDropdown();
       return;
     }
+
+    // Si ja existeix el desplegable pel mateix input, només actualitza les opcions
+    if (this.currentDropdown && this.currentInput === input) {
+      this.updateDropdownOptions(this.currentDropdown, suggestions, input);
+      return;
+    }
+
+    // Elimina desplegable anterior si existeix
+    this.closeDropdown();
 
     // Crea el contenidor del desplegable
     const dropdown = document.createElement("div");
@@ -325,8 +332,8 @@ class LocationSuggestionsService {
     // Posiciona el desplegable ENGANXAT just a sota del input (sense espai)
     const inputRect = input.getBoundingClientRect();
     dropdown.style.position = "fixed";
-    dropdown.style.top = `${inputRect.bottom}px`; // Eliminem window.scrollY per mantenir-lo fix
-    dropdown.style.left = `${inputRect.left}px`; // Eliminem window.scrollX per mantenir-lo fix
+    dropdown.style.top = `${inputRect.bottom}px`;
+    dropdown.style.left = `${inputRect.left}px`;
     dropdown.style.width = `${inputRect.width}px`;
     dropdown.style.zIndex = "9999";
 
@@ -334,6 +341,46 @@ class LocationSuggestionsService {
     input.classList.add("has-dropdown-open");
 
     // Afegeix les opcions
+    this.updateDropdownOptions(dropdown, suggestions, input);
+
+    // Afegeix al document
+    document.body.appendChild(dropdown);
+    this.currentDropdown = dropdown;
+    this.currentInput = input;
+    this.selectedIndex = -1;
+
+    // Scroll automàtic més agressiu
+    setTimeout(() => {
+      const viewportHeight = window.innerHeight;
+      const dropdownRect = dropdown.getBoundingClientRect();
+
+      // Si el desplegable està fora de la pantalla (tapat pel teclat)
+      if (dropdownRect.bottom > viewportHeight - 20) {
+        // Calcula quant hem de fer scroll
+        const scrollAmount = dropdownRect.bottom - viewportHeight + 100;
+
+        // Scroll directe amb window.scrollBy
+        window.scrollBy({
+          top: scrollAmount,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+
+    // Tanca el desplegable si es clica fora
+    setTimeout(() => {
+      document.addEventListener("click", this.handleOutsideClick.bind(this));
+    }, 0);
+  }
+
+  /**
+   * Actualitza les opcions del desplegable sense recrear-lo (evita parpadeig)
+   */
+  updateDropdownOptions(dropdown, suggestions, input) {
+    // Neteja opcions existents
+    dropdown.innerHTML = "";
+
+    // Afegeix les noves opcions
     suggestions.forEach((suggestion, index) => {
       const option = document.createElement("div");
       option.className = "custom-dropdown-option";
@@ -357,33 +404,6 @@ class LocationSuggestionsService {
 
       dropdown.appendChild(option);
     });
-
-    // Afegeix al document
-    document.body.appendChild(dropdown);
-    this.currentDropdown = dropdown;
-    this.currentInput = input;
-    this.selectedIndex = -1;
-
-    // Scroll automàtic per assegurar que el desplegable sigui visible
-    // Espera un frame per assegurar que el dropdown està renderitzat
-    requestAnimationFrame(() => {
-      const dropdownRect = dropdown.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-
-      // Si el dropdown està tapat pel teclat (part inferior fora de pantalla)
-      if (dropdownRect.bottom > viewportHeight) {
-        // Scroll suau per mostrar el dropdown
-        input.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    });
-
-    // Tanca el desplegable si es clica fora
-    setTimeout(() => {
-      document.addEventListener("click", this.handleOutsideClick.bind(this));
-    }, 0);
   }
 
   /**
@@ -562,11 +582,11 @@ class LocationSuggestionsService {
 
         // Només mostra desplegable si té 3+ caràcters
         if (value.length >= MIN_CHARS_FOR_SUGGESTIONS) {
-          // Debounce de 200ms per evitar parpadeig
+          // Debounce de 300ms per evitar parpadeig
           this.inputDebounceTimer = setTimeout(() => {
             const suggestions = this.getSuggestionsForInput(type, value);
             this.createCustomDropdown(target, suggestions);
-          }, 200);
+          }, 300);
         } else {
           this.closeDropdown();
         }
