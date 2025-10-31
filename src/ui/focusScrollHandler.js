@@ -40,50 +40,12 @@ const getFixedHeadersHeight = () => {
 };
 
 const ensureSpaceForLocationDropdown = (element) => {
-  const { height: viewportHeight } = getViewportMetrics();
-  const rect = element.getBoundingClientRect();
-  const scrollingElement =
-    document.scrollingElement || document.documentElement || document.body;
-
-  // Posició absoluta de l'element respecte el document
-  const absoluteTop = window.scrollY + rect.top;
-
-  // Calcula l'alçada de les barres fixes (topbar + tabs)
-  const fixedHeadersHeight = getFixedHeadersHeight();
-
-  // El camp ha d'aparèixer VISUALMENT per sota de les barres + marge
-  const desiredVisualTop = fixedHeadersHeight + EXTRA_TOP_MARGIN;
-
-  // Calculem el scroll necessari
-  const maxScroll = Math.max(scrollingElement.scrollHeight - viewportHeight, 0);
-  let targetScroll = clamp(absoluteTop - desiredVisualTop, 0, maxScroll); // Ara assegurem que hi ha espai suficient per sota per al dropdown
-  // Després del scroll, l'element estarà a desiredVisualTop píxels des de dalt
-  const elementVisualBottom = desiredVisualTop + rect.height;
-  const spaceBelow = viewportHeight - elementVisualBottom;
-
-  const maxSpaceBelow = Math.max(
-    viewportHeight - (desiredVisualTop + rect.height),
-    0
-  );
-  const desiredSpaceBelow = Math.min(
-    MIN_SPACE_BELOW_FOR_LOCATIONS,
-    maxSpaceBelow
-  );
-
-  if (spaceBelow < desiredSpaceBelow) {
-    const extraScroll = Math.min(
-      desiredSpaceBelow - spaceBelow,
-      Math.max(maxScroll - targetScroll, 0)
-    );
-
-    if (extraScroll > 0) {
-      targetScroll += extraScroll;
-    }
-  }
-
-  window.scrollTo({
-    top: targetScroll,
+  // Utilitzem scrollIntoView que respecta el scroll-margin-top del CSS
+  // Això assegura que l'element no quedi amagat darrere de la topbar i els tabs
+  element.scrollIntoView({
     behavior: "smooth",
+    block: "start", // Alinea al principi del viewport (respectant scroll-margin-top)
+    inline: "nearest",
   });
 };
 

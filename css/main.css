@@ -147,7 +147,7 @@ main {
 
 input.origin,
 input.destination {
-  scroll-margin-top: calc(var(--top-bar-height) + var(--tab-height) + 12px);
+  scroll-margin-top: calc(var(--top-bar-height) + var(--tab-height) + 20px);
 }
 
 .top-bar {
