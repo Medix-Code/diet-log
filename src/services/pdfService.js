@@ -10,31 +10,42 @@ import { gatherAllData } from "./formService.js";
 import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
 import { getDiet } from "../db/indexedDbDietRepository.js";
-import { applyCspNonce } from "../utils/utils.js";
 import { logger } from "../utils/logger.js";
 import {
   fillPdf,
   PDF_SETTINGS,
   formatDateForPdf,
 } from "./pdf/pdfTemplate.js";
+import { loadExternalScript } from "../utils/secureScriptLoader.js";
 
 // Lazy loading PDFLib
 let pdfLibLoaded = false;
+let pdfLibLoadPromise = null;
 const log = logger.withScope("PdfService");
+const PDF_LIB_SCRIPT_URL =
+  "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
+const PDF_LIB_SCRIPT_INTEGRITY =
+  "sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI";
 
 async function loadPdfLib() {
-  if (pdfLibLoaded) return;
-  const script = document.createElement("script");
-  applyCspNonce(script);
-  script.src = "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
-  return new Promise((resolve, reject) => {
-    script.onload = () => {
-      pdfLibLoaded = true;
-      resolve();
-    };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
+  if (pdfLibLoaded && window.PDFLib) return;
+  if (!pdfLibLoadPromise) {
+    pdfLibLoadPromise = loadExternalScript({
+      src: PDF_LIB_SCRIPT_URL,
+      integrity: PDF_LIB_SCRIPT_INTEGRITY,
+    })
+      .then(() => {
+        if (!window.PDFLib) {
+          throw new Error("PDF-Lib no disponible després de carregar script.");
+        }
+        pdfLibLoaded = true;
+      })
+      .catch((error) => {
+        pdfLibLoadPromise = null;
+        throw error;
+      });
+  }
+  await pdfLibLoadPromise;
 }
 
 // -----------------------------------------------------------------------------

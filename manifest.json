@@ -62,7 +62,7 @@
   "id": "/",
   "scope": "/",
   "display_override": ["window-controls-overlay", "standalone", "browser"],
-  "handle_links": "preferred",
+  "handle_links": "auto",
   "shortcuts": [
     {
       "name": "Abrir formulario",

@@ -5,7 +5,6 @@ import {
   getModeForService,
 } from "../services/servicesPanelManager.js";
 import { setControlsDisabled } from "../ui/uiControls.js";
-import { applyCspNonce } from "../utils/utils.js";
 import { getOCRFeedbackManager } from "../utils/ocrFeedbackBridge.js";
 import { showToast } from "../ui/toast.js";
 import { logger } from "../utils/logger.js";
@@ -13,6 +12,7 @@ import {
   resizeImage,
   preprocessImage,
 } from "./cameraOcr/imageProcessing.js";
+import { loadExternalScript } from "../utils/secureScriptLoader.js";
 
 // --- Constants ---
 const OCR_LANGUAGE = "spa";
@@ -20,9 +20,30 @@ const TESSERACT_ENGINE_MODE = 1;
 const TESSERACT_CHAR_WHITELIST =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:/-ÀÉÍÓÚÈÒÀÜÏÇÑ";
 const MAX_IMAGE_SIZE_MB = 10; // Límit de mida d'imatge per prevenció de malware
+const MIN_OCR_INTERVAL_MS = 1000;
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+const IMAGE_SIGNATURES = [
+  { type: "image/jpeg", bytes: [0xff, 0xd8, 0xff] },
+  {
+    type: "image/png",
+    bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+  },
+  {
+    type: "image/webp",
+    bytes: [0x52, 0x49, 0x46, 0x46, null, null, null, null, 0x57, 0x45, 0x42, 0x50],
+  },
+];
 const MODAL_TRANSITION_DURATION = 300;
 const PROGRESS_HIDE_DELAY = 1000;
 const OCR_SEARCH_WINDOW = 200;
+const TESSERACT_SCRIPT_URL =
+  "https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js";
+const TESSERACT_SCRIPT_INTEGRITY =
+  "sha384-r1ru3tcf6FhnCFR4B7pIFG+BhFF9LlFtz/P1y4pblWn3AGs9y3lBx5SKLNf4+rED";
 
 // Paràmetres d'inicialització (només es poden passar durant la creació del worker)
 const INIT_ONLY_PARAMS = {
@@ -89,9 +110,35 @@ let tesseractScriptLoaded = false;
 let lastPressOcr = 0;
 let ocrFeedback = null; // Nou gestor de feedback OCR
 let currentProgress = 0; // Seguiment del progrés actual per evitar que baixi
+let lastOcrProcessAt = 0;
 const log = logger.withScope("CameraOCR");
 
 // --- Funcions ---
+function _matchesSignature(bytes, signature) {
+  if (!bytes || bytes.length < signature.length) return false;
+  return signature.every(
+    (expected, index) =>
+      expected === null || bytes[index] === expected
+  );
+}
+
+async function _isAllowedImageFile(file) {
+  if (!file) return false;
+
+  if (ALLOWED_IMAGE_TYPES.has(file.type?.toLowerCase())) {
+    return true;
+  }
+
+  try {
+    const headerBytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+    return IMAGE_SIGNATURES.some((signature) =>
+      _matchesSignature(headerBytes, signature.bytes)
+    );
+  } catch (error) {
+    log.warn("No s'ha pogut validar la signatura del fitxer:", error);
+    return false;
+  }
+}
 
 function _normalizeTime(timeStr) {
   if (!timeStr) return "";
@@ -380,13 +427,25 @@ async function _handleFileChange(event) {
 
   const file = event.target.files?.[0];
   if (!file) return;
-  if (!file.type.startsWith("image/")) {
+
+  if (Date.now() - lastOcrProcessAt < MIN_OCR_INTERVAL_MS) {
+    showToast("OCR massa freqüent. Espera un segon abans de reintentar.", "warning");
+    if (cameraInput) cameraInput.value = "";
+    return;
+  }
+
+  if (!(await _isAllowedImageFile(file))) {
+    showToast("Format d'imatge no suportat. Usa PNG, JPG o WEBP.", "error");
     if (cameraInput) cameraInput.value = "";
     return;
   }
 
   const maxSizeBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
   if (file.size > maxSizeBytes) {
+    showToast(
+      `Imatge massa gran. El màxim permès és ${MAX_IMAGE_SIZE_MB}MB.`,
+      "error"
+    );
     if (cameraInput) cameraInput.value = "";
     return;
   }
@@ -399,6 +458,7 @@ async function _handleFileChange(event) {
   ocrFeedback.start(file);
   _updateOcrProgress(0);
   _scrollToBottom();
+  lastOcrProcessAt = Date.now();
 
   let worker = null;
 
@@ -416,18 +476,11 @@ async function _handleFileChange(event) {
 
     if (!tesseractScriptLoaded) {
       _updateOcrProgress(50);
-      await new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        applyCspNonce(script);
-        script.src =
-          "https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js";
-        script.onload = () => {
-          tesseractScriptLoaded = true;
-          resolve();
-        };
-        script.onerror = reject;
-        document.head.appendChild(script);
+      await loadExternalScript({
+        src: TESSERACT_SCRIPT_URL,
+        integrity: TESSERACT_SCRIPT_INTEGRITY,
       });
+      tesseractScriptLoaded = true;
     }
 
     _updateOcrProgress(60);

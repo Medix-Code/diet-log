@@ -7,7 +7,7 @@ const PRECACHE_URLS = [
   "/index.html",
   "/manifest.json",
   "/css/main.min.css?v=2.3.3",
-  "/dist/bundle.js?v=2.5.2",
+  "/dist/bundle.js?v=2.5.3",
   "/assets/images/icons-192.png",
   "/assets/images/icons-512.png",
   "/assets/images/icons-192-maskable.png",
@@ -17,6 +17,39 @@ const PRECACHE_URLS = [
 ];
 
 const STATIC_EXTENSIONS = [".js", ".css", ".png", ".svg", ".jpg", ".jpeg", ".webp", ".json", ".ico"];
+const RESOURCE_INTEGRITY = {
+  "/dist/bundle.js?v=2.5.3":
+    "a712963b80100400820146f7e0705c20cc8ac662ab964b5daf933db6e1cb87999ecc0eecff7eebcaf1eea6f840cedaa4",
+  "/css/main.min.css?v=2.3.3":
+    "7d099a5e5cbd7b5e3e62e1ec6726102aadae250f63178de5ae54a9553f990e215107dbe26941b1aca4cb61dba422fa6f",
+};
+
+function bufferToHex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function enforceIntegrity(request, response) {
+  const url = new URL(request.url);
+  const key = `${url.pathname}${url.search}`;
+  const expectedHash = RESOURCE_INTEGRITY[key];
+  if (!expectedHash) {
+    return response;
+  }
+
+  const hashBuffer = await crypto.subtle.digest(
+    "SHA-384",
+    await response.clone().arrayBuffer()
+  );
+  const actualHash = bufferToHex(hashBuffer);
+  if (actualHash !== expectedHash) {
+    throw new Error(
+      `[SW] Integrity check failed for ${key}. Expected ${expectedHash} but got ${actualHash}.`
+    );
+  }
+  return response;
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -25,7 +58,10 @@ self.addEventListener("install", (event) => {
       await Promise.all(
         PRECACHE_URLS.map(async (url) => {
           try {
-            await cache.add(url);
+            const request = new Request(url, { cache: "no-cache" });
+            const response = await fetch(request);
+            const verifiedResponse = await enforceIntegrity(request, response);
+            await cache.put(request, verifiedResponse.clone());
           } catch (error) {
             console.warn("[SW] Precache failed for:", url, error);
           }
@@ -87,16 +123,18 @@ async function cacheFirst(request) {
     return cachedResponse;
   }
   const response = await fetch(request);
-  cache.put(request, response.clone());
-  return response;
+  const verifiedResponse = await enforceIntegrity(request, response);
+  cache.put(request, verifiedResponse.clone());
+  return verifiedResponse;
 }
 
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   try {
     const response = await fetch(request);
-    cache.put(request, response.clone());
-    return response;
+    const verifiedResponse = await enforceIntegrity(request, response);
+    cache.put(request, verifiedResponse.clone());
+    return verifiedResponse;
   } catch (error) {
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {

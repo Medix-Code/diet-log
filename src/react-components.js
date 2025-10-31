@@ -20,14 +20,22 @@ function ConnectionIndicator() {
   const [show, setShow] = React.useState(true);
 
   React.useEffect(() => {
+    let hideTimer = null;
     const updateStatus = () => {
       const online = navigator.onLine;
       setIsOnline(online);
 
       // Oculta automàticament després de 3 segons quan torna online
       if (online) {
-        setTimeout(() => setShow(false), 3000);
+        if (hideTimer) {
+          clearTimeout(hideTimer);
+        }
+        hideTimer = window.setTimeout(() => setShow(false), 3000);
       } else {
+        if (hideTimer) {
+          clearTimeout(hideTimer);
+          hideTimer = null;
+        }
         setShow(true); // Mostra sempre quan offline
       }
     };
@@ -38,6 +46,9 @@ function ConnectionIndicator() {
     return () => {
       window.removeEventListener("online", updateStatus);
       window.removeEventListener("offline", updateStatus);
+      if (hideTimer) {
+        clearTimeout(hideTimer);
+      }
     };
   }, []);
 

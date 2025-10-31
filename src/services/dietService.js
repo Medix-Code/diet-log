@@ -51,8 +51,6 @@ import {
   setSignatureAjudant,
 } from "./signatureService.js";
 
-import { debounce } from "../utils/utils.js";
-
 // --- Constants ---
 import {
   DOM_IDS,
@@ -62,9 +60,10 @@ import {
 } from "../config/constants.js";
 
 // Variables per controlar el guardat amb mutex
-let savingPromise = Promise.resolve();
-let needsAnotherSave = false;
-let debouncedAutoSave = null;
+let ongoingSave = Promise.resolve();
+let isSaving = false;
+let shouldReplaySave = false;
+let pendingManualRequest = false;
 const log = logger.withScope("DietService");
 
 async function buildDietObject(generalData, servicesData, dietId) {
@@ -210,9 +209,19 @@ function populateFormWithDietData(diet) {
   }
 }
 
-async function performSave(isManual) {
-  // Evitar races amb promise chaining
-  savingPromise = savingPromise.then(async () => {
+async function performSave(requestedManual) {
+  pendingManualRequest = pendingManualRequest || requestedManual;
+
+  if (isSaving) {
+    shouldReplaySave = true;
+    return ongoingSave;
+  }
+
+  isSaving = true;
+  const isManual = pendingManualRequest;
+  pendingManualRequest = false;
+
+  const saveTask = (async () => {
     const { generalData, servicesData } = gatherAllData();
     const dietId = servicesData[0]?.serviceNumber?.slice(0, 9) || "";
     if (!dietId || !/^\d{9}$/.test(dietId)) {
@@ -279,14 +288,24 @@ async function performSave(isManual) {
       }
     } finally {
       setSaveButtonState(true);
-
-      if (needsAnotherSave) {
-        needsAnotherSave = false;
-        setTimeout(() => autoSaveDiet(), 100);
-      }
     }
-  });
-  return savingPromise;
+  })();
+
+  ongoingSave = saveTask;
+
+  try {
+    await saveTask;
+  } finally {
+    isSaving = false;
+    if (shouldReplaySave || pendingManualRequest) {
+      const manualPending = pendingManualRequest;
+      pendingManualRequest = false;
+      shouldReplaySave = false;
+      return performSave(manualPending);
+    }
+  }
+
+  return ongoingSave;
 }
 
 // --- Funcions Exportades ---

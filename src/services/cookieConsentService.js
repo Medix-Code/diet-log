@@ -1,6 +1,19 @@
 // /src/services/cookieConsentService.js
 
-import { applyCspNonce } from "../utils/utils.js";
+import { loadExternalScript } from "../utils/secureScriptLoader.js";
+
+const GA_SCRIPT_URL =
+  "https://www.googletagmanager.com/gtag/js?id=G-23SXKMLR75";
+const GA_SCRIPT_INTEGRITY =
+  "sha384-npdF2r0gS4VTDBOUWQ32Igb6Tr6PDv4p0eoQI5oJUSutnNpdFb8JFJ7Y8dbvECv7";
+
+// Inicialitza dataLayer i gtag de forma segura sense codi inline.
+window.dataLayer = window.dataLayer || [];
+window.gtag =
+  window.gtag ||
+  function gtag() {
+    window.dataLayer.push(arguments);
+  };
 
 // Funció per obtenir una cookie (del teu exemple)
 const getCookie = (name) => {
@@ -20,26 +33,26 @@ const setCookie = (name, value, days) => {
 
 // Elements del DOM
 let banner, acceptBtn, declineBtn;
+let gaInitialized = false;
 
 // Funció per carregar GA dinàmicament sols en acceptar
-function loadGoogleAnalytics() {
-  // Carreguem el script de GA
-  const gaScript = document.createElement("script");
-  applyCspNonce(gaScript);
-  gaScript.async = true;
-  gaScript.src = "https://www.googletagmanager.com/gtag/js?id=G-23SXKMLR75";
-  document.head.appendChild(gaScript);
-
-  // Quan carregui, configurem
-  gaScript.onload = () => {
-    window.gtag("js", new Date());
-    window.gtag("config", "G-23SXKMLR75");
-  };
+async function loadGoogleAnalytics() {
+  if (gaInitialized) return;
+  await loadExternalScript({
+    src: GA_SCRIPT_URL,
+    integrity: GA_SCRIPT_INTEGRITY,
+    referrerPolicy: "strict-origin-when-cross-origin",
+  });
+  window.gtag("js", new Date());
+  window.gtag("config", "G-23SXKMLR75");
+  gaInitialized = true;
 }
 
 function handleAccept() {
   // Carreguem i configurem GA amb consentiment grant
-  loadGoogleAnalytics();
+  loadGoogleAnalytics().catch((error) => {
+    console.error("Error carregant Google Analytics:", error);
+  });
   setCookie("cookie_consent", "granted", 365);
   hideBanner();
 }
@@ -77,6 +90,23 @@ export function initCookieConsentService() {
   }
 
   const consent = getCookie("cookie_consent");
+  window.gtag("consent", "default", {
+    analytics_storage: "denied",
+  });
+
+  if (consent === "granted") {
+    loadGoogleAnalytics().catch((error) => {
+      console.error("Error carregant GA després del consentiment guardat:", error);
+    });
+    hideBanner();
+    return;
+  }
+
+  if (consent === "denied") {
+    hideBanner();
+    return;
+  }
+
   if (!consent) {
     showBanner();
     acceptBtn.addEventListener("click", handleAccept);
