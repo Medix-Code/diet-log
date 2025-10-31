@@ -216,6 +216,7 @@ body {
   flex-direction: column;
   margin: 0;
   padding: 0;
+  scroll-padding-top: calc(var(--top-bar-height) + var(--tab-height) + 12px);
 
   &.modal-open {
     overflow: hidden !important;
@@ -224,7 +225,12 @@ body {
 
 main {
   flex: 1;
-  padding-top: 100px;
+  padding-top: calc(var(--top-bar-height) + var(--tab-height) + var(--space-md) + 10px);
+}
+
+input.origin,
+input.destination {
+  scroll-margin-top: calc(var(--top-bar-height) + var(--tab-height) + 12px);
 }
 
 // =============================================================================
