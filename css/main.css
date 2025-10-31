@@ -3944,6 +3944,7 @@ input[type=text].destination.has-dropdown-open {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-family: "Roboto", sans-serif;
   animation: slideDown 0.15s ease-out;
+  z-index: 850 !important;
   /* Scroll personalitzat */
   scrollbar-width: thin;
   scrollbar-color: var(--input-border) var(--bg-color);

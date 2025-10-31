@@ -225,7 +225,9 @@ body {
 
 main {
   flex: 1;
-  padding-top: calc(var(--top-bar-height) + var(--tab-height) + var(--space-md) + 10px);
+  padding-top: calc(
+    var(--top-bar-height) + var(--tab-height) + var(--space-md) + 10px
+  );
 }
 
 input.origin,
@@ -4352,6 +4354,7 @@ input[type="text"].destination {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-family: "Roboto", sans-serif;
   animation: slideDown 0.15s ease-out;
+  z-index: 850 !important; // Per sota dels tabs (900) i la topbar (1100)
 
   /* Scroll personalitzat */
   scrollbar-width: thin;

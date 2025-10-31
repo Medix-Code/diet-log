@@ -1,4 +1,4 @@
-const VERSION = "2.1.8";
+const VERSION = "2.1.3";
 const CACHE_PREFIX = "misdietas-cache";
 const CACHE_NAME = `${CACHE_PREFIX}-v${VERSION}`;
 
@@ -6,7 +6,7 @@ const PRECACHE_URLS = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/css/main.min.css?v=2.3.3",
+  "/css/main.min.css?v=2.3.4",
   "/dist/bundle.js?v=2.5.3",
   "/assets/images/icons-192.png",
   "/assets/images/icons-512.png",
@@ -20,8 +20,8 @@ const STATIC_EXTENSIONS = [".js", ".css", ".png", ".svg", ".jpg", ".jpeg", ".web
 const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.3":
     "a712963b80100400820146f7e0705c20cc8ac662ab964b5daf933db6e1cb87999ecc0eecff7eebcaf1eea6f840cedaa4",
-  "/css/main.min.css?v=2.3.3":
-    "7d099a5e5cbd7b5e3e62e1ec6726102aadae250f63178de5ae54a9553f990e215107dbe26941b1aca4cb61dba422fa6f",
+  "/css/main.min.css?v=2.3.4":
+    "88ca99a9cd692cfc96f78012923a9cdeaca84d946477e477758bd7ec3391a846ee353ade50973efc0657367aaf6b6e5c",
 };
 
 function bufferToHex(buffer) {

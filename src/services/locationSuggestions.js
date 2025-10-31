@@ -291,7 +291,9 @@ class LocationSuggestionsService {
   ) {
     const popularityRank =
       POPULARITY_PRIORITY.get(normalizedValue) ?? DEFAULT_POPULARITY_RANK;
-    const articlePenalty = /,\s*(el|la|els|les|l')$/i.test(originalValue) ? 1 : 0;
+    const articlePenalty = /,\s*(el|la|els|les|l')$/i.test(originalValue)
+      ? 1
+      : 0;
     const hyphenPenalty = originalValue.includes("-") ? 1 : 0;
     const multiWordPenalty = locationWords.length > 1 ? 0 : 1;
 
@@ -322,38 +324,41 @@ class LocationSuggestionsService {
       return 2;
     };
 
-    const bestScore = expandedSearchTerms.reduce((currentBest, variantWords) => {
-      let variantCategory = -Infinity;
+    const bestScore = expandedSearchTerms.reduce(
+      (currentBest, variantWords) => {
+        let variantCategory = -Infinity;
 
-      variantWords.forEach((word) => {
-        variantCategory = Math.max(variantCategory, evaluateWord(word));
-      });
+        variantWords.forEach((word) => {
+          variantCategory = Math.max(variantCategory, evaluateWord(word));
+        });
 
-      const targetLength =
-        variantWords[0]?.length ?? searchMeta.primaryLength ?? 0;
-      const firstWord = locationWords[0] ?? "";
-      const prefixLengthPenalty =
-        targetLength > 0 && firstWord.startsWith(variantWords[0] ?? "")
-          ? Math.abs(firstWord.length - targetLength)
-          : firstWord.length;
+        const targetLength =
+          variantWords[0]?.length ?? searchMeta.primaryLength ?? 0;
+        const firstWord = locationWords[0] ?? "";
+        const prefixLengthPenalty =
+          targetLength > 0 && firstWord.startsWith(variantWords[0] ?? "")
+            ? Math.abs(firstWord.length - targetLength)
+            : firstWord.length;
 
-      const candidate = {
-        category: Number.isFinite(variantCategory) ? variantCategory : 3,
-        popularityRank,
-        articlePenalty,
-        hyphenPenalty,
-        multiWordPenalty,
-        prefixLengthPenalty,
-      };
+        const candidate = {
+          category: Number.isFinite(variantCategory) ? variantCategory : 3,
+          popularityRank,
+          articlePenalty,
+          hyphenPenalty,
+          multiWordPenalty,
+          prefixLengthPenalty,
+        };
 
-      if (!currentBest) {
-        return candidate;
-      }
+        if (!currentBest) {
+          return candidate;
+        }
 
-      return this.compareScores(candidate, currentBest) < 0
-        ? candidate
-        : currentBest;
-    }, null);
+        return this.compareScores(candidate, currentBest) < 0
+          ? candidate
+          : currentBest;
+      },
+      null
+    );
 
     return (
       bestScore || {
@@ -543,28 +548,9 @@ class LocationSuggestionsService {
    * Determina el z-index del desplegable perquè quedi sota la topbar i les pestanyes.
    */
   calculateDropdownZIndex() {
-    const selectors = [".top-bar", ".tabs-container"];
-    let smallestZIndex = Infinity;
-
-    selectors.forEach((selector) => {
-      const element = document.querySelector(selector);
-      if (!element) return;
-
-      const zIndex = Number.parseInt(
-        window.getComputedStyle(element).zIndex,
-        10
-      );
-
-      if (!Number.isNaN(zIndex)) {
-        smallestZIndex = Math.min(smallestZIndex, zIndex);
-      }
-    });
-
-    if (!Number.isFinite(smallestZIndex)) {
-      return 950;
-    }
-
-    return Math.max(smallestZIndex - 1, 0);
+    // Retornar un z-index fix que estigui per sota de la topbar (1100) i els tabs (900)
+    // Utilitzem 850 per assegurar-nos que sempre estigui per sota
+    return 850;
   }
 
   getFixedHeadersOffset() {
@@ -710,43 +696,63 @@ class LocationSuggestionsService {
     const viewport = window.visualViewport;
     const viewportHeight = viewport?.height ?? window.innerHeight;
     const viewportTop = viewport?.offsetTop ?? 0;
-    const viewportBottom = viewportTop + viewportHeight;
     const headerOffset = this.getFixedHeadersOffset();
 
     const dropdownRect = dropdown.getBoundingClientRect();
-    const dropdownTop = dropdownRect.top + viewportTop;
-    const dropdownBottom = dropdownTop + dropdownRect.height;
+    const dropdownTopViewport = dropdownRect.top + viewportTop;
+    const dropdownBottomViewport = dropdownTopViewport + dropdownRect.height;
 
     const SAFE_TOP_MARGIN = 12;
     const SAFE_BOTTOM_MARGIN = 16;
 
-    let scrollNeeded = 0;
+    const scrollingElement =
+      document.scrollingElement || document.documentElement || document.body;
+    const currentScroll = window.scrollY;
+    const maxScroll = Math.max(
+      (scrollingElement?.scrollHeight ?? document.body.scrollHeight) -
+        viewportHeight,
+      0
+    );
 
-    if (dropdownBottom > viewportBottom - SAFE_BOTTOM_MARGIN) {
-      scrollNeeded = dropdownBottom - (viewportBottom - SAFE_BOTTOM_MARGIN);
-    } else if (dropdownTop < viewportTop + headerOffset + SAFE_TOP_MARGIN) {
-      scrollNeeded =
-        viewportTop + headerOffset + SAFE_TOP_MARGIN - dropdownTop;
+    const topOverlap = headerOffset + SAFE_TOP_MARGIN - dropdownTopViewport;
+    if (topOverlap > 0) {
+      const newScroll = Math.max(currentScroll - topOverlap, 0);
+      if (newScroll !== currentScroll) {
+        window.scrollTo({
+          top: newScroll,
+          behavior: "smooth",
+        });
+      }
+      return;
     }
 
-    if (scrollNeeded > 0) {
-      window.scrollBy({
-        top: scrollNeeded,
-        behavior: "smooth",
-      });
+    const viewportBottom = viewportTop + viewportHeight;
+    const bottomOverlap =
+      dropdownBottomViewport - (viewportBottom - SAFE_BOTTOM_MARGIN);
+    if (bottomOverlap > 0) {
+      const newScroll = Math.min(currentScroll + bottomOverlap, maxScroll);
+      if (newScroll !== currentScroll) {
+        window.scrollTo({
+          top: newScroll,
+          behavior: "smooth",
+        });
+      }
       return;
     }
 
     const inputRect = input.getBoundingClientRect();
-    const inputTop = inputRect.top + viewportTop;
-    const desiredInputTop = viewportTop + headerOffset + SAFE_TOP_MARGIN;
+    const inputTopViewport = inputRect.top + viewportTop;
+    const desiredInputTop = headerOffset + SAFE_TOP_MARGIN;
 
-    if (inputTop < desiredInputTop) {
-      const adjust = desiredInputTop - inputTop;
-      window.scrollBy({
-        top: adjust,
-        behavior: "smooth",
-      });
+    if (inputTopViewport < desiredInputTop) {
+      const diff = desiredInputTop - inputTopViewport;
+      const newScroll = Math.max(currentScroll - diff, 0);
+      if (newScroll !== currentScroll) {
+        window.scrollTo({
+          top: newScroll,
+          behavior: "smooth",
+        });
+      }
     }
   }
 
