@@ -1,0 +1,25 @@
+# 🔒 HEADERS DE SEGURETAT - Netlify/Cloudflare Pages
+# Protegeix l'aplicació contra atacs comuns
+
+/*
+  # Security Headers
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self';
+
+# 🚫 BLOQUEJAR fitxers de test i diagnòstic (SEGURETAT CRÍTICA)
+/test-*.html
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store, no-cache, must-revalidate
+  # Retornar 403 Forbidden en producció
+  
+/tests/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/docs/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store, no-cache, must-revalidate

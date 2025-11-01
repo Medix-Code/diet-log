@@ -34,6 +34,11 @@ Thumbs.db
 # Local documentation (not pushed to GitHub)
 docs/
 
+# 🔒 SEGURETAT: Fitxers de test i diagnòstic (NO pujar MAI)
+test-manual*.html
+tests/TESTING-*.md
+DEBUG-KEY-RESET.md
+
 # Temporary files
 *.tmp
 *.temp

@@ -269,20 +269,34 @@ async function performSave(requestedManual) {
         dietId
       );
 
-      // 🔐 ENCRIPTACIÓ TRANSPARENT: Encriptar abans de guardar
-      let finalDiet = dietToSave;
-      if (await isKeySystemInitialized()) {
-        try {
-          const masterKey = await getMasterKey();
-          finalDiet = await encryptDiet(dietToSave, masterKey);
-          log.debug("🔒 Dieta encriptada abans de guardar");
-        } catch (encryptError) {
-          log.warn(
-            "Error encriptant dieta, guardant sense encriptar:",
-            encryptError
-          );
-          // Continuar amb dieta no encriptada si falla
+      // 🔐 ENCRIPTACIÓ OBLIGATÒRIA (fail-closed): NO guardar si falla
+      if (!(await isKeySystemInitialized())) {
+        log.error(
+          "❌ Sistema de claus no inicialitzat. NO es pot guardar la dieta."
+        );
+        const errorMsg =
+          "Error de seguretat: Sistema d'encriptació no disponible. Proveu recarregar la pàgina.";
+        showToast(errorMsg, "error", 5000);
+        if (isManual) {
+          indicateSaveError("Sistema d'encriptació no disponible");
         }
+        return; // BLOQUEJAR el guardat
+      }
+
+      let finalDiet;
+      try {
+        const masterKey = await getMasterKey();
+        finalDiet = await encryptDiet(dietToSave, masterKey);
+        log.debug("🔒 Dieta encriptada abans de guardar");
+      } catch (encryptError) {
+        log.error("❌ Error CRÍTIC encriptant dieta:", encryptError);
+        const errorMsg =
+          "Error crític d'encriptació. Les dades NO s'han desat per seguretat.";
+        showToast(errorMsg, "error", 5000);
+        if (isManual) {
+          indicateSaveError("Error d'encriptació");
+        }
+        return; // BLOQUEJAR el guardat si falla l'encriptació
       }
 
       if (existingDiet) {

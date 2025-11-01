@@ -1,6 +1,6 @@
 /**
  * @file dotacion.js
- * @description Gestiona dotaciones con localStorage.
+ * @description Gestiona dotaciones con localStorage (con encriptación).
  * @module dotacionService
  */
 import { capitalizeWords } from "../utils/utils.js";
@@ -18,9 +18,16 @@ import {
   setSignatureAjudant,
 } from "./signatureService.js";
 import { showToast } from "../ui/toast.js";
+import { logger } from "../utils/logger.js";
+
+// Encriptació de dotacions
+import { getMasterKey, isKeySystemInitialized } from "../utils/keyManager.js";
+
+const log = logger.withScope("DotacionService");
 
 // --- Constantes ---
 const LS_KEY = "dotacions_v2";
+const LS_ENCRYPTED_FLAG = "dotacions_encrypted";
 const DOM_IDS = {
   MODAL: "dotacio-modal",
   OPTIONS_CONTAINER: "dotacio-options",
@@ -63,7 +70,7 @@ class DotacionService {
    * Inicializa el servicio.
    * @export
    */
-  init() {
+  async init() {
     if (this.isInitialized) return;
 
     this.dotacioModalElement = document.getElementById(DOM_IDS.MODAL);
@@ -89,7 +96,7 @@ class DotacionService {
       return;
     }
 
-    this.loadDotacionsFromStorage();
+    await this.loadDotacionsFromStorage();
 
     addDotacioBtn.addEventListener(
       "click",
@@ -137,26 +144,99 @@ class DotacionService {
   }
 
   /**
-   * Carga las dotaciones desde localStorage.
+   * Carga las dotaciones desde localStorage (con desencriptación).
    */
-  loadDotacionsFromStorage() {
+  async loadDotacionsFromStorage() {
     try {
-      const savedJson = localStorage.getItem(LS_KEY);
-      this.savedDotacions = savedJson ? JSON.parse(savedJson) : [];
-      if (!Array.isArray(this.savedDotacions)) this.savedDotacions = [];
+      const savedData = localStorage.getItem(LS_KEY);
+      if (!savedData) {
+        this.savedDotacions = [];
+        return;
+      }
+
+      // Comprovar si les dades estan encriptades
+      const isEncrypted = localStorage.getItem(LS_ENCRYPTED_FLAG) === "true";
+
+      if (isEncrypted) {
+        // Desencriptar dotacions
+        try {
+          if (await isKeySystemInitialized()) {
+            const masterKey = await getMasterKey();
+            const encryptedData = JSON.parse(savedData);
+            const decryptedData = await decryptDotacionsData(
+              encryptedData,
+              masterKey
+            );
+            this.savedDotacions = decryptedData;
+            log.debug("🔓 Dotacions desencriptades correctament");
+          } else {
+            log.warn(
+              "Sistema de claus no inicialitzat, carregant sense desencriptar"
+            );
+            this.savedDotacions = JSON.parse(savedData);
+          }
+        } catch (decryptError) {
+          log.error("Error desencriptant dotacions:", decryptError);
+          // Fallback: intentar carregar com a text pla
+          this.savedDotacions = JSON.parse(savedData);
+        }
+      } else {
+        // Dades antigues en text pla
+        this.savedDotacions = JSON.parse(savedData);
+        log.debug("Dotacions carregades en text pla (format antic)");
+
+        // Migrar automàticament a format encriptat
+        if (this.savedDotacions.length > 0) {
+          log.debug("📦 Migrant dotacions a format encriptat...");
+          await this.saveDotacionsToStorage();
+        }
+      }
+
+      if (!Array.isArray(this.savedDotacions)) {
+        this.savedDotacions = [];
+      }
     } catch (error) {
+      log.error("Error carregant dotacions:", error);
       this.savedDotacions = [];
     }
   }
 
   /**
-   * Guarda las dotaciones en localStorage.
+   * Guarda las dotaciones en localStorage (con encriptación OBLIGATORIA).
    */
-  saveDotacionsToStorage() {
+  async saveDotacionsToStorage() {
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify(this.savedDotacions));
+      // 🔐 ENCRIPTACIÓ OBLIGATÒRIA (fail-closed): Sistema de claus REQUERIT
+      if (!(await isKeySystemInitialized())) {
+        log.error(
+          "❌ Sistema de claus NO inicialitzat. NO es poden guardar dotacions."
+        );
+        showToast(
+          "Error de seguretat: Sistema d'encriptació no disponible. Proveu recarregar la pàgina.",
+          "error",
+          5000
+        );
+        throw new Error(
+          "Sistema de claus no inicialitzat - guardat bloquejat per seguretat"
+        );
+      }
+
+      const masterKey = await getMasterKey();
+      const encryptedData = await encryptDotacionsData(
+        this.savedDotacions,
+        masterKey
+      );
+      localStorage.setItem(LS_KEY, JSON.stringify(encryptedData));
+      localStorage.setItem(LS_ENCRYPTED_FLAG, "true");
+      log.debug("🔒 Dotacions guardades encriptades");
     } catch (error) {
-      showToast("No se han podido guardar las dotaciones.", "error");
+      log.error("❌ Error CRÍTIC guardant dotacions:", error);
+      showToast(
+        "Error crític: Les dotacions NO s'han desat per seguretat.",
+        "error",
+        5000
+      );
+      throw error; // Propagar l'error per evitar desar en text pla
     }
   }
 
@@ -379,15 +459,15 @@ class DotacionService {
     const dotBackup = { ...dotacionToDelete, originalIndex: indexToDelete };
 
     this.savedDotacions.splice(indexToDelete, 1);
-    this.saveDotacionsToStorage();
+    await this.saveDotacionsToStorage();
 
     updateDotacioListVisibility();
 
     showToast("Dotación eliminada.", "success", 5000, {
       queueable: false,
-      undoCallback: () => {
+      undoCallback: async () => {
         this.savedDotacions.splice(dotBackup.originalIndex, 0, dotBackup);
-        this.saveDotacionsToStorage();
+        await this.saveDotacionsToStorage();
         restoreDotacioItemToList(dotBackup);
         showToast("Dotación restaurada.", "success");
       },
@@ -450,7 +530,7 @@ class DotacionService {
   /**
    * Añade o actualiza una dotación desde el formulario principal.
    */
-  addDotacioFromMainForm() {
+  async addDotacioFromMainForm() {
     if (!validateDotacioTab()) return;
 
     const { vehiculo, conductor, ayudante } = this.getDotacionInputValues();
@@ -479,7 +559,7 @@ class DotacionService {
       showToast(`Dotación ${vehiculo} creada.`, "success");
     }
 
-    this.saveDotacionsToStorage();
+    await this.saveDotacionsToStorage();
   }
 
   /**
@@ -498,6 +578,142 @@ class DotacionService {
     vehicleInput?.classList.remove(CSS_CLASSES.INPUT_ERROR);
     conductorGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
     ayudanteGroup?.classList.remove(CSS_CLASSES.INPUT_ERROR);
+  }
+}
+
+// --- Funcions d'encriptació per dotacions ---
+
+/**
+ * Encripta les dades de dotacions
+ * @param {Array} dotacions - Array de dotacions
+ * @param {CryptoKey} key - Clau mestra
+ * @returns {Promise<Object>} Dades encriptades
+ */
+async function encryptDotacionsData(dotacions, key) {
+  try {
+    // Convertir dades a JSON i després a ArrayBuffer
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(JSON.stringify(dotacions));
+
+    // Generar IV únic
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    // Encriptar amb AES-GCM
+    const encryptedBuffer = await crypto.subtle.encrypt(
+      {
+        name: "AES-GCM",
+        iv: iv,
+        tagLength: 128,
+      },
+      key,
+      dataBuffer
+    );
+
+    // Convertir a Base64 per localStorage
+    const encryptedData = arrayBufferToBase64(encryptedBuffer);
+    const ivBase64 = arrayBufferToBase64(iv);
+
+    // Calcular checksum per integritat
+    const checksum = await calculateChecksum(encryptedData);
+
+    return {
+      version: 1,
+      algorithm: "AES-GCM",
+      iv: ivBase64,
+      data: encryptedData,
+      checksum: checksum,
+    };
+  } catch (error) {
+    log.error("Error encriptant dotacions:", error);
+    throw error;
+  }
+}
+
+/**
+ * Desencripta les dades de dotacions
+ * @param {Object} encryptedData - Dades encriptades
+ * @param {CryptoKey} key - Clau mestra
+ * @returns {Promise<Array>} Array de dotacions
+ */
+async function decryptDotacionsData(encryptedData, key) {
+  try {
+    // Validar format
+    if (!encryptedData || !encryptedData.data || !encryptedData.iv) {
+      throw new Error("Format de dades encriptades invàlid");
+    }
+
+    // Validar checksum (integritat)
+    if (encryptedData.checksum) {
+      const currentChecksum = await calculateChecksum(encryptedData.data);
+      if (currentChecksum !== encryptedData.checksum) {
+        log.warn("Checksum no coincideix - dades potencialment corruptes");
+      }
+    }
+
+    // Convertir de Base64 a ArrayBuffer
+    const encryptedBuffer = base64ToArrayBuffer(encryptedData.data);
+    const iv = base64ToArrayBuffer(encryptedData.iv);
+
+    // Desencriptar
+    const decryptedBuffer = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv: new Uint8Array(iv),
+        tagLength: 128,
+      },
+      key,
+      new Uint8Array(encryptedBuffer)
+    );
+
+    // Convertir de ArrayBuffer a Object
+    const decoder = new TextDecoder();
+    const jsonString = decoder.decode(decryptedBuffer);
+
+    return JSON.parse(jsonString);
+  } catch (error) {
+    log.error("Error desencriptant dotacions:", error);
+    throw error;
+  }
+}
+
+/**
+ * Converteix ArrayBuffer a Base64
+ */
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+/**
+ * Converteix Base64 a ArrayBuffer
+ */
+function base64ToArrayBuffer(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+/**
+ * Calcula checksum SHA-256
+ */
+async function calculateChecksum(data) {
+  try {
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
+
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (error) {
+    log.error("Error calculant checksum:", error);
+    return "";
   }
 }
 
