@@ -1,0 +1,35 @@
+{
+  "name": "diet-log",
+  "version": "2.1.9",
+  "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
+  "main": "index.html",
+  "scripts": {
+    "inject-version": "node inject-version.js",
+    "update-hashes": "node update-hashes.js",
+    "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --loader:.js=jsx --outfile=dist/bundle.js && npm run update-hashes",
+    "build:css": "sass css/main.scss css/main.css --style=expanded && sass css/main.scss css/main.min.css --style=compressed && npm run update-hashes",
+    "test": "vitest",
+    "dev": "echo 'Serve index.html with compression'"
+  },
+  "keywords": [],
+  "author": "MisDietas",
+  "license": "ISC",
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "tesseract.js": "^6.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^4.0.5",
+    "esbuild": "^0.25.11",
+    "jsdom": "^27.1.0",
+    "vitest": "^4.0.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "7.1.11"
+    }
+  },
+  "packageManager": "pnpm@10.18.1+sha512.77a884a165cbba2d8d1c19e3b4880eee6d2fcabd0d879121e282196b80042351d5eb3ca0935fa599da1dc51265cc68816ad2bddd2a2de5ea9fdf92adbec7cd34"
+}

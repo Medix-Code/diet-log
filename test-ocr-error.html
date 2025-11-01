@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test OCR Error Flow</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .status {
+        margin-top: 10px;
+        padding: 10px;
+        background: #f0f0f0;
+        border-radius: 4px;
+      }
+      .error {
+        background: #ffe0e0;
+        color: #c00;
+      }
+      .success {
+        background: #e0ffe0;
+        color: #0c0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test OCR Error Flow</h1>
+
+    <div class="test-section">
+      <h2>Test 1: Verificar shouldRender amb diferents estats</h2>
+      <button onclick="testShouldRender()">Run Test</button>
+      <div id="test1-result" class="status"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 2: Simular flux complet amb error</h2>
+      <button onclick="testErrorFlow()">Run Test</button>
+      <div id="test2-result" class="status"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 3: Verificar reset() neteja tot</h2>
+      <button onclick="testReset()">Run Test</button>
+      <div id="test3-result" class="status"></div>
+    </div>
+
+    <script>
+      // Simulació de la lògica del component
+      function shouldRender(imageUrl, isProcessing, status) {
+        // Primera comprovació: NO mostrar mai en error o idle
+        if (status === "error" || status === "idle") {
+          return false;
+        }
+
+        // Segona comprovació: condicions de renderització
+        return (
+          (Boolean(imageUrl) && isProcessing) ||
+          (Boolean(imageUrl) && (status === "done" || status === "warning"))
+        );
+      }
+
+      function testShouldRender() {
+        const tests = [
+          {
+            imageUrl: "blob:xxx",
+            isProcessing: true,
+            status: "processing",
+            expected: true,
+            name: "Processing",
+          },
+          {
+            imageUrl: "blob:xxx",
+            isProcessing: false,
+            status: "done",
+            expected: true,
+            name: "Done",
+          },
+          {
+            imageUrl: "blob:xxx",
+            isProcessing: false,
+            status: "warning",
+            expected: true,
+            name: "Warning",
+          },
+          {
+            imageUrl: "blob:xxx",
+            isProcessing: false,
+            status: "error",
+            expected: false,
+            name: "Error",
+          },
+          {
+            imageUrl: null,
+            isProcessing: false,
+            status: "idle",
+            expected: false,
+            name: "Idle",
+          },
+          {
+            imageUrl: "blob:xxx",
+            isProcessing: true,
+            status: "error",
+            expected: false,
+            name: "Error while processing",
+          },
+        ];
+
+        let results = [];
+        let allPassed = true;
+
+        tests.forEach((test) => {
+          const result = shouldRender(
+            test.imageUrl,
+            test.isProcessing,
+            test.status
+          );
+          const passed = result === test.expected;
+          allPassed = allPassed && passed;
+          results.push(
+            `${passed ? "✅" : "❌"} ${
+              test.name
+            }: shouldRender=${result} (esperado=${test.expected})`
+          );
+        });
+
+        const resultDiv = document.getElementById("test1-result");
+        resultDiv.innerHTML = results.join("<br>");
+        resultDiv.className = "status " + (allPassed ? "success" : "error");
+      }
+
+      function testErrorFlow() {
+        const resultDiv = document.getElementById("test2-result");
+        let log = [];
+
+        // Simular estat inicial
+        let state = {
+          imageUrl: "blob:test-image",
+          isProcessing: true,
+          progress: 80,
+          status: "processing",
+        };
+
+        log.push(
+          `1. Estado inicial: status="${state.status}", isProcessing=${state.isProcessing}`
+        );
+        log.push(
+          `   shouldRender = ${shouldRender(
+            state.imageUrl,
+            state.isProcessing,
+            state.status
+          )}`
+        );
+
+        // Simular error: cridem reset()
+        log.push(`<br>2. ❌ Error detectado! Llamando reset()...`);
+        state = {
+          imageUrl: null,
+          isProcessing: false,
+          progress: 0,
+          status: "idle",
+        };
+
+        log.push(
+          `3. Estado después de reset(): status="${state.status}", isProcessing=${state.isProcessing}`
+        );
+        log.push(
+          `   shouldRender = ${shouldRender(
+            state.imageUrl,
+            state.isProcessing,
+            state.status
+          )}`
+        );
+
+        const shouldClose = !shouldRender(
+          state.imageUrl,
+          state.isProcessing,
+          state.status
+        );
+        log.push(
+          `<br>4. ✅ Resultado: El componente ${
+            shouldClose ? "SE CIERRA" : "NO SE CIERRA (ERROR!)"
+          }`
+        );
+
+        resultDiv.innerHTML = log.join("<br>");
+        resultDiv.className = "status " + (shouldClose ? "success" : "error");
+      }
+
+      function testReset() {
+        const resultDiv = document.getElementById("test3-result");
+
+        // Simular reset
+        const stateAfterReset = {
+          imageUrl: null,
+          isProcessing: false,
+          progress: 0,
+          status: "idle",
+          statusText: "Reconociendo texto",
+        };
+
+        const checks = [
+          {
+            condition: stateAfterReset.imageUrl === null,
+            name: "imageUrl es null",
+          },
+          {
+            condition: stateAfterReset.isProcessing === false,
+            name: "isProcessing es false",
+          },
+          { condition: stateAfterReset.progress === 0, name: "progress es 0" },
+          {
+            condition: stateAfterReset.status === "idle",
+            name: "status es idle",
+          },
+          {
+            condition: !shouldRender(
+              stateAfterReset.imageUrl,
+              stateAfterReset.isProcessing,
+              stateAfterReset.status
+            ),
+            name: "shouldRender retorna false",
+          },
+        ];
+
+        const allPassed = checks.every((check) => check.condition);
+        const results = checks.map(
+          (check) => `${check.condition ? "✅" : "❌"} ${check.name}`
+        );
+
+        resultDiv.innerHTML = results.join("<br>");
+        resultDiv.className = "status " + (allPassed ? "success" : "error");
+      }
+
+      // Auto-run tests on load
+      window.onload = () => {
+        console.log("🧪 Running automatic tests...");
+        testShouldRender();
+        testErrorFlow();
+        testReset();
+      };
+    </script>
+  </body>
+</html>
