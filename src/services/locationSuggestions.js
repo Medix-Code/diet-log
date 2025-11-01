@@ -20,9 +20,9 @@ const STORAGE_KEYS = {
 
 // Límits de suggeriments
 const MAX_SUGGESTIONS = 10;
-const MAX_DATALIST_OPTIONS = 5; // Màxim 5 opcions al desplegable
+const MAX_DATALIST_OPTIONS = 4; // Màxim 4 opcions al desplegable
 const RECENT_SUGGESTIONS_LIMIT = 6;
-const MIN_CHARS_FOR_SUGGESTIONS = 3; // Mínim caràcters abans de mostrar suggeriments
+const MIN_CHARS_FOR_SUGGESTIONS = 4; // Mínim caràcters abans de mostrar suggeriments
 
 const normalizeText = (text) =>
   text
@@ -402,7 +402,7 @@ class LocationSuggestionsService {
 
   /**
    * Construeix les opcions que es mostraran al datalist
-   * Requereix mínim 3 caràcters per mostrar suggeriments (excepte recents)
+   * Requereix mínim 4 caràcters per mostrar suggeriments (excepte recents)
    */
   getSuggestionsForInput(type, searchTerm = "", options = {}) {
     // Si no hi ha mínim caràcters i no es demanen només recents, no mostrar res
@@ -899,7 +899,7 @@ class LocationSuggestionsService {
 
   /**
    * Mostra tots els suggeriments quan es fa focus
-   * Per origen: mostra només municipis (població) fins que escrigui 3+ caràcters
+   * Per origen: mostra només municipis (població) fins que escrigui 4+ caràcters
    */
   addInputListeners() {
     // Mostra suggeriments recents quan es fa focus
@@ -913,7 +913,7 @@ class LocationSuggestionsService {
           target.classList.contains("origin") ||
           target.classList.contains("destination")
         ) {
-          // NO mostrar res al focus inicial - només quan escrigui 3+ caràcters
+          // NO mostrar res al focus inicial - només quan escrigui 4+ caràcters
           this.closeDropdown();
         }
       },
@@ -940,7 +940,7 @@ class LocationSuggestionsService {
           clearTimeout(this.inputDebounceTimer);
         }
 
-        // Només mostra desplegable si té 3+ caràcters
+        // Només mostra desplegable si té 4+ caràcters
         if (value.length >= MIN_CHARS_FOR_SUGGESTIONS) {
           // Debounce de 300ms per evitar parpadeig
           this.inputDebounceTimer = setTimeout(() => {
