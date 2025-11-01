@@ -234,7 +234,7 @@ main {
 
 input.origin,
 input.destination {
-  scroll-margin-top: calc(var(--fixed-headers-height) + var(--label-space));
+  scroll-margin-top: calc(var(--fixed-headers-height) + 45px);
 }
 
 // =============================================================================
