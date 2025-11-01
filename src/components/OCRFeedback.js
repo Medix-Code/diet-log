@@ -99,10 +99,12 @@ export function OCRFeedback({
           status === "warning") && (
           <div className="ocr-progress-section fade-in">
             <div className="ocr-progress-bar-container">
-              <div className="ocr-progress-bar-track">
+              <div
+                className="ocr-progress-bar-track"
+                style={{ "--progress-width": `${animatedProgress}%` }}
+              >
                 <div
                   className="ocr-progress-bar-fill"
-                  style={{ width: `${animatedProgress}%` }}
                   role="progressbar"
                   aria-valuenow={animatedProgress}
                   aria-valuemin="0"
