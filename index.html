@@ -55,7 +55,7 @@
 
     <!-- PDF-Lib carregat lazy sols quan s'usi -->
 
-    <script src="./sw-register.js" type="module"></script>
+    <script src="./sw-register.js" type="module" data-csp-nonce></script>
   </head>
   <body id="app-body" class="no-js">
     <!-- ========= ONBOARDING CAROUSEL (CON MEJORAS) ========= -->
@@ -1180,7 +1180,11 @@
         <span class="pill-icon" aria-hidden="true"></span>
         <span class="pill-text"></span>
       </div>
-      <script type="module" src="./dist/bundle.js?v=2.5.3"></script>
+      <script
+        type="module"
+        src="./dist/bundle.js?v=2.5.3"
+        data-csp-nonce
+      ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
     </main>
     <footer class="footer">
@@ -1233,7 +1237,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text">2.1.6</span>
+          <span class="version-text">2.1.7</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
