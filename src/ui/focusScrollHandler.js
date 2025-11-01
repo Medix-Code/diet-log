@@ -73,8 +73,8 @@ const updateLabelHeight = () => {
   const labelHeight = label.offsetHeight;
   const labelMarginBottom = parseFloat(labelStyles.marginBottom) || 0;
 
-  // Afegim un petit marge extra (10px) per seguretat
-  const totalLabelSpace = labelHeight + labelMarginBottom + 10;
+  // Afegim un marge extra més gran (20px) per assegurar que el label es veu complet
+  const totalLabelSpace = labelHeight + labelMarginBottom + 20;
 
   document.documentElement.style.setProperty(
     "--label-space",
