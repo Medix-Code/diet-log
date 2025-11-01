@@ -72,6 +72,7 @@
   --top-bar-height: 60px;
   --tab-height: 60px;
   --fixed-headers-height: 120px;
+  --label-space: 50px;
   --font-size-base: 15px;
   --transition-speed: 0.3s;
   --icon-size: 24px;
@@ -148,7 +149,7 @@ main {
 
 input.origin,
 input.destination {
-  scroll-margin-top: calc(var(--fixed-headers-height) + 8px);
+  scroll-margin-top: calc(var(--fixed-headers-height) + var(--label-space));
 }
 
 .top-bar {

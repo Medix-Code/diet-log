@@ -51,10 +51,48 @@ const updateFixedHeadersHeight = () => {
   );
 };
 
+/**
+ * Calcula l'alçada d'un label de form-group (per camps d'origen i destí)
+ * per assegurar que el label també sigui visible quan es fa scroll
+ */
+const updateLabelHeight = () => {
+  // Busquem un camp d'origen o destí per mesurar el seu label
+  const originInput = document.querySelector("input.origin");
+  if (!originInput) return;
+
+  // Trobem el form-group que conté aquest input
+  const formGroup = originInput.closest(".form-group");
+  if (!formGroup) return;
+
+  // Trobem el label dins del form-group
+  const label = formGroup.querySelector("label");
+  if (!label) return;
+
+  // Calculem l'alçada del label + margin-bottom
+  const labelStyles = window.getComputedStyle(label);
+  const labelHeight = label.offsetHeight;
+  const labelMarginBottom = parseFloat(labelStyles.marginBottom) || 0;
+
+  // Afegim un petit marge extra (10px) per seguretat
+  const totalLabelSpace = labelHeight + labelMarginBottom + 10;
+
+  document.documentElement.style.setProperty(
+    "--label-space",
+    `${totalLabelSpace}px`
+  );
+};
+
 // Actualitzar al carregar i quan es redimensiona la finestra
 updateFixedHeadersHeight();
-window.addEventListener("resize", updateFixedHeadersHeight);
-window.addEventListener("orientationchange", updateFixedHeadersHeight);
+updateLabelHeight();
+window.addEventListener("resize", () => {
+  updateFixedHeadersHeight();
+  updateLabelHeight();
+});
+window.addEventListener("orientationchange", () => {
+  updateFixedHeadersHeight();
+  updateLabelHeight();
+});
 
 const ensureSpaceForLocationDropdown = (element) => {
   // Utilitzem scrollIntoView que respecta el scroll-margin-top del CSS
