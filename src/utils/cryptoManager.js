@@ -326,20 +326,47 @@ export async function encryptDiet(diet, key) {
  * Desencripta una dieta completa (API pública)
  * @param {Object} encryptedDiet - Dieta encriptada
  * @param {CryptoKey} key - Clau mestra
+ * @param {Object} options - Opcions (showChecksumWarning: boolean)
  * @returns {Promise<Object>} Dieta desencriptada
  */
-export async function decryptDiet(encryptedDiet, key) {
+export async function decryptDiet(encryptedDiet, key, options = {}) {
+  const { showChecksumWarning = true } = options;
+
   try {
     log.debug("Desencriptant dieta:", encryptedDiet.id);
 
     // 1. Validar checksum (integritat)
+    let checksumValid = true;
     if (encryptedDiet.checksum) {
       const currentChecksum = await calculateChecksum(
         encryptedDiet.encryptedData
       );
       if (currentChecksum !== encryptedDiet.checksum) {
-        log.warn("Checksum mismatch - dades potencialment corruptes");
-        // No llencem error, intentem desencriptar igualment
+        checksumValid = false;
+        log.error(
+          `⚠️ CHECKSUM MISMATCH per dieta ${encryptedDiet.id} - Integritat compromesa`
+        );
+
+        // Mostrar advertència a l'usuari si està habilitat
+        if (showChecksumWarning && typeof window !== "undefined") {
+          // Dinàmicament importar showToast per evitar dependencies circulars
+          try {
+            const { showToast } = await import("../ui/toast.js");
+            showToast(
+              `⚠️ Advertència: Les dades d'aquesta dieta poden estar corruptes. El checksum no coincideix.`,
+              "warning",
+              7000
+            );
+          } catch (importError) {
+            // Si no podem importar showToast, només loggejar
+            log.warn("No s'ha pogut mostrar alerta de checksum a l'usuari");
+          }
+        }
+
+        // Continuar amb la desencriptació (AES-GCM detectarà manipulació)
+        log.warn(
+          "Continuant amb desencriptació malgrat checksum invàlid (AES-GCM validarà integritat)"
+        );
       }
     }
 
@@ -362,10 +389,23 @@ export async function decryptDiet(encryptedDiet, key) {
 
     const diet = mergeData(publicData, sensitiveData);
 
-    log.debug("Dieta desencriptada correctament:", diet.id);
+    // Afegir metadades de validació al log
+    log.debug(
+      `Dieta desencriptada correctament: ${diet.id} (checksum: ${
+        checksumValid ? "✅ vàlid" : "⚠️ invàlid"
+      })`
+    );
     return diet;
   } catch (error) {
     log.error("Error desencriptant dieta:", error);
+
+    // Millorar missatge d'error per l'usuari
+    if (error.name === "OperationError") {
+      throw new Error(
+        "Les dades estan corruptes o s'ha utilitzat una clau incorrecta"
+      );
+    }
+
     throw error;
   }
 }

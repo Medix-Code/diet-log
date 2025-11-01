@@ -23,6 +23,13 @@ import { logger } from "../utils/logger.js";
 // Encriptació de dotacions
 import { getMasterKey, isKeySystemInitialized } from "../utils/keyManager.js";
 
+// Repository per IndexedDB
+import {
+  saveDotacions as saveToIndexedDB,
+  loadDotacions as loadFromIndexedDB,
+  migrateDotacionsFromLocalStorage,
+} from "../db/dotacionsRepository.js";
+
 const log = logger.withScope("DotacionService");
 
 // --- Constantes ---
@@ -144,18 +151,22 @@ class DotacionService {
   }
 
   /**
-   * Carga las dotaciones desde localStorage (con desencriptación).
+   * Carga las dotaciones desde IndexedDB (con desencriptación).
    */
   async loadDotacionsFromStorage() {
     try {
-      const savedData = localStorage.getItem(LS_KEY);
+      // 🔄 MIGRACIÓ AUTOMÀTICA: localStorage → IndexedDB (només primera vegada)
+      await migrateDotacionsFromLocalStorage();
+
+      // Carregar des d'IndexedDB
+      const savedData = await loadFromIndexedDB();
       if (!savedData) {
         this.savedDotacions = [];
         return;
       }
 
-      // Comprovar si les dades estan encriptades
-      const isEncrypted = localStorage.getItem(LS_ENCRYPTED_FLAG) === "true";
+      // Comprovar si les dades estan encriptades (sempre haurien d'estar-ho)
+      const isEncrypted = savedData.version && savedData.algorithm;
 
       if (isEncrypted) {
         // Desencriptar dotacions (FAIL-CLOSED: no fallback a text pla)
@@ -174,9 +185,8 @@ class DotacionService {
 
         try {
           const masterKey = await getMasterKey();
-          const encryptedData = JSON.parse(savedData);
           const decryptedData = await decryptDotacionsData(
-            encryptedData,
+            savedData,
             masterKey
           );
           this.savedDotacions = decryptedData;
@@ -192,18 +202,18 @@ class DotacionService {
           // NO fer fallback a text pla per seguretat
         }
       } else {
-        // 🔄 MIGRACIÓ: Dades antigues detectades en text pla
+        // 🔄 MIGRACIÓ: Dades antigues detectades en text pla (només localStorage antic)
         log.warn("⚠️ Dotacions en text pla detectades (format antic insegur)");
 
-        // Carregar dades antigues
-        this.savedDotacions = JSON.parse(savedData);
+        // Carregar dades antigues (ja vindran de localStorage si és primera migració)
+        this.savedDotacions = Array.isArray(savedData) ? savedData : [];
 
         // Avisar l'usuari sobre la migració necessària
         if (this.savedDotacions.length > 0) {
           showToast(
-            `⚠️ S'han detectat ${this.savedDotacions.length} dotació(ns) sense encriptar. S'encriptaran automàticament per protegir les vostres dades.`,
+            `⚠️ S'han detectat ${this.savedDotacions.length} dotació(ns) sense encriptar. S'encriptaran automàticament.`,
             "warning",
-            7000
+            5000
           );
 
           log.debug("📦 Migrant dotacions a format encriptat...");
@@ -212,7 +222,7 @@ class DotacionService {
           try {
             await this.saveDotacionsToStorage();
             showToast(
-              "✅ Dotacions migrades i encriptades correctament!",
+              "✅ Dotacions migrades i encriptades a IndexedDB!",
               "success",
               5000
             );
@@ -220,9 +230,9 @@ class DotacionService {
           } catch (migrationError) {
             log.error("❌ Error migrant dotacions:", migrationError);
             showToast(
-              "⚠️ No s'han pogut encriptar les dotacions antigues. Les dades encara són accessibles però no estan protegides. Deseu-les de nou per encriptar-les.",
+              "⚠️ No s'han pogut encriptar les dotacions. Deseu-les de nou per encriptar-les.",
               "error",
-              10000
+              7000
             );
           }
         }
@@ -238,7 +248,7 @@ class DotacionService {
   }
 
   /**
-   * Guarda las dotaciones en localStorage (con encriptación OBLIGATORIA).
+   * Guarda las dotaciones en IndexedDB (con encriptación OBLIGATORIA).
    */
   async saveDotacionsToStorage() {
     try {
@@ -262,9 +272,11 @@ class DotacionService {
         this.savedDotacions,
         masterKey
       );
-      localStorage.setItem(LS_KEY, JSON.stringify(encryptedData));
-      localStorage.setItem(LS_ENCRYPTED_FLAG, "true");
-      log.debug("🔒 Dotacions guardades encriptades");
+
+      // Guardar a IndexedDB enlloc de localStorage
+      await saveToIndexedDB(encryptedData);
+
+      log.debug("🔒 Dotacions guardades encriptades a IndexedDB");
     } catch (error) {
       log.error("❌ Error CRÍTIC guardant dotacions:", error);
       showToast(
@@ -679,10 +691,21 @@ async function decryptDotacionsData(encryptedData, key) {
     }
 
     // Validar checksum (integritat)
+    let checksumValid = true;
     if (encryptedData.checksum) {
       const currentChecksum = await calculateChecksum(encryptedData.data);
       if (currentChecksum !== encryptedData.checksum) {
-        log.warn("Checksum no coincideix - dades potencialment corruptes");
+        checksumValid = false;
+        log.error("⚠️ CHECKSUM MISMATCH en dotacions - Integritat compromesa");
+
+        // Mostrar advertència a l'usuari
+        showToast(
+          "⚠️ Advertència: Les dotacions poden estar corruptes. El checksum no coincideix.",
+          "warning",
+          7000
+        );
+
+        log.warn("Continuant amb desencriptació malgrat checksum invàlid");
       }
     }
 
@@ -705,9 +728,25 @@ async function decryptDotacionsData(encryptedData, key) {
     const decoder = new TextDecoder();
     const jsonString = decoder.decode(decryptedBuffer);
 
-    return JSON.parse(jsonString);
+    const dotacions = JSON.parse(jsonString);
+
+    log.debug(
+      `Dotacions desencriptades (checksum: ${
+        checksumValid ? "✅ vàlid" : "⚠️ invàlid"
+      })`
+    );
+
+    return dotacions;
   } catch (error) {
     log.error("Error desencriptant dotacions:", error);
+
+    // Millorar missatge d'error
+    if (error.name === "OperationError") {
+      throw new Error(
+        "Les dotacions estan corruptes o s'ha utilitzat una clau incorrecta"
+      );
+    }
+
     throw error;
   }
 }

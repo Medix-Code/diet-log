@@ -2,9 +2,10 @@
 
 // Constants de la base de dades
 const DB_NAME = "DietasDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incrementat per suportar dotacions a IndexedDB
 const STORE_NAME = "dietas";
 const INDEX_DATE = "dateIndex";
+const DOTACIONS_STORE = "dotacions";
 
 let dbInstance = null;
 
@@ -15,18 +16,30 @@ function openInternal() {
 
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
+      const oldVersion = event.oldVersion;
       let store;
 
-      // Crea l'objectStore si no existeix
+      // V1: Crear objectStore de dietes
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        // Afegir índex si és nou
+        store.createIndex(INDEX_DATE, "date", { unique: false });
       } else {
         store = event.target.transaction.objectStore(STORE_NAME);
+        // Afegir índex si no existeix
+        if (store && !store.indexNames.contains(INDEX_DATE)) {
+          store.createIndex(INDEX_DATE, "date", { unique: false });
+        }
       }
 
-      // Índex per data (ja existia a la primera versió)
-      if (!store.indexNames.contains(INDEX_DATE)) {
-        store.createIndex(INDEX_DATE, "date", { unique: false });
+      // V2: Crear objectStore de dotacions (si no existeix)
+      if (oldVersion < 2 && !db.objectStoreNames.contains(DOTACIONS_STORE)) {
+        const dotacionsStore = db.createObjectStore(DOTACIONS_STORE, {
+          keyPath: "id",
+        });
+        dotacionsStore.createIndex("timestamp", "timestamp", {
+          unique: false,
+        });
       }
     };
 

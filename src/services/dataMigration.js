@@ -33,6 +33,8 @@ const log = logger.withScope("DataMigration");
 // Constants
 const MIGRATION_KEY = "migration-v2.0.1-encryption";
 const MIGRATION_PROGRESS_TOAST_ID = "migration-progress";
+const MAX_RETRIES = 3; // Màxim 3 intents per dieta
+const RETRY_DELAY_MS = 1000; // 1 segon entre intents
 
 /**
  * Classe principal de migració
@@ -123,26 +125,37 @@ export class DataMigration {
       // 3. Obtenir clau mestra
       const masterKey = await getMasterKey();
 
-      // 4. Migrar una a una
+      // 4. Migrar una a una amb retry
       for (let i = 0; i < legacyDiets.length; i++) {
         const diet = legacyDiets[i];
 
         try {
-          await this.migrateSingleDiet(diet, masterKey);
-          migrated++;
+          // Intentar migrar amb retry automàtic
+          const result = await this.migrateSingleDietWithRetry(diet, masterKey);
+
+          if (result.success) {
+            migrated++;
+          } else {
+            errors++;
+            errorDetails.push({
+              dietId: diet.id,
+              error: result.error,
+              attempts: result.attempts,
+            });
+          }
 
           // Actualitzar UI cada 5 dietes o al final
           if (migrated % 5 === 0 || migrated === total) {
             this.updateMigrationProgress(migrated, total);
           }
         } catch (error) {
-          log.error(`❌ Error migrant dieta ${diet.id}:`, error);
+          log.error(`❌ Error crític migrant dieta ${diet.id}:`, error);
           errors++;
           errorDetails.push({
             dietId: diet.id,
             error: error.message,
+            attempts: MAX_RETRIES,
           });
-          // Continuar amb la següent (no aturar tot)
         }
       }
 
@@ -167,6 +180,59 @@ export class DataMigration {
       this.showMigrationError(error);
       throw error;
     }
+  }
+
+  /**
+   * Migra una sola dieta amb validació completa i retry automàtic
+   * @param {Object} oldDiet - Dieta antiga (sense encriptar)
+   * @param {CryptoKey} masterKey - Clau mestra
+   * @param {number} maxRetries - Màxim d'intents (per defecte 3)
+   * @returns {Promise<Object>} { success: boolean, error?: string, attempts: number }
+   */
+  async migrateSingleDietWithRetry(
+    oldDiet,
+    masterKey,
+    maxRetries = MAX_RETRIES
+  ) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        log.debug(`Intent ${attempt}/${maxRetries} per dieta ${oldDiet.id}`);
+
+        await this.migrateSingleDiet(oldDiet, masterKey);
+
+        // Èxit!
+        log.debug(`✅ Dieta ${oldDiet.id} migrada (intent ${attempt})`);
+        return { success: true, attempts: attempt };
+      } catch (error) {
+        log.warn(
+          `⚠️ Intent ${attempt}/${maxRetries} fallat per dieta ${oldDiet.id}: ${error.message}`
+        );
+
+        // Si és l'últim intent, retornar error
+        if (attempt === maxRetries) {
+          log.error(
+            `❌ Dieta ${oldDiet.id} no s'ha pogut migrar després de ${maxRetries} intents`
+          );
+          return {
+            success: false,
+            error: error.message,
+            attempts: attempt,
+          };
+        }
+
+        // Esperar abans de reintentar (backoff exponencial)
+        const delay = RETRY_DELAY_MS * attempt;
+        log.debug(`⏳ Esperant ${delay}ms abans de reintentar...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    // Aquest punt mai s'hauria d'assolir, però per seguretat
+    return {
+      success: false,
+      error: "Unknown error during migration",
+      attempts: maxRetries,
+    };
   }
 
   /**
@@ -265,17 +331,29 @@ export class DataMigration {
         duration: 4000,
         type: "success",
       });
-    } else if (migrated > 0) {
+    } else if (migrated > 0 && errors < total) {
       // Migració parcial
-      showToast(`⚠️ ${migrated} dietes protegides, ${errors} amb errors`, {
+      showToast(
+        `⚠️ ${migrated}/${total} dietes protegides. ${errors} amb errors (es reintentaran automàticament)`,
+        {
+          duration: 7000,
+          type: "warning",
+        }
+      );
+    } else if (migrated === 0) {
+      // Tot ha fallat
+      showToast(
+        `❌ No s'han pogut migrar les dietes. Proveu recarregar la pàgina.`,
+        {
+          duration: 8000,
+          type: "error",
+        }
+      );
+    } else {
+      // Cas general
+      showToast(`ℹ️ ${migrated} dietes migrades, ${errors} amb errors`, {
         duration: 5000,
         type: "warning",
-      });
-    } else {
-      // Tot ha fallat
-      showToast(`❌ Error en la migració de dietes`, {
-        duration: 5000,
-        type: "error",
       });
     }
   }
