@@ -52,17 +52,8 @@ export function OCRFeedback({
     return () => clearInterval(interval);
   }, [status]);
 
-  // DEBUG: Log de l'estat
-  console.log("🔍 OCR State:", {
-    status,
-    imageUrl: !!imageUrl,
-    isProcessing,
-    progress,
-  });
-
   // El component NO es mostra mai en cas d'error o idle
   if (status === "error" || status === "idle") {
-    console.log("🚫 Component NO renderitza - status:", status);
     return null;
   }
 

@@ -35,16 +35,14 @@ export function applyCspNonce(element) {
  * Estableix la data actual.
  * @export
  */
-export function setTodayDate() {
-  const dateInput = document.getElementById(DOM_IDS.DATE_INPUT);
-  if (!dateInput) {
-    console.warn("Utils: Input de data no trobat.");
-    return;
-  }
+export function setTodaysDate() {
   try {
+    const dateInput = document.getElementById(DATE_INPUT_ID);
+    if (!dateInput) return;
+
     dateInput.valueAsDate = new Date();
   } catch (error) {
-    console.error("Error establint la data d'avui:", error);
+    // Silenci si hi ha error
   }
 }
 
@@ -99,12 +97,9 @@ export function getCurrentDietType() {
  * Estableix tipus de dieta per defecte.
  * @export
  */
-export function setDefaultDietSelect() {
-  const dietSelect = document.getElementById(DOM_IDS.DIET_TYPE_SELECT);
-  if (!dietSelect) {
-    console.warn("Utils: Select de tipus de dieta no trobat.");
-    return;
-  }
+export function setupDietTypeSelectBehaviour() {
+  const dietTypeSelect = document.getElementById(DIET_TYPE_SELECT_ID);
+  if (!dietTypeSelect) return;
   dietSelect.value = getCurrentDietType();
 }
 
@@ -123,7 +118,7 @@ export function getDietDisplayInfo(dietDate, dietType) {
       const yy = parts[0].slice(-2);
       ddmmaa = `${parts[2]}/${parts[1]}/${yy}`;
     } catch (e) {
-      console.error("Error formatant data:", e);
+      // Silenci si hi ha error de format
     }
   }
   const franjaText = DIET_TYPE_TEXT[dietType] || DIET_TYPE_TEXT.DEFAULT;
@@ -181,14 +176,11 @@ function _showEasterEggAnimation() {
  * Inicialitza easter egg.
  * @export
  */
-export function easterEgg() {
-  const topBarElement = document.querySelector(DOM_IDS.TOP_BAR);
-  const footerElement = document.querySelector(DOM_IDS.FOOTER);
+export function activateEasterEgg() {
+  const topBarElement = document.getElementById("top-bar");
+  const footerElement = document.getElementById("footer");
 
-  if (!topBarElement || !footerElement) {
-    console.warn("Easter Egg: No s'han trobat top bar o footer.");
-    return;
-  }
+  if (!topBarElement || !footerElement) return;
 
   topBarElement.addEventListener("touchend", (event) => {
     if (event.changedTouches.length === 1) {

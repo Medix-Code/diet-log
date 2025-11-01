@@ -6,9 +6,9 @@ import * as formService from "./services/formService.js";
 import { initOnboarding } from "./ui/onboarding.js";
 import { openDatabase } from "./db/indexedDbDietRepository.js";
 import {
-  setTodayDate,
-  easterEgg,
-  setDefaultDietSelect,
+  setTodaysDate,
+  activateEasterEgg,
+  setupDietTypeSelectBehaviour,
 } from "./utils/utils.js";
 import {
   initServices,
@@ -33,6 +33,10 @@ import { setupNotesSelectedService } from "./services/notesService.js";
 import { initCookieConsentService } from "./services/cookieConsentService.js";
 import { initLocationSuggestions } from "./services/locationSuggestions.js";
 import { logger } from "./utils/logger.js";
+
+// Sistema d'encriptació i migració
+import { initializeKeySystem } from "./utils/keyManager.js";
+import { dataMigration } from "./services/dataMigration.js";
 
 const log = logger.withScope("Init");
 
@@ -61,10 +65,34 @@ export async function initializeApp() {
   try {
     log.info("initializeApp() iniciant...");
 
+    // 🔐 FASE 1: Inicialitzar sistema d'encriptació (primer de tot!)
+    try {
+      log.debug("🔐 Inicialitzant sistema de claus...");
+      await initializeKeySystem();
+      log.debug("✅ Sistema de claus inicialitzat");
+    } catch (keyError) {
+      log.warn(
+        "Error inicialitzant sistema de claus (continuant sense encriptació):",
+        keyError
+      );
+    }
+
     // Prepara dades bàsiques
-    setTodayDate();
-    setDefaultDietSelect();
+    setTodaysDate();
+    setupDietTypeSelectBehaviour();
     await openDatabase();
+
+    // 🔄 FASE 2: Migració automàtica de dietes antigues (en background)
+    setTimeout(async () => {
+      try {
+        log.debug("🔄 Executant migració automàtica...");
+        const result = await dataMigration.runIfNeeded();
+        log.debug("📊 Resultat migració:", result);
+      } catch (migrationError) {
+        log.error("Error en migració automàtica:", migrationError);
+        // No bloquejar l'app per errors de migració
+      }
+    }, 1000); // Esperar 1 segon per no bloquejar la càrrega inicial
 
     // Llança serveis interns
     initServices();
@@ -112,7 +140,7 @@ export async function initializeApp() {
     formService.captureInitialFormState();
 
     // Altres coses
-    easterEgg();
+    activateEasterEgg();
     initCookieConsentService();
 
     log.info("initializeApp() completada.");

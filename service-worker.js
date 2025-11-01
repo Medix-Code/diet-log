@@ -1,4 +1,4 @@
-const VERSION = "2.0.1";
+const VERSION = "2.1.0";
 const CACHE_PREFIX = "misdietas-cache";
 const CACHE_NAME = `${CACHE_PREFIX}-v${VERSION}`;
 
@@ -29,7 +29,7 @@ const STATIC_EXTENSIONS = [
 ];
 const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.3":
-    "77de0709024a1657a8d8b84d7be851f40824c50df9976dde1b169d2258122bdc34d405faf2e6382f4c8bfc8bb7a09170",
+    "9aeb0c543bb6ad9cb4172620a1e97a416b7afc53aa4e4ec654f6f7b464fadda68b96a6332f0e5e72eaa5a8b460d53f62",
   "/css/main.min.css?v=2.3.4":
     "22c158d80eec969a24cf14b586bcfe6732727b55c55e93e529378508e41bf6074047f5ceaf0021903adf140c780be444",
 };

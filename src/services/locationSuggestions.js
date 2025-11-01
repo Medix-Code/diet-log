@@ -22,7 +22,7 @@ const STORAGE_KEYS = {
 const MAX_SUGGESTIONS = 10;
 const MAX_DATALIST_OPTIONS = 4; // Màxim 4 opcions al desplegable
 const RECENT_SUGGESTIONS_LIMIT = 6;
-const MIN_CHARS_FOR_SUGGESTIONS = 4; // Mínim caràcters abans de mostrar suggeriments
+const MIN_CHARS_FOR_SUGGESTIONS = 3; // Mínim caràcters abans de mostrar suggeriments
 
 const normalizeText = (text) =>
   text

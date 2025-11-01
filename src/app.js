@@ -7,6 +7,21 @@ import { initPwaInstall } from "./services/pwaInstallHandler.js";
 // Components React incrementals (2025)
 import { initReactComponents } from "./react-components.js";
 
+// Filtra warnings de React sobre touchmove (són benignes i esperades)
+if (typeof console !== "undefined") {
+  const originalWarn = console.warn;
+  console.warn = function (...args) {
+    const message = args[0];
+    if (
+      typeof message === "string" &&
+      message.includes("Ignored attempt to cancel a touchmove event")
+    ) {
+      return; // Ignora aquest warning específic
+    }
+    originalWarn.apply(console, args);
+  };
+}
+
 // Exporta les funcions OCR globalment per poder-les utilitzar des de l'HTML
 import {
   getOCRFeedbackManager,
@@ -37,8 +52,8 @@ async function startApp() {
     // Inicialitza components React incrementals (fallback-safe)
     initReactComponents();
   } catch (error) {
-    console.error("Critical error during app startup:", error);
-    // TODO: Consider implementing user-friendly error display for production
+    // En cas d'error crític, recarregar la pàgina
+    window.location.reload();
   }
 }
 

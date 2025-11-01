@@ -5,9 +5,17 @@ import { Diet } from "../models/diet.js";
 export { Diet };
 
 import { pseudoId } from "../utils/pseudoId.js";
-
 import { timeAgo } from "../utils/relativeTime.js";
 import { logger } from "../utils/logger.js";
+
+// Encriptació transparent
+import {
+  isEncrypted,
+  encryptDiet,
+  decryptDiet,
+} from "../utils/cryptoManager.js";
+import { getMasterKey, isKeySystemInitialized } from "../utils/keyManager.js";
+
 import {
   addDiet,
   getAllDiets,
@@ -261,10 +269,26 @@ async function performSave(requestedManual) {
         dietId
       );
 
+      // 🔐 ENCRIPTACIÓ TRANSPARENT: Encriptar abans de guardar
+      let finalDiet = dietToSave;
+      if (await isKeySystemInitialized()) {
+        try {
+          const masterKey = await getMasterKey();
+          finalDiet = await encryptDiet(dietToSave, masterKey);
+          log.debug("🔒 Dieta encriptada abans de guardar");
+        } catch (encryptError) {
+          log.warn(
+            "Error encriptant dieta, guardant sense encriptar:",
+            encryptError
+          );
+          // Continuar amb dieta no encriptada si falla
+        }
+      }
+
       if (existingDiet) {
-        await updateDiet(dietToSave);
+        await updateDiet(finalDiet);
       } else {
-        await addDiet(dietToSave);
+        await addDiet(finalDiet);
       }
 
       lastSavedDate = new Date();
@@ -337,13 +361,26 @@ export async function loadDietById(dietId) {
 
   // 1️⃣  Si ja ens arriba un hash (64 caràcters) el fem servir directament.
   //     Si és el número de 9 xifres, el convertim amb pseudoId().
-  const diet =
+  let diet =
     dietId.length === 64
       ? await getDiet(dietId) // ja és hash
       : await getDiet(await pseudoId(dietId)); // número → hash
 
   if (!diet) {
     throw new Error(`Dieta no trobada: ${dietId}`);
+  }
+
+  // 🔓 DESENCRIPTACIÓ TRANSPARENT: Desencriptar si està encriptada
+  if (isEncrypted(diet)) {
+    try {
+      const masterKey = await getMasterKey();
+      diet = await decryptDiet(diet, masterKey);
+      log.debug("🔓 Dieta desencriptada correctament");
+    } catch (decryptError) {
+      log.error("Error desencriptant dieta:", decryptError);
+      showToast("Error desencriptant dieta. Pot estar corrupta.", "error");
+      throw decryptError;
+    }
   }
 
   /* ---------- omplim el formulari ---------- */

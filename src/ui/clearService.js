@@ -30,7 +30,6 @@ const SERVICE_COLOR_CLASSES = [
 export function setupClearSelectedService() {
   const clearButton = document.getElementById(CLEAR_BUTTON_ID);
   if (!clearButton) {
-    console.warn(`Clear Service: Botó amb ID '${CLEAR_BUTTON_ID}' no trobat.`);
     return;
   }
 
@@ -67,15 +66,7 @@ export function setupClearSelectedService() {
         fieldsToClear.forEach((field) => {
           field.classList.remove("field-clearing");
         });
-
-        console.log(`Servei ${currentIndex + 1} netejat amb efecte visual.`);
       }, 600); // Aquest temps ha de coincidir amb la durada de l'animació CSS (0.6s = 600ms)
-    } else {
-      console.warn(
-        `Clear Service: Índex de servei invàlid (${currentIndex}) o element no trobat.`
-      );
     }
   });
-
-  console.log("Funcionalitat 'Netejar Servei Seleccionat' configurada.");
 }

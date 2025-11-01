@@ -1,6 +1,9 @@
 import { loadDietById, deleteDietHandler } from "../../services/dietService.js";
 import { getAllDiets } from "../../db/indexedDbDietRepository.js";
-import { getDietDisplayInfo, capitalizeFirstLetter } from "../../utils/utils.js";
+import {
+  getDietDisplayInfo,
+  capitalizeFirstLetter,
+} from "../../utils/utils.js";
 import { downloadDietPDF } from "../../services/pdfService.js";
 import {
   CSS_CLASSES,
@@ -55,10 +58,8 @@ function formatTimeFromISO(isoTimestamp) {
 }
 
 function createDietListItem(diet) {
-  const displayId =
-    diet.services && diet.services.length > 0
-      ? diet.services[0].serviceNumber
-      : "?????????";
+  // ✅ FIX: Utilitzar diet.id directament (funciona amb dietes encriptades i no encriptades)
+  const displayId = diet.id || "?????????";
 
   const { ddmmaa, franjaText } = getDietDisplayInfo(diet.date, diet.dietType);
   const creationTime = formatTimeFromISO(diet.timeStampDiet);

@@ -91,7 +91,6 @@ export function initReactComponents() {
   try {
     // Verifica que React està carregat (defensive programming)
     if (typeof React === "undefined" || typeof ReactDOM === "undefined") {
-      console.log("React no disponible - components skip");
       return;
     }
 
@@ -103,10 +102,7 @@ export function initReactComponents() {
       const connectionRoot = ReactDOM.createRoot(connectionContainer);
       connectionRoot.render(<ConnectionIndicator />);
     }
-
-    console.log("✅ React components inicialitzats (incremental - reversible)");
   } catch (error) {
-    console.log("⚠️ React component skip:", error.message);
     // NO falla - l'app vanilla JS funciona igual
   }
 }

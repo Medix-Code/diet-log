@@ -87,12 +87,23 @@ export async function addDiet(diet) {
 /**
  * Actualitza una dieta existent a IndexedDB.
  * Gestiona errors de quota en cas de que no hi hagi espai.
- * @param {Diet} diet - Objecte Diet a actualitzar (ha de tenir id)
+ * @param {string|Diet} idOrDiet - ID de la dieta o objecte Diet complet
+ * @param {Diet} [dietData] - Dades de la dieta (si el primer paràmetre és un ID)
  * @returns {string} - ID de la dieta actualitzada
  * @throws {Error} Quan falla l'operació (inclòs quota exceeded)
  */
-export async function updateDiet(diet) {
+export async function updateDiet(idOrDiet, dietData) {
   try {
+    // Suportar ambdós formats:
+    // updateDiet(diet) - format antic
+    // updateDiet(id, diet) - format nou per migració
+    let diet;
+    if (typeof idOrDiet === "string" && dietData) {
+      diet = { ...dietData, id: idOrDiet };
+    } else {
+      diet = idOrDiet;
+    }
+
     const tx = await getTx("readwrite");
     wrap(tx.objectStore(STORE_NAME).put(diet), "No s'ha pogut actualitzar");
     await waitTx(tx);

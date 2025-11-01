@@ -59,7 +59,6 @@ class ThemeSwitcher {
       !this.themeTextElement ||
       !this.bodyElement
     ) {
-      console.warn("Faltan elementos del DOM para el gestor de temas.");
       return;
     }
 

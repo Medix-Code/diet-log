@@ -37,7 +37,6 @@ let currentEnterKeyHandler = null;
 export function setupNotesSelectedService() {
   const notesButton = document.getElementById(NOTES_BUTTON_ID);
   if (!notesButton) {
-    console.warn(`Notes Service: Botó amb ID '${NOTES_BUTTON_ID}' no trobat.`);
     return;
   }
 
@@ -58,9 +57,6 @@ export function setupNotesSelectedService() {
     !notesCancel ||
     !notesCounter
   ) {
-    console.error(
-      "Notes Service: Un o més elements del modal de notes no s'han trobat."
-    );
     return;
   }
 
@@ -70,8 +66,6 @@ export function setupNotesSelectedService() {
   });
 
   notesCancel.addEventListener("click", closeNotesModal);
-
-  console.log("Funcionalitat 'Afegir Notes' configurada.");
 }
 
 /**
