@@ -158,37 +158,73 @@ class DotacionService {
       const isEncrypted = localStorage.getItem(LS_ENCRYPTED_FLAG) === "true";
 
       if (isEncrypted) {
-        // Desencriptar dotacions
+        // Desencriptar dotacions (FAIL-CLOSED: no fallback a text pla)
+        if (!(await isKeySystemInitialized())) {
+          log.error(
+            "❌ Sistema de claus NO inicialitzat. No es poden carregar dotacions encriptades."
+          );
+          showToast(
+            "Error de seguretat: No es poden carregar les dotacions. Proveu recarregar la pàgina.",
+            "error",
+            5000
+          );
+          this.savedDotacions = [];
+          return;
+        }
+
         try {
-          if (await isKeySystemInitialized()) {
-            const masterKey = await getMasterKey();
-            const encryptedData = JSON.parse(savedData);
-            const decryptedData = await decryptDotacionsData(
-              encryptedData,
-              masterKey
-            );
-            this.savedDotacions = decryptedData;
-            log.debug("🔓 Dotacions desencriptades correctament");
-          } else {
-            log.warn(
-              "Sistema de claus no inicialitzat, carregant sense desencriptar"
-            );
-            this.savedDotacions = JSON.parse(savedData);
-          }
+          const masterKey = await getMasterKey();
+          const encryptedData = JSON.parse(savedData);
+          const decryptedData = await decryptDotacionsData(
+            encryptedData,
+            masterKey
+          );
+          this.savedDotacions = decryptedData;
+          log.debug("🔓 Dotacions desencriptades correctament");
         } catch (decryptError) {
-          log.error("Error desencriptant dotacions:", decryptError);
-          // Fallback: intentar carregar com a text pla
-          this.savedDotacions = JSON.parse(savedData);
+          log.error("❌ Error CRÍTIC desencriptant dotacions:", decryptError);
+          showToast(
+            "Error desencriptant dotacions. Les dades estan protegides i no es poden llegir. Contacteu suport si el problema persisteix.",
+            "error",
+            7000
+          );
+          this.savedDotacions = [];
+          // NO fer fallback a text pla per seguretat
         }
       } else {
-        // Dades antigues en text pla
-        this.savedDotacions = JSON.parse(savedData);
-        log.debug("Dotacions carregades en text pla (format antic)");
+        // 🔄 MIGRACIÓ: Dades antigues detectades en text pla
+        log.warn("⚠️ Dotacions en text pla detectades (format antic insegur)");
 
-        // Migrar automàticament a format encriptat
+        // Carregar dades antigues
+        this.savedDotacions = JSON.parse(savedData);
+
+        // Avisar l'usuari sobre la migració necessària
         if (this.savedDotacions.length > 0) {
+          showToast(
+            `⚠️ S'han detectat ${this.savedDotacions.length} dotació(ns) sense encriptar. S'encriptaran automàticament per protegir les vostres dades.`,
+            "warning",
+            7000
+          );
+
           log.debug("📦 Migrant dotacions a format encriptat...");
-          await this.saveDotacionsToStorage();
+
+          // Intentar migrar automàticament
+          try {
+            await this.saveDotacionsToStorage();
+            showToast(
+              "✅ Dotacions migrades i encriptades correctament!",
+              "success",
+              5000
+            );
+            log.info("✅ Migració completada amb èxit");
+          } catch (migrationError) {
+            log.error("❌ Error migrant dotacions:", migrationError);
+            showToast(
+              "⚠️ No s'han pogut encriptar les dotacions antigues. Les dades encara són accessibles però no estan protegides. Deseu-les de nou per encriptar-les.",
+              "error",
+              10000
+            );
+          }
         }
       }
 
