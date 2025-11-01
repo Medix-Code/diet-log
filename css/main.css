@@ -71,6 +71,7 @@
   --toast-box-shadow: rgba(0, 0, 0, 0.15);
   --top-bar-height: 60px;
   --tab-height: 60px;
+  --fixed-headers-height: 120px;
   --font-size-base: 15px;
   --transition-speed: 0.3s;
   --icon-size: 24px;
@@ -134,7 +135,7 @@ body {
   flex-direction: column;
   margin: 0;
   padding: 0;
-  scroll-padding-top: calc(var(--top-bar-height) + var(--tab-height) + 12px);
+  scroll-padding-top: calc(var(--fixed-headers-height) + 12px);
 }
 body.modal-open {
   overflow: hidden !important;
@@ -147,7 +148,7 @@ main {
 
 input.origin,
 input.destination {
-  scroll-margin-top: calc(var(--top-bar-height) + var(--tab-height) + 8px);
+  scroll-margin-top: calc(var(--fixed-headers-height) + 8px);
 }
 
 .top-bar {

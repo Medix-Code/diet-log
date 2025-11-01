@@ -39,6 +39,23 @@ const getFixedHeadersHeight = () => {
   return Math.max(maxBottom, 0);
 };
 
+/**
+ * Actualitza la variable CSS --fixed-headers-height amb l'alçada real
+ * de les capçaleres fixes (topbar + tabs)
+ */
+const updateFixedHeadersHeight = () => {
+  const height = getFixedHeadersHeight();
+  document.documentElement.style.setProperty(
+    "--fixed-headers-height",
+    `${height}px`
+  );
+};
+
+// Actualitzar al carregar i quan es redimensiona la finestra
+updateFixedHeadersHeight();
+window.addEventListener("resize", updateFixedHeadersHeight);
+window.addEventListener("orientationchange", updateFixedHeadersHeight);
+
 const ensureSpaceForLocationDropdown = (element) => {
   // Utilitzem scrollIntoView que respecta el scroll-margin-top del CSS
   // Això assegura que l'element no quedi amagat darrere de la topbar i els tabs
