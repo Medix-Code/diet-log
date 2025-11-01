@@ -6,9 +6,9 @@ import * as formService from "./services/formService.js";
 import { initOnboarding } from "./ui/onboarding.js";
 import { openDatabase } from "./db/indexedDbDietRepository.js";
 import {
-  setTodaysDate,
-  activateEasterEgg,
-  setupDietTypeSelectBehaviour,
+  setTodayDate,
+  easterEgg,
+  setDefaultDietSelect,
 } from "./utils/utils.js";
 import {
   initServices,
@@ -78,8 +78,8 @@ export async function initializeApp() {
     }
 
     // Prepara dades bàsiques
-    setTodaysDate();
-    setupDietTypeSelectBehaviour();
+    setTodayDate();
+    setDefaultDietSelect();
     await openDatabase();
 
     // 🔄 FASE 2: Migració automàtica de dietes antigues (en background)
@@ -140,7 +140,7 @@ export async function initializeApp() {
     formService.captureInitialFormState();
 
     // Altres coses
-    activateEasterEgg();
+    easterEgg();
     initCookieConsentService();
 
     log.info("initializeApp() completada.");

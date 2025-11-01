@@ -395,9 +395,34 @@ export async function resetKeySystem() {
   });
 }
 
+/**
+ * Exporta la clau mestra com a recovery phrase (12 paraules)
+ * @returns {Promise<string>} Recovery phrase
+ * @todo Implementar generació de mnemònic (BIP39)
+ */
+export async function exportRecoveryPhrase() {
+  // TODO: Implementar amb BIP39 o similar
+  log.warn("Recovery phrase no implementat encara");
+  throw new Error("Not implemented yet");
+}
+
+/**
+ * Importa clau mestra des d'una recovery phrase
+ * @param {string} phrase - Recovery phrase
+ * @returns {Promise<CryptoKey>} Clau mestra
+ * @todo Implementar validació i importació de mnemònic
+ */
+export async function importFromRecoveryPhrase(phrase) {
+  // TODO: Implementar amb BIP39 o similar
+  log.warn("Import from recovery phrase no implementat encara");
+  throw new Error("Not implemented yet");
+}
+
 export default {
   initializeKeySystem,
   getMasterKey,
   isKeySystemInitialized,
   resetKeySystem,
+  exportRecoveryPhrase,
+  importFromRecoveryPhrase,
 };
