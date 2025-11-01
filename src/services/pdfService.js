@@ -11,11 +11,7 @@ import { validateDadesTab, validateServeisTab } from "../utils/validation.js";
 import { requestInstallPromptAfterAction } from "./pwaInstallHandler.js";
 import { getDiet } from "../db/indexedDbDietRepository.js";
 import { logger } from "../utils/logger.js";
-import {
-  fillPdf,
-  PDF_SETTINGS,
-  formatDateForPdf,
-} from "./pdf/pdfTemplate.js";
+import { fillPdf, PDF_SETTINGS, formatDateForPdf } from "./pdf/pdfTemplate.js";
 import { loadExternalScript } from "../utils/secureScriptLoader.js";
 import RateLimiter from "../utils/rateLimiter.js";
 
@@ -29,7 +25,7 @@ const PDF_LIB_SCRIPT_INTEGRITY =
   "sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI";
 
 // Rate Limiter per generació de PDFs (20 PDFs per minut màx)
-const pdfRateLimiter = new RateLimiter(20, 60000, 'generació de PDF');
+const pdfRateLimiter = new RateLimiter(20, 60000, "generació de PDF");
 
 async function loadPdfLib() {
   if (pdfLibLoaded && window.PDFLib) return;

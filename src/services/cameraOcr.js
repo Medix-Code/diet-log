@@ -8,10 +8,7 @@ import { setControlsDisabled } from "../ui/uiControls.js";
 import { getOCRFeedbackManager } from "../utils/ocrFeedbackBridge.js";
 import { showToast } from "../ui/toast.js";
 import { logger } from "../utils/logger.js";
-import {
-  resizeImage,
-  preprocessImage,
-} from "./cameraOcr/imageProcessing.js";
+import { resizeImage, preprocessImage } from "./cameraOcr/imageProcessing.js";
 import { loadExternalScript } from "../utils/secureScriptLoader.js";
 import RateLimiter from "../utils/rateLimiter.js";
 import { validateOCRResult } from "../utils/inputSanitizer.js";
@@ -23,11 +20,7 @@ const TESSERACT_CHAR_WHITELIST =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:/-ÀÉÍÓÚÈÒÀÜÏÇÑ";
 const MAX_IMAGE_SIZE_MB = 10; // Límit de mida d'imatge per prevenció de malware
 const MIN_OCR_INTERVAL_MS = 1000;
-const ALLOWED_IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const IMAGE_SIGNATURES = [
   { type: "image/jpeg", bytes: [0xff, 0xd8, 0xff] },
   {
@@ -36,7 +29,20 @@ const IMAGE_SIGNATURES = [
   },
   {
     type: "image/webp",
-    bytes: [0x52, 0x49, 0x46, 0x46, null, null, null, null, 0x57, 0x45, 0x42, 0x50],
+    bytes: [
+      0x52,
+      0x49,
+      0x46,
+      0x46,
+      null,
+      null,
+      null,
+      null,
+      0x57,
+      0x45,
+      0x42,
+      0x50,
+    ],
   },
 ];
 const MODAL_TRANSITION_DURATION = 300;
@@ -116,14 +122,13 @@ let lastOcrProcessAt = 0;
 const log = logger.withScope("CameraOCR");
 
 // Rate Limiter per OCR (10 scans per minut màx)
-const ocrRateLimiter = new RateLimiter(10, 60000, 'escanejat OCR');
+const ocrRateLimiter = new RateLimiter(10, 60000, "escanejat OCR");
 
 // --- Funcions ---
 function _matchesSignature(bytes, signature) {
   if (!bytes || bytes.length < signature.length) return false;
   return signature.every(
-    (expected, index) =>
-      expected === null || bytes[index] === expected
+    (expected, index) => expected === null || bytes[index] === expected
   );
 }
 
@@ -278,8 +283,8 @@ function _processAndFillForm(ocrText, updateFieldsCallback = null) {
   // Validació de seguretat del resultat OCR
   const ocrValidation = validateOCRResult(ocrText);
   if (!ocrValidation.valid) {
-    log.warn('Resultat OCR invàlid:', ocrValidation.reason);
-    showToast(`Error de validació: ${ocrValidation.reason}`, 'error');
+    log.warn("Resultat OCR invàlid:", ocrValidation.reason);
+    showToast(`Error de validació: ${ocrValidation.reason}`, "error");
     return { hasData: false, allFieldsStatus: [] };
   }
 
@@ -453,7 +458,10 @@ async function _handleFileChange(event) {
   }
 
   if (Date.now() - lastOcrProcessAt < MIN_OCR_INTERVAL_MS) {
-    showToast("OCR massa freqüent. Espera un segon abans de reintentar.", "warning");
+    showToast(
+      "OCR massa freqüent. Espera un segon abans de reintentar.",
+      "warning"
+    );
     if (cameraInput) cameraInput.value = "";
     return;
   }
