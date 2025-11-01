@@ -17,6 +17,7 @@ import {
   formatDateForPdf,
 } from "./pdf/pdfTemplate.js";
 import { loadExternalScript } from "../utils/secureScriptLoader.js";
+import RateLimiter from "../utils/rateLimiter.js";
 
 // Lazy loading PDFLib
 let pdfLibLoaded = false;
@@ -26,6 +27,9 @@ const PDF_LIB_SCRIPT_URL =
   "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
 const PDF_LIB_SCRIPT_INTEGRITY =
   "sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI";
+
+// Rate Limiter per generació de PDFs (20 PDFs per minut màx)
+const pdfRateLimiter = new RateLimiter(20, 60000, 'generació de PDF');
 
 async function loadPdfLib() {
   if (pdfLibLoaded && window.PDFLib) return;
@@ -130,6 +134,16 @@ export function buildPdfFileName(dateValue, dietType) {
 }
 
 export async function generateAndDownloadPdf() {
+  // Comprovació de Rate Limiting
+  if (!pdfRateLimiter.canMakeRequest()) {
+    const remaining = pdfRateLimiter.getRemainingRequests();
+    showToast(
+      `Has superat el límit de generació de PDFs. Espera uns segons. (${remaining} disponibles)`,
+      "warning"
+    );
+    return;
+  }
+
   const isDadesValid = validateDadesTab();
   const isServeisValid = validateServeisTab();
 
@@ -175,6 +189,16 @@ export async function generateAndDownloadPdf() {
 export async function downloadDietPDF(dietId) {
   if (!dietId) {
     showToast("ID de dieta inválido.", "error");
+    return;
+  }
+
+  // Comprovació de Rate Limiting
+  if (!pdfRateLimiter.canMakeRequest()) {
+    const remaining = pdfRateLimiter.getRemainingRequests();
+    showToast(
+      `Has superat el límit de generació de PDFs. Espera uns segons. (${remaining} disponibles)`,
+      "warning"
+    );
     return;
   }
 

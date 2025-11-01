@@ -13,6 +13,23 @@
       content="Aplicació per gestionar dietes amb formularis accessibles i funcionalitat PWA."
     />
 
+    <!-- Content Security Policy (CSP) - Seguretat 2025 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' https://cdnjs.cloudflare.com https://www.googletagmanager.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: blob:;
+        connect-src 'self';
+        frame-ancestors 'none';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+      "
+    />
+
     <!-- Altres headers de seguretat -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 

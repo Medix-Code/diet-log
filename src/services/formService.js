@@ -3,6 +3,11 @@
 
 import { sanitizeText } from "../utils/validation.js";
 import {
+  sanitizeAndValidate,
+  validateTime,
+  validateServiceNumber,
+} from "../utils/inputSanitizer.js";
+import {
   getSignatureConductor,
   getSignatureAjudant,
 } from "./signatureService.js";
@@ -18,6 +23,9 @@ import {
   indicateSaved,
   indicateSaveError,
 } from "../ui/saveIndicator.js";
+import { logger } from "../utils/logger.js";
+
+const log = logger.withScope("FormService");
 
 // Constants bàsiques
 const SERVICE_CONTAINER_SELECTOR = ".service";
@@ -90,16 +98,35 @@ class FormService {
   // Recull dades del formulari en objecte
   getFormDataObject() {
     try {
+      // Validació i sanitització de dades generals
+      const dateValue = sanitizeText(document.getElementById(IDS.DATE)?.value);
+      const vehicleValue = sanitizeText(document.getElementById(IDS.VEHICLE)?.value);
+      const person1Value = sanitizeText(document.getElementById(IDS.P1)?.value);
+      const person2Value = sanitizeText(document.getElementById(IDS.P2)?.value);
+      
+      // Validacions semàntiques
+      const vehicleValidation = sanitizeAndValidate(vehicleValue, 'vehicleNumber');
+      const person1Validation = sanitizeAndValidate(person1Value, 'personName');
+      const person2Validation = sanitizeAndValidate(person2Value, 'personName');
+      
+      if (vehicleValue && !vehicleValidation.valid) {
+        log.warn('Número de vehicle invàlid:', vehicleValidation.reason);
+      }
+      if (person1Value && !person1Validation.valid) {
+        log.warn('Nom conductor invàlid:', person1Validation.reason);
+      }
+      if (person2Value && !person2Validation.valid) {
+        log.warn('Nom ajudant invàlid:', person2Validation.reason);
+      }
+      
       const generalData = {
-        date: sanitizeText(document.getElementById(IDS.DATE)?.value),
+        date: dateValue,
         dietType: sanitizeText(
           document.getElementById(IDS.DIET_TYPE)?.value || getCurrentDietType()
         ),
-        vehicleNumber: sanitizeText(
-          document.getElementById(IDS.VEHICLE)?.value
-        ),
-        person1: sanitizeText(document.getElementById(IDS.P1)?.value),
-        person2: sanitizeText(document.getElementById(IDS.P2)?.value),
+        vehicleNumber: vehicleValidation.valid ? vehicleValidation.sanitized : '',
+        person1: person1Validation.valid ? person1Validation.sanitized : '',
+        person2: person2Validation.valid ? person2Validation.sanitized : '',
         serviceType: sanitizeText(
           document.getElementById(IDS.SERVICE_TYPE)?.value || "TSU"
         ),
@@ -117,7 +144,28 @@ class FormService {
             s[k] = "";
             continue;
           }
-          s[k] = sanitizeText(panel.querySelector(sel)?.value);
+          const rawValue = sanitizeText(panel.querySelector(sel)?.value);
+          
+          // Validacions semàntiques per camp
+          if (k === 'serviceNumber' && rawValue) {
+            if (!validateServiceNumber(rawValue)) {
+              log.warn(`Número de servei ${index + 1} invàlid:`, rawValue);
+              s[k] = ''; // Rebutja valor invàlid
+            } else {
+              s[k] = rawValue;
+            }
+          } else if ((k === 'originTime' || k === 'destinationTime' || k === 'endTime') && rawValue) {
+            if (!validateTime(rawValue)) {
+              log.warn(`Hora invàlida en servei ${index + 1}, camp ${k}:`, rawValue);
+              s[k] = ''; // Rebutja valor invàlid
+            } else {
+              s[k] = rawValue;
+            }
+          } else {
+            // Altres camps amb validació general
+            const validation = sanitizeAndValidate(rawValue, 'text');
+            s[k] = validation.valid ? validation.sanitized : '';
+          }
         }
         const activeChip = panel.querySelector(`.chip.${CHIP_ACTIVE_CLASS}`);
         s.mode = activeChip?.dataset.mode || "3.6";

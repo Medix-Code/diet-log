@@ -13,6 +13,8 @@ import {
   preprocessImage,
 } from "./cameraOcr/imageProcessing.js";
 import { loadExternalScript } from "../utils/secureScriptLoader.js";
+import RateLimiter from "../utils/rateLimiter.js";
+import { validateOCRResult } from "../utils/inputSanitizer.js";
 
 // --- Constants ---
 const OCR_LANGUAGE = "spa";
@@ -112,6 +114,9 @@ let ocrFeedback = null; // Nou gestor de feedback OCR
 let currentProgress = 0; // Seguiment del progrés actual per evitar que baixi
 let lastOcrProcessAt = 0;
 const log = logger.withScope("CameraOCR");
+
+// Rate Limiter per OCR (10 scans per minut màx)
+const ocrRateLimiter = new RateLimiter(10, 60000, 'escanejat OCR');
 
 // --- Funcions ---
 function _matchesSignature(bytes, signature) {
@@ -267,6 +272,14 @@ function _safeSetFieldValue(fieldId, value, fieldName) {
 
 function _processAndFillForm(ocrText, updateFieldsCallback = null) {
   if (!ocrText || !ocrText.trim()) {
+    return { hasData: false, allFieldsStatus: [] };
+  }
+
+  // Validació de seguretat del resultat OCR
+  const ocrValidation = validateOCRResult(ocrText);
+  if (!ocrValidation.valid) {
+    log.warn('Resultat OCR invàlid:', ocrValidation.reason);
+    showToast(`Error de validació: ${ocrValidation.reason}`, 'error');
     return { hasData: false, allFieldsStatus: [] };
   }
 
@@ -427,6 +440,17 @@ async function _handleFileChange(event) {
 
   const file = event.target.files?.[0];
   if (!file) return;
+
+  // Comprovació de Rate Limiting
+  if (!ocrRateLimiter.canMakeRequest()) {
+    const remaining = ocrRateLimiter.getRemainingRequests();
+    showToast(
+      `Has superat el límit d'escaneigs. Espera uns segons abans de tornar-ho a intentar. (${remaining} disponibles)`,
+      "warning"
+    );
+    if (cameraInput) cameraInput.value = "";
+    return;
+  }
 
   if (Date.now() - lastOcrProcessAt < MIN_OCR_INTERVAL_MS) {
     showToast("OCR massa freqüent. Espera un segon abans de reintentar.", "warning");
