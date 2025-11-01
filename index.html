@@ -51,14 +51,6 @@
     <link rel="preload" href="/css/main.min.css?v=2.3.4" as="style" />
     <link rel="stylesheet" href="/css/main.min.css?v=2.3.4" />
 
-    <!-- Lottie Player desde CDN -->
-    <script
-      defer
-      src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"
-      integrity="sha384-J8C0MvgX4WP58J4N2W99vCKd2J6z99ynOJ5bEfE6jeP7kVTW1drYtv/jzrxM5jbm"
-      crossorigin="anonymous"
-    ></script>
-
     <!-- Tesseract.js carregat dinàmicament sols quan s'usi OCR -->
 
     <!-- PDF-Lib carregat lazy sols quan s'usi -->
@@ -994,7 +986,7 @@
               para descargar cuando quieras.
             </p>
 
-            <h3 style="margin-top: 25px">Consejos:</h3>
+            <h3 class="mt-25">Consejos:</h3>
             <ul>
               <li>
                 <strong>
@@ -1140,12 +1132,12 @@
       </div>
 
       <!-- Container per components React - no existeix per defecte (safe) -->
-      <div id="react-summary-container" style="display: none"></div>
-      <div id="react-progress-container" style="display: none"></div>
-      <div id="react-connection-container" style="display: none"></div>
+      <div id="react-summary-container" class="hidden"></div>
+      <div id="react-progress-container" class="hidden"></div>
+      <div id="react-connection-container" class="hidden"></div>
 
       <div id="camera-gallery-modal" class="modal-bottom hidden">
-        <div class="modal-bottom-content" style="border-radius: 16px 16px 0 0">
+        <div class="modal-bottom-content">
           <div class="modal-title-container">
             <h3 class="modal-bottom-title">Escanear</h3>
             <span class="beta-tag">BETA</span>
@@ -1241,7 +1233,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text">2.1.5</span>
+          <span class="version-text">2.1.6</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
