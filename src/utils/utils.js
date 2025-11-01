@@ -37,7 +37,7 @@ export function applyCspNonce(element) {
  */
 export function setTodaysDate() {
   try {
-    const dateInput = document.getElementById(DATE_INPUT_ID);
+    const dateInput = document.getElementById(DOM_IDS.DATE_INPUT);
     if (!dateInput) return;
 
     dateInput.valueAsDate = new Date();
@@ -98,9 +98,9 @@ export function getCurrentDietType() {
  * @export
  */
 export function setupDietTypeSelectBehaviour() {
-  const dietTypeSelect = document.getElementById(DIET_TYPE_SELECT_ID);
+  const dietTypeSelect = document.getElementById(DOM_IDS.DIET_TYPE_SELECT);
   if (!dietTypeSelect) return;
-  dietSelect.value = getCurrentDietType();
+  dietTypeSelect.value = getCurrentDietType();
 }
 
 /**
