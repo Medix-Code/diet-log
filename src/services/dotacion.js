@@ -270,7 +270,7 @@ class DotacionService {
         } catch (decryptError) {
           log.error("❌ Error CRÍTIC desencriptant dotacions:", decryptError);
           showToast(
-            "Error desencriptant dotacions. Les dades estan protegides i no es poden llegir. Contacteu suport si el problema persisteix.",
+            "Dotacions antigues no compatibles amb l'actualització. Torneu-les a crear al formulari principal.",
             "error",
             7000
           );
