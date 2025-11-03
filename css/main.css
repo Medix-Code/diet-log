@@ -772,6 +772,18 @@ button .fa {
   flex-direction: column;
   gap: 15px;
   transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+.dotacio-item .dotacio-item-content::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(249, 249, 249, 0.95);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
 }
 .dotacio-item .dotacio-info {
   font-size: 14px;
@@ -788,6 +800,9 @@ button .fa {
   gap: 10px;
   justify-content: center;
   width: 100%;
+  position: relative;
+  z-index: 5;
+  transition: opacity 0.2s ease;
 }
 .dotacio-item .dotacio-load {
   flex: 1;
@@ -819,19 +834,45 @@ button .fa {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 80px;
+  width: 120px;
   background-color: #fdeceb;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 15;
+}
+.dotacio-item .delete-reveal .delete-reveal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.dotacio-item .delete-reveal .icon {
+  width: 24px;
+  height: 24px;
+  filter: invert(27%) sepia(93%) saturate(2576%) hue-rotate(342deg) brightness(91%) contrast(92%);
+}
+.dotacio-item .delete-reveal .delete-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e03131;
+  text-align: center;
+  white-space: nowrap;
 }
 .dotacio-item.swiping .dotacio-item-content {
-  transform: translateX(-80px);
+  transform: translateX(-120px);
+}
+.dotacio-item.swiping .dotacio-item-content::after {
+  opacity: 1;
 }
 .dotacio-item.swiping .delete-reveal {
-  transform: translateX(0);
+  opacity: 1;
+}
+.dotacio-item.swiping .button-container {
+  opacity: 0.3;
 }
 
 /* Modal footer i botó Cerrar */
@@ -1905,15 +1946,14 @@ button .fa {
   gap: 20px;
   width: 100%;
   max-width: 100%;
-  padding: 0 15px 15px 5px;
+  padding: 0 5px 10px 5px;
   overflow-x: hidden;
   flex-grow: 1;
   overflow-y: auto;
-  scroll-padding-right: 15px; /* Evita que elements quedin tallats pel scrollbar */
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
   scrollbar-gutter: stable;
-  -webkit-overflow-scrolling: touch;
 }
 .diet-list::-webkit-scrollbar {
   width: 6px;
@@ -1952,8 +1992,8 @@ button .fa {
   gap: 15px;
   transition: transform 0.3s ease;
   position: relative;
+  z-index: 1;
 }
-
 .diet-item-content::after {
   content: "";
   position: absolute;
@@ -1962,7 +2002,7 @@ button .fa {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
-  z-index: 2;
+  z-index: 10;
 }
 
 .swiping .diet-item-content::after {
@@ -1994,14 +2034,33 @@ button .fa {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 80px;
+  width: 120px;
   background-color: #fdeceb;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   transition: opacity 0.3s ease;
-  z-index: -1;
+  z-index: 15;
+}
+.delete-reveal .delete-reveal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.delete-reveal .icon {
+  width: 24px;
+  height: 24px;
+  filter: invert(27%) sepia(93%) saturate(2576%) hue-rotate(342deg) brightness(91%) contrast(92%);
+}
+.delete-reveal .delete-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e03131;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .swiping .delete-reveal {
@@ -2012,7 +2071,7 @@ button .fa {
   display: flex;
   width: 100%;
   position: relative;
-  z-index: 1;
+  z-index: 5;
   transition: opacity 0.2s ease;
 }
 
@@ -2030,6 +2089,10 @@ button .fa {
   transition: background-color 0.2s ease, transform 0.2s ease;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.swiping .diet-icons {
+  opacity: 0.3;
 }
 
 .diet-icons .diet-load {
@@ -2055,10 +2118,6 @@ button .fa {
 /* Per consistència amb dotaciones, si vols hover/actiu */
 .diet-icons button:hover {
   transform: scale(1.02);
-}
-
-.swiping .diet-icons {
-  opacity: 0;
 }
 
 .diet-delete {

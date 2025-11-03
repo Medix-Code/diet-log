@@ -929,6 +929,19 @@ button {
     flex-direction: column;
     gap: 15px;
     transition: transform 0.3s ease;
+    position: relative;
+    z-index: 1; // Assegura que tot el contingut estigui per sobre del delete-reveal
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(249, 249, 249, 0.95);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 10; // Overlay per sobre de tot el contingut
+    }
   }
 
   // Text informatiu
@@ -949,6 +962,9 @@ button {
     gap: 10px;
     justify-content: center;
     width: 100%;
+    position: relative;
+    z-index: 5; // Per sota del overlay (z-index: 10) però per sobre del contingut
+    transition: opacity 0.2s ease;
   }
 
   // Botons de carregar i eliminar
@@ -985,22 +1001,52 @@ button {
     top: 0;
     right: 0;
     bottom: 0;
-    width: 80px;
+    width: 120px; // Ampliat per tenir espai per al text
     background-color: #fdeceb;
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateX(100%); // Comença amagat a la dreta
-    transition: transform 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 15; // Per sobre de tot, inclòs l'overlay (z-index: 10)
+
+    .delete-reveal-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      filter: invert(27%) sepia(93%) saturate(2576%) hue-rotate(342deg) brightness(91%) contrast(92%); // Color vermell #e03131
+    }
+
+    .delete-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: #e03131;
+      text-align: center;
+      white-space: nowrap;
+    }
   }
 
   // Estats durant el swipe
   &.swiping {
     .dotacio-item-content {
-      transform: translateX(-80px);
+      transform: translateX(-120px);
+
+      &::after {
+        opacity: 1; // Mostra l'overlay
+      }
     }
     .delete-reveal {
-      transform: translateX(0);
+      opacity: 1;
+    }
+    .button-container {
+      opacity: 0.3; // Desapareixen visualment però l'overlay els tapa completament
     }
   }
 }
@@ -2156,14 +2202,13 @@ button {
   gap: 20px;
   width: 100%;
   max-width: 100%;
-  padding: 0 15px 15px 5px;
+  padding: 0 5px 10px 5px; // Padding reduït a la dreta per evitar que la scrollbar tapi les cards
 
   overflow-x: hidden;
   flex-grow: 1;
   overflow-y: auto;
-  scroll-padding-right: 15px; /* Evita que elements quedin tallats pel scrollbar */
-  @include custom-scrollbar-style;
   -webkit-overflow-scrolling: touch;
+  @include custom-scrollbar-style;
 }
 
 /* Cada ítem: Flex column per text a dalt + botons a sota */
@@ -2185,6 +2230,7 @@ button {
   gap: 15px;
   transition: transform 0.3s ease;
   position: relative;
+  z-index: 1; // Assegura que tot el contingut estigui per sobre del delete-reveal
 
   &::after {
     content: "";
@@ -2194,7 +2240,7 @@ button {
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
-    z-index: 2;
+    z-index: 10; // Overlay per sobre de tot el contingut
   }
 }
 
@@ -2228,25 +2274,47 @@ button {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 80px; // Estret per no tapar molt
+  width: 120px; // Ampliat per tenir espai per al text
   background-color: #fdeceb;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   transition: opacity 0.3s ease;
-  z-index: -1; // Darrere del contingut
+  z-index: 15; // Per sobre de tot, inclòs l'overlay (z-index: 10)
+
+  .delete-reveal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .icon {
+    width: 24px;
+    height: 24px;
+    filter: invert(27%) sepia(93%) saturate(2576%) hue-rotate(342deg) brightness(91%) contrast(92%); // Color vermell #e03131
+  }
+
+  .delete-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: #e03131;
+    text-align: center;
+    white-space: nowrap;
+  }
 }
 
 .swiping .delete-reveal {
-  opacity: 1; // Apareix gradualment sinse tapar (ja que z-index baix)
+  opacity: 1; // Apareix gradualment
 }
 
 .diet-icons {
   display: flex;
   width: 100%;
   position: relative;
-  z-index: 1;
+  z-index: 5; // Per sota del overlay (z-index: 10) però per sobre del contingut
   transition: opacity 0.2s ease;
 }
 
@@ -2267,7 +2335,7 @@ button {
 }
 
 .swiping .diet-icons {
-  opacity: 0;
+  opacity: 0.3; // Desapareixen visualment però l'overlay els tapa completament
 }
 
 .diet-icons .diet-load {

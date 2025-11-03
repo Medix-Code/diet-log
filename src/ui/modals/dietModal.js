@@ -81,7 +81,12 @@ function createDietListItem(diet) {
 
   const deleteReveal = document.createElement("div");
   deleteReveal.className = CSS_CLASSES.DIET_DELETE_REVEAL;
-  deleteReveal.innerHTML = `<img src="assets/icons/delete.svg" alt="Eliminar" class="icon">`;
+  deleteReveal.innerHTML = `
+    <div class="delete-reveal-content">
+      <img src="assets/icons/delete.svg" alt="Eliminar" class="icon">
+      <span class="delete-text">Eliminar dieta</span>
+    </div>
+  `;
 
   const loadBtn = document.createElement("button");
   loadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} ${CSS_CLASSES.LIST_ITEM_BTN_LOAD} ${CSS_CLASSES.DIET_LOAD_BTN}`;
@@ -175,7 +180,7 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
     }
     if (isDragging && diff > 10) {
-      dietItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+      dietItem.style.transform = `translateX(-${Math.min(diff, 120)}px)`;
       event.preventDefault();
     }
   });
@@ -238,7 +243,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
         if (dietModalElement) dietModalElement.style.overflow = "hidden";
       }
       if (isSwiping && diff > 10) {
-        dietItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+        dietItem.style.transform = `translateX(-${Math.min(diff, 120)}px)`;
         event.preventDefault();
         event.stopPropagation();
       }

@@ -147,7 +147,7 @@ export function initMouseSwipeToDeleteDotacio(dotacioItem, dotacioId) {
     }
 
     if (isDragging) {
-      const limitedDiff = Math.max(Math.min(diffX, 0), -80);
+      const limitedDiff = Math.max(Math.min(diffX, 0), -120);
       dotacioItem.style.transform = `translateX(${limitedDiff}px)`;
       event.preventDefault();
     }
@@ -217,7 +217,7 @@ export function initSwipeToDeleteDotacio(dotacioItem, dotacioId) {
         dotacioItem.classList.add("swiping");
       }
       if (isSwiping && diff > 10) {
-        dotacioItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+        dotacioItem.style.transform = `translateX(-${Math.min(diff, 120)}px)`;
         event.preventDefault();
         event.stopPropagation();
       }
