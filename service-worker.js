@@ -1,4 +1,4 @@
-const VERSION = "2.27";
+const VERSION = "2.2.8";
 const CACHE_PREFIX = "misdietas-cache";
 const CACHE_NAME = `${CACHE_PREFIX}-v${VERSION}`;
 
