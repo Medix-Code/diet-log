@@ -1201,8 +1201,8 @@ export const PUBLIC_HEALTH_CENTERS = [
   "CAP Dr. Francisco Benito Inaraja",
   "CAP Dr. Ramon Vinyes",
   "CAP La Selva",
-  "CAP Lloret-Centre",
-  "CAP Lloret-Rieral",
+  "CAP Lloret Centre",
+  "CAP Lloret Rieral",
   "CAP Sils",
 
   // ÀMBIT GARRAF
