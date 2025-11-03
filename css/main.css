@@ -1827,11 +1827,13 @@ button .fa {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
-  line-height: 1.6;
-  padding: 20px 0px 20px;
 }
 #about-modal .modal-scrollable-content p {
   margin: 0 6px 6px;
+}
+#about-modal .modal-scrollable-content {
+  line-height: 1.6;
+  padding: 20px 0px 20px;
 }
 
 /* COLOR en <strong> */
@@ -4000,13 +4002,6 @@ body.app-ready #main-content {
   }
 }
 /* Elimina completament el datalist natiu */
-input[type=text].origin,
-input[type=text].destination {
-  background-image: none !important;
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
 input[type=text].origin::-webkit-calendar-picker-indicator,
 input[type=text].destination::-webkit-calendar-picker-indicator {
   display: none !important;
@@ -4019,6 +4014,13 @@ input[type=text].destination::-webkit-calendar-picker-indicator {
 input[type=text].origin::-webkit-list-button,
 input[type=text].destination::-webkit-list-button {
   display: none !important;
+}
+input[type=text].origin,
+input[type=text].destination {
+  background-image: none !important;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 input[type=text].origin.has-dropdown-open,
 input[type=text].destination.has-dropdown-open {
@@ -4106,3 +4108,5 @@ input[type=text].destination.has-dropdown-open {
   outline: 2px solid #004aad;
   outline-offset: 2px;
 }
+
+/*# sourceMappingURL=main.css.map */
