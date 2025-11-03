@@ -2203,7 +2203,8 @@ button {
   gap: 20px;
   width: 100%;
   max-width: 100%;
-  padding: 0 5px 10px 5px; // Padding reduït a la dreta per evitar que la scrollbar tapi les cards
+  padding: 0 0 10px 5px; // Padding base
+  padding-right: 12px; // Espai suficient per la scrollbar sense tapar les cards
 
   overflow-x: hidden;
   flex-grow: 1;

@@ -63,7 +63,7 @@ const DATA_ATTRIBUTES = {
 };
 const MAX_TEXT_WIDTH = 180;
 const ENCRYPTION_DISABLED_DEFAULT_MESSAGE =
-  "⚠️ L'encriptació de dotacions no està disponible. Les dotacions es guardaran sense xifrar fins que es resolgui el problema.";
+  "⚠️ La encriptación de dotaciones no está disponible. Las dotaciones se guardarán sin cifrar hasta que se resuelva el problema.";
 
 class DotacionService {
   constructor() {
@@ -212,7 +212,7 @@ class DotacionService {
       log.error("Error carregant dotacions sense encriptació:", error);
       this.savedDotacions = [];
       showToast(
-        "Error carregant dotacions sense encriptació. Les dades poden no estar disponibles.",
+        "Error cargando dotaciones sin encriptación. Los datos pueden no estar disponibles.",
         "error",
         6000
       );
@@ -251,7 +251,7 @@ class DotacionService {
             "❌ Sistema de claus NO inicialitzat. No es poden carregar dotacions encriptades."
           );
           showToast(
-            "Error de seguretat: No es poden carregar les dotacions. Proveu recarregar la pàgina.",
+            "Error de seguridad: No se pueden cargar las dotaciones. Prueba recargar la página.",
             "error",
             5000
           );
@@ -270,7 +270,7 @@ class DotacionService {
         } catch (decryptError) {
           log.error("❌ Error CRÍTIC desencriptant dotacions:", decryptError);
           showToast(
-            "Dotacions antigues no compatibles amb l'actualització. Torneu-les a crear al formulari principal.",
+            "Dotaciones antiguas no compatibles con la actualización. Vuelve a crearlas en el formulario principal.",
             "error",
             7000
           );
@@ -287,7 +287,7 @@ class DotacionService {
         // Avisar l'usuari sobre la migració necessària
         if (this.savedDotacions.length > 0) {
           showToast(
-            `⚠️ S'han detectat ${this.savedDotacions.length} dotació(ns) sense encriptar. S'encriptaran automàticament.`,
+            `⚠️ Se han detectado ${this.savedDotacions.length} dotación(es) sin encriptar. Se encriptarán automáticamente.`,
             "warning",
             5000
           );
@@ -298,7 +298,7 @@ class DotacionService {
           try {
             await this.saveDotacionsToStorage();
             showToast(
-              "✅ Dotacions migrades i encriptades a IndexedDB!",
+              "✅ Dotaciones migradas y encriptadas a IndexedDB.",
               "success",
               5000
             );
@@ -306,7 +306,7 @@ class DotacionService {
           } catch (migrationError) {
             log.error("❌ Error migrant dotacions:", migrationError);
             showToast(
-              "⚠️ No s'han pogut encriptar les dotacions. Deseu-les de nou per encriptar-les.",
+              "⚠️ No se han podido encriptar las dotaciones. Guárdalas de nuevo para encriptarlas.",
               "error",
               7000
             );
@@ -335,7 +335,7 @@ class DotacionService {
       } catch (error) {
         log.error("Error guardant dotacions sense encriptació:", error);
         showToast(
-          "Error guardant dotacions sense encriptació. Comproveu l'espai disponible.",
+          "Error guardando dotaciones sin encriptación. Comprueba el espacio disponible.",
           "error",
           6000
         );
@@ -373,7 +373,7 @@ class DotacionService {
     } catch (error) {
       log.error("❌ Error CRÍTIC guardant dotacions:", error);
       showToast(
-        "Error crític: Les dotacions NO s'han desat per seguretat.",
+        "Error crítico: Las dotaciones NO se han guardado por seguridad.",
         "error",
         5000
       );
@@ -793,7 +793,7 @@ async function decryptDotacionsData(encryptedData, key) {
 
         // Mostrar advertència a l'usuari
         showToast(
-          "⚠️ Advertència: Les dotacions poden estar corruptes. El checksum no coincideix.",
+          "⚠️ Advertencia: Las dotaciones pueden estar corruptas. El checksum no coincide.",
           "warning",
           7000
         );
