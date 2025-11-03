@@ -4,8 +4,6 @@ import { loadExternalScript } from "../utils/secureScriptLoader.js";
 
 const GA_MEASUREMENT_ID = "G-23SXKMLR75";
 const GA_SCRIPT_URL = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-const GA_SCRIPT_INTEGRITY =
-  "sha384-npdF2r0gS4VTDBOUWQ32Igb6Tr6PDv4p0eoQI5oJUSutnNpdFb8JFJ7Y8dbvECv7";
 
 // Inicialitza dataLayer i gtag de forma segura sense codi inline.
 window.dataLayer = window.dataLayer || [];
@@ -38,27 +36,15 @@ let gaInitialized = false;
 // Funció per carregar GA dinàmicament sols en acceptar
 async function loadGoogleAnalytics() {
   if (gaInitialized) return;
-  let scriptLoaded = false;
   try {
     await loadExternalScript({
       src: GA_SCRIPT_URL,
-      integrity: GA_SCRIPT_INTEGRITY,
       referrerPolicy: "strict-origin-when-cross-origin",
     });
-    scriptLoaded = true;
   } catch (error) {
-    console.warn(
-      "Fallo de SRI carregant Google Analytics. Reintentant sense integritat:",
-      error
-    );
-    await loadExternalScript({
-      src: GA_SCRIPT_URL,
-      referrerPolicy: "strict-origin-when-cross-origin",
-    });
-    scriptLoaded = true;
+    console.error("Error carregant Google Analytics:", error);
+    return;
   }
-
-  if (!scriptLoaded) return;
 
   window.gtag("consent", "update", {
     analytics_storage: "granted",

@@ -2184,6 +2184,22 @@ button {
   flex-direction: column;
   gap: 15px;
   transition: transform 0.3s ease;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(249, 249, 249, 0.95);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 2;
+  }
+}
+
+.swiping .diet-item-content::after {
+  opacity: 1;
 }
 
 // Text informatiu
@@ -2229,6 +2245,9 @@ button {
 .diet-icons {
   display: flex;
   width: 100%;
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.2s ease;
 }
 
 .diet-icons button {
@@ -2245,6 +2264,10 @@ button {
   transition: background-color 0.2s ease, transform 0.2s ease;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.swiping .diet-icons {
+  opacity: 0;
 }
 
 .diet-icons .diet-load {

@@ -62,7 +62,6 @@ function createDietListItem(diet) {
   const displayId = diet.id || "?????????";
 
   const { ddmmaa, franjaText } = getDietDisplayInfo(diet.date, diet.dietType);
-  const creationTime = formatTimeFromISO(diet.timeStampDiet);
 
   const dietItem = document.createElement("div");
   dietItem.className = CSS_CLASSES.DIET_ITEM;
@@ -73,7 +72,7 @@ function createDietListItem(diet) {
   const dateSpan = document.createElement("span");
   dateSpan.className = CSS_CLASSES.DIET_DATE;
   let displayText = ddmmaa;
-  if (creationTime) displayText += ` [${creationTime}]`;
+
   displayText += ` - ${capitalizeFirstLetter(franjaText)}`;
   dateSpan.textContent = displayText;
 

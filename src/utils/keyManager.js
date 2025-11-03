@@ -37,6 +37,7 @@ const KEY_STORE_VERSION = 1;
 const MASTER_KEY_ID = "master-key-v1";
 const WRAPPED_KEY_ID = "wrapped-master-key";
 const DEVICE_SALT_ID = "device-salt";
+const MAX_KEY_RECOVERY_ATTEMPTS = 2;
 
 // Configuració de la clau mestra
 const MASTER_KEY_CONFIG = {
@@ -148,34 +149,8 @@ async function getFromKeyStore(id) {
 }
 
 /**
- * Genera un device fingerprint únic (per aquest dispositiu)
- * @returns {Promise<string>} Fingerprint
- */
-async function generateDeviceFingerprint() {
-  // Recollir característiques del dispositiu
-  const components = [
-    navigator.userAgent,
-    navigator.language,
-    screen.width,
-    screen.height,
-    screen.colorDepth,
-    new Date().getTimezoneOffset(),
-    navigator.hardwareConcurrency || 0,
-    navigator.deviceMemory || 0,
-  ];
-
-  // Crear hash SHA-256
-  const encoder = new TextEncoder();
-  const data = encoder.encode(components.join("|"));
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-
-  // Convertir a hex
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/**
  * Genera o recupera el salt del dispositiu
+ * Aquest salt és l'únic element que fa la clau única per aquest navegador/dispositiu
  * @returns {Promise<Uint8Array>} Salt
  */
 async function getDeviceSalt() {
@@ -196,20 +171,27 @@ async function getDeviceSalt() {
 }
 
 /**
- * Deriva una clau de wrapping del device fingerprint
+ * Deriva una clau de wrapping del salt del dispositiu
+ * NOTA: Ja no usem device fingerprint perquè pot canviar (mode responsiu, etc.)
  * @returns {Promise<CryptoKey>} Clau de wrapping
  */
 async function deriveDeviceKey() {
   try {
-    // Obtenir fingerprint i salt
-    const fingerprint = await generateDeviceFingerprint();
-    const salt = await getDeviceSalt();
+    log.debug("🔑 Derivant clau de dispositiu...");
 
-    // Importar fingerprint com a clau base
+    // Obtenir salt (únic per aquest dispositiu/navegador)
+    const salt = await getDeviceSalt();
+    log.debug(`Salt length: ${salt.length} bytes`);
+
+    // Usar una passphrase fixa + salt aleatori
+    // El salt aleatori proporciona la unicitat necessària
+    const passphrase = "diet-log-encryption-v1";
+
+    // Importar passphrase com a clau base
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
       "raw",
-      encoder.encode(fingerprint),
+      encoder.encode(passphrase),
       { name: "PBKDF2" },
       false,
       ["deriveBits", "deriveKey"]
@@ -229,6 +211,7 @@ async function deriveDeviceKey() {
       ["wrapKey", "unwrapKey"]
     );
 
+    log.debug("✅ Clau de dispositiu derivada");
     return deviceKey;
   } catch (error) {
     log.error("Error derivant clau de dispositiu:", error);
@@ -273,6 +256,7 @@ async function wrapMasterKey(masterKey, deviceKey) {
       WRAPPING_CONFIG.name
     );
 
+    log.debug(`Clau protegida: ${wrappedKey.byteLength} bytes`);
     return wrappedKey;
   } catch (error) {
     log.error("Error protegint clau mestra:", error);
@@ -282,15 +266,32 @@ async function wrapMasterKey(masterKey, deviceKey) {
 
 /**
  * Desprotegeix (unwrap) la clau mestra
- * @param {ArrayBuffer} wrappedKey - Clau mestra protegida
+ * @param {ArrayBuffer|Uint8Array} wrappedKey - Clau mestra protegida
  * @param {CryptoKey} deviceKey - Clau de wrapping
  * @returns {Promise<CryptoKey>} Clau mestra
  */
 async function unwrapMasterKey(wrappedKey, deviceKey) {
   try {
+    // Assegurar que tenim un ArrayBuffer proper
+    let keyBuffer = wrappedKey;
+    if (wrappedKey instanceof Uint8Array) {
+      // Crear una còpia real, no només una referència al buffer
+      keyBuffer = wrappedKey.buffer.slice(
+        wrappedKey.byteOffset,
+        wrappedKey.byteOffset + wrappedKey.byteLength
+      );
+    } else if (!(wrappedKey instanceof ArrayBuffer)) {
+      // Si és un array normal, convertir-lo
+      keyBuffer = new Uint8Array(wrappedKey).buffer;
+    }
+
+    log.debug(
+      `Unwrapping key with buffer length: ${keyBuffer.byteLength} bytes`
+    );
+
     const masterKey = await crypto.subtle.unwrapKey(
       "raw",
-      wrappedKey,
+      keyBuffer,
       deviceKey,
       WRAPPING_CONFIG.name,
       MASTER_KEY_CONFIG,
@@ -298,6 +299,7 @@ async function unwrapMasterKey(wrappedKey, deviceKey) {
       ["encrypt", "decrypt"]
     );
 
+    log.debug("✅ Clau desprotegida correctament");
     return masterKey;
   } catch (error) {
     log.error("Error desprotegint clau mestra:", error);
@@ -317,8 +319,25 @@ export async function initializeKeySystem() {
     // Comprovar si ja existeix
     const existingWrappedKey = await getFromKeyStore(WRAPPED_KEY_ID);
     if (existingWrappedKey) {
-      log.debug("✅ Sistema de claus ja inicialitzat");
-      return;
+      log.debug("⚠️ Sistema de claus ja inicialitzat. Validant integritat...");
+
+      // VALIDAR que la clau existent funciona!
+      try {
+        const deviceKey = await deriveDeviceKey();
+        const testWrappedKey = new Uint8Array(existingWrappedKey);
+        await unwrapMasterKey(testWrappedKey, deviceKey);
+        log.debug("✅ Clau existent validada correctament");
+        return; // Tot OK
+      } catch (validationError) {
+        log.warn(
+          "⚠️ Clau existent corrupta o incompatible. Re-inicialitzant..."
+        );
+        log.warn("Error de validació:", validationError);
+
+        // Resetjar i continuar amb la creació d'una nova clau
+        await resetKeySystem(true);
+        log.debug("🔄 Sistema resetejat. Creant nova clau...");
+      }
     }
 
     // 1. Generar clau mestra
@@ -331,12 +350,34 @@ export async function initializeKeySystem() {
     const wrappedKey = await wrapMasterKey(masterKey, deviceKey);
 
     // 4. Guardar clau protegida
-    await saveToKeyStore(
-      WRAPPED_KEY_ID,
-      Array.from(new Uint8Array(wrappedKey))
+    const wrappedKeyArray = Array.from(new Uint8Array(wrappedKey));
+    await saveToKeyStore(WRAPPED_KEY_ID, wrappedKeyArray);
+
+    log.debug(
+      `✅ Clau protegida guardada a IndexedDB (${wrappedKeyArray.length} bytes)`
     );
 
-    log.debug("✅ Sistema de claus inicialitzat correctament");
+    // 5. VALIDACIÓ IMMEDIATA: Intentar desprotegir amb la mateixa clau
+    try {
+      log.debug("🔍 Validant que la clau es pot recuperar...");
+      const testWrappedKey = new Uint8Array(wrappedKeyArray);
+      await unwrapMasterKey(testWrappedKey, deviceKey);
+      log.debug("✅ Validació exitosa: la clau es pot recuperar correctament");
+    } catch (validationError) {
+      log.error(
+        "❌ VALIDACIÓ FALLIDA: La clau no es pot recuperar després de crear-la!"
+      );
+      log.error("Error de validació:", validationError);
+
+      // Resetjar i llançar error
+      await resetKeySystem(true);
+      throw new Error(
+        `Key system validation failed: ${validationError.message}. ` +
+          "Possible browser incompatibility with AES-KW algorithm."
+      );
+    }
+
+    log.debug("✅ Sistema de claus inicialitzat i validat correctament");
     log.debug("🔒 Protecció de dades activada");
   } catch (error) {
     if (!(error instanceof EncryptionSupportError)) {
@@ -367,30 +408,33 @@ export async function initializeKeySystem() {
 export async function getMasterKey() {
   try {
     assertEncryptionSupport();
+
     // 1. Recuperar clau protegida
     const wrappedKeyArray = await getFromKeyStore(WRAPPED_KEY_ID);
 
     if (!wrappedKeyArray) {
-      // ✅ FIX: Inicialitzar si no existeix
+      // Inicialitzar si no existeix
       log.warn(
         "⚠️ Clau mestra no trobada. Inicialitzant sistema automàticament..."
       );
       await initializeKeySystem();
+
       // Retry després d'inicialitzar
       const retryWrappedKey = await getFromKeyStore(WRAPPED_KEY_ID);
       if (!retryWrappedKey) {
         throw new Error("Failed to initialize key system");
       }
-      return await getMasterKey();
+
+      // Tornar a cridar recursivament (només una vegada)
+      const deviceKey = await deriveDeviceKey();
+      const wrappedKey = new Uint8Array(retryWrappedKey).buffer;
+      return await unwrapMasterKey(wrappedKey, deviceKey);
     }
 
     // 2. Validar format
     if (!Array.isArray(wrappedKeyArray) || wrappedKeyArray.length === 0) {
-      log.error("❌ Clau mestra corrupta (format invàlid). Reinicialitzant...");
-      await resetKeySystem();
-      await initializeKeySystem();
       throw new Error(
-        "Key system was corrupted and has been reset. Please try again."
+        "Clau mestra amb format invàlid. Executa diagnoseKeySystem() per més detalls."
       );
     }
 
@@ -405,18 +449,21 @@ export async function getMasterKey() {
       const masterKey = await unwrapMasterKey(wrappedKey, deviceKey);
       return masterKey;
     } catch (unwrapError) {
-      log.error(
-        "❌ Error desprotegint clau (possiblement corrupta):",
-        unwrapError
-      );
-      log.warn("🔄 Reinicialitzant sistema de claus...");
+      // ❌ NO auto-resetjar - això destrueix les dades encriptades existents
+      log.error("⛔ Error CRÍTIC desprotegint clau mestra:", unwrapError);
 
-      // Reinicialitzar sistema si unwrap falla
-      await resetKeySystem();
-      await initializeKeySystem();
+      // Donar informació útil a l'usuari
+      const userMessage =
+        "El sistema de claus està corrupte o el dispositiu ha canviat. " +
+        "Les dotacions encriptades no es poden recuperar sense la clau original. " +
+        "Opcions: 1) Prova a recarregar la pàgina, 2) Exporta dades i reseteja l'aplicació.";
+
+      log.error(userMessage);
 
       throw new Error(
-        "Key system was corrupted. System has been reset - please refresh the page."
+        `Key unwrap failed: ${unwrapError.message}. ` +
+          `Això pot passar si has canviat de navegador/dispositiu o les dades estan corruptes. ` +
+          `SOLUCIÓ: Reseteja el sistema de claus des de Configuració.`
       );
     }
   } catch (error) {
@@ -441,8 +488,16 @@ export async function isKeySystemInitialized() {
 /**
  * Reseteja tot el sistema de claus (PERILLÓS - només per debug/tests)
  * @warning Això farà que totes les dades encriptades siguin irrecuperables
+ * @param {boolean} confirmed - Confirmació explícita de l'usuari
  */
-export async function resetKeySystem() {
+export async function resetKeySystem(confirmed = false) {
+  if (!confirmed) {
+    throw new Error(
+      "resetKeySystem requereix confirmació explícita (confirmed=true). " +
+        "ATENCIÓ: Això farà que totes les dades encriptades siguin irrecuperables."
+    );
+  }
+
   log.warn(
     "⚠️ RESETEJANT SISTEMA DE CLAUS - Les dades encriptades es perdran!"
   );
@@ -460,6 +515,68 @@ export async function resetKeySystem() {
     };
     request.onerror = () => reject(request.error);
   });
+}
+
+/**
+ * Diagnostica l'estat del sistema de claus
+ * @returns {Promise<Object>} Estat detallat del sistema
+ */
+export async function diagnoseKeySystem() {
+  try {
+    const diagnosis = {
+      encryptionSupported: isEncryptionEnvironmentSupported(),
+      keySystemInitialized: false,
+      wrappedKeyExists: false,
+      wrappedKeyValid: false,
+      deviceSaltExists: false,
+      canUnwrap: false,
+      errors: [],
+    };
+
+    if (!diagnosis.encryptionSupported) {
+      diagnosis.errors.push("WebCrypto or IndexedDB not supported");
+      return diagnosis;
+    }
+
+    // Comprovar si existeix clau wrapped
+    const wrappedKeyArray = await getFromKeyStore(WRAPPED_KEY_ID);
+    diagnosis.wrappedKeyExists = !!wrappedKeyArray;
+    diagnosis.keySystemInitialized = diagnosis.wrappedKeyExists;
+
+    if (wrappedKeyArray) {
+      diagnosis.wrappedKeyValid =
+        Array.isArray(wrappedKeyArray) && wrappedKeyArray.length > 0;
+    }
+
+    // Comprovar si existeix salt
+    const salt = await getFromKeyStore(DEVICE_SALT_ID);
+    diagnosis.deviceSaltExists = !!salt;
+
+    // Intentar unwrap (sense resetjar si falla)
+    if (diagnosis.wrappedKeyExists && diagnosis.wrappedKeyValid) {
+      try {
+        const wrappedKey = new Uint8Array(wrappedKeyArray).buffer;
+        const deviceKey = await deriveDeviceKey();
+        await unwrapMasterKey(wrappedKey, deviceKey);
+        diagnosis.canUnwrap = true;
+      } catch (unwrapError) {
+        diagnosis.canUnwrap = false;
+        diagnosis.errors.push(`Unwrap failed: ${unwrapError.message}`);
+      }
+    }
+
+    return diagnosis;
+  } catch (error) {
+    return {
+      encryptionSupported: false,
+      keySystemInitialized: false,
+      wrappedKeyExists: false,
+      wrappedKeyValid: false,
+      deviceSaltExists: false,
+      canUnwrap: false,
+      errors: [`Diagnosis failed: ${error.message}`],
+    };
+  }
 }
 
 /**
@@ -490,6 +607,7 @@ export default {
   getMasterKey,
   isKeySystemInitialized,
   resetKeySystem,
+  diagnoseKeySystem,
   exportRecoveryPhrase,
   importFromRecoveryPhrase,
   EncryptionSupportError,

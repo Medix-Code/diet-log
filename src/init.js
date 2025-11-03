@@ -41,6 +41,7 @@ import {
   isEncryptionEnvironmentSupported,
 } from "./utils/keyManager.js";
 import { dataMigration } from "./services/dataMigration.js";
+import { exposeDebugFunctions } from "./utils/keySystemDebug.js";
 
 const log = logger.withScope("Init");
 
@@ -164,6 +165,15 @@ export async function initializeApp() {
     // Altres coses
     activateEasterEgg();
     initCookieConsentService();
+
+    // Exposar funcions de debug (només en development/test)
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      exposeDebugFunctions();
+      log.debug("🛠️ Funcions de debug exposades (mode development)");
+    }
 
     log.info("initializeApp() completada.");
   } catch (error) {

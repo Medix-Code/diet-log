@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Encryption System</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #d32f2f;
+        margin-top: 0;
+      }
+      button {
+        background: #d32f2f;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+      }
+      button:hover {
+        background: #b71c1c;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .log {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+        font-family: monospace;
+        font-size: 14px;
+        white-space: pre-wrap;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .warning {
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .success {
+        background: #e8f5e9;
+        border-left: 4px solid #4caf50;
+        padding: 15px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>⚠️ Reset Sistema d'Encriptació</h1>
+
+      <div class="warning">
+        <strong>ATENCIÓ:</strong> Aquesta eina eliminarà completament el sistema
+        de claus d'encriptació. Les dotacions encriptades no es podran
+        recuperar. <br /><br />
+        <strong>Les dietes NO es veuran afectades.</strong>
+      </div>
+
+      <button id="resetBtn">🔄 Resetjar Sistema de Claus</button>
+      <button id="reloadBtn" style="display: none; background: #4caf50">
+        🔄 Recarregar App
+      </button>
+
+      <div id="log" class="log" style="display: none"></div>
+    </div>
+
+    <script>
+      const logEl = document.getElementById("log");
+      const resetBtn = document.getElementById("resetBtn");
+      const reloadBtn = document.getElementById("reloadBtn");
+
+      function log(message) {
+        console.log(message);
+        logEl.style.display = "block";
+        logEl.textContent += message + "\n";
+      }
+
+      resetBtn.addEventListener("click", async () => {
+        if (
+          !confirm(
+            "Estàs segur que vols resetjar el sistema de claus?\n\nAixò eliminarà totes les dotacions encriptades."
+          )
+        ) {
+          return;
+        }
+
+        resetBtn.disabled = true;
+        logEl.textContent = "";
+        log("🔄 Iniciant reset del sistema de claus...\n");
+
+        try {
+          // 1. Eliminar base de dades de claus
+          log("📦 Eliminant base de dades de claus...");
+          await new Promise((resolve, reject) => {
+            const request = indexedDB.deleteDatabase("encryption-keys");
+            request.onsuccess = () => {
+              log("✅ Base de dades de claus eliminada");
+              resolve();
+            };
+            request.onerror = () => {
+              log("❌ Error eliminant BD de claus: " + request.error);
+              reject(request.error);
+            };
+            request.onblocked = () => {
+              log(
+                "⚠️ Eliminació bloquejada. Tanca totes les pestanyes de l'app i torna a intentar."
+              );
+              reject(new Error("Blocked"));
+            };
+          });
+
+          // 2. Opcionalment, netejar dotacions de DietasDB
+          log("\n📦 Eliminant dotacions de DietasDB...");
+          try {
+            const db = await new Promise((resolve, reject) => {
+              const request = indexedDB.open("DietasDB", 2);
+              request.onsuccess = () => resolve(request.result);
+              request.onerror = () => reject(request.error);
+            });
+
+            const tx = db.transaction(["dotacions"], "readwrite");
+            const store = tx.objectStore("dotacions");
+            await new Promise((resolve, reject) => {
+              const request = store.clear();
+              request.onsuccess = () => {
+                log("✅ Dotacions eliminades");
+                resolve();
+              };
+              request.onerror = () => reject(request.error);
+            });
+
+            db.close();
+          } catch (dbError) {
+            log("ℹ️ No hi havia dotacions per eliminar o BD no existeix");
+          }
+
+          // 3. Netejar localStorage relacionat
+          log("\n🧹 Netejant localStorage...");
+          const keysToRemove = [
+            "dotacions_v2",
+            "dotacions_encrypted",
+            "dotacions_migrated_to_indexeddb",
+          ];
+          keysToRemove.forEach((key) => {
+            if (localStorage.getItem(key)) {
+              localStorage.removeItem(key);
+              log(`  - ${key} eliminat`);
+            }
+          });
+
+          log("\n✅ Reset completat amb èxit!");
+          log(
+            "\n🔄 Recarrega l'aplicació per inicialitzar un nou sistema de claus."
+          );
+
+          const successDiv = document.createElement("div");
+          successDiv.className = "success";
+          successDiv.innerHTML =
+            "<strong>✅ Reset completat!</strong><br>El sistema de claus s'ha resetejat correctament.";
+          document.querySelector(".container").insertBefore(successDiv, logEl);
+
+          reloadBtn.style.display = "inline-block";
+        } catch (error) {
+          log("\n❌ Error durant el reset: " + error.message);
+          log(error.stack);
+          resetBtn.disabled = false;
+        }
+      });
+
+      reloadBtn.addEventListener("click", () => {
+        window.location.href = "/";
+      });
+    </script>
+  </body>
+</html>
