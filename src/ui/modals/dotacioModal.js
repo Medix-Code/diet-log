@@ -80,7 +80,10 @@ export function initMouseSwipeToDeleteDotacio(dotacioItem, dotacioId) {
   let isDragging = false;
 
   const cleanupPointerState = (withTransition = true) => {
-    if (pointerId !== null && typeof dotacioItem.releasePointerCapture === "function") {
+    if (
+      pointerId !== null &&
+      typeof dotacioItem.releasePointerCapture === "function"
+    ) {
       const hasCapture =
         typeof dotacioItem.hasPointerCapture === "function" &&
         dotacioItem.hasPointerCapture(pointerId);
@@ -110,7 +113,10 @@ export function initMouseSwipeToDeleteDotacio(dotacioItem, dotacioId) {
   const onPointerDown = (event) => {
     if (event.pointerType === "touch") return; // Gestos tàctils gestionats a initSwipeToDeleteDotacio
     if (event.button !== 0) return;
-    if (event.target.closest("button") || event.target.closest(".button-container")) {
+    if (
+      event.target.closest("button") ||
+      event.target.closest(".button-container")
+    ) {
       return;
     }
 
