@@ -1,6 +1,7 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "diet-log",
-  "version": "2.2.6",
+  "version": "2.27",
   "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
   "main": "index.html",
   "scripts": {
