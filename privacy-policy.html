@@ -101,7 +101,7 @@
   <body class="body-privacy-policy">
     <div class="container">
       <h1>Política de Privacidad</h1>
-      <p><strong>Última actualización:</strong> 9 de octubre de 2025</p>
+      <p><strong>Última actualización:</strong> 1 de novembre de 2025</p>
 
       <p>
         Esta Política de Privacidad describe cómo se gestiona la información en
@@ -137,9 +137,19 @@
         ningún momento.
       </p>
       <p>
+        <strong>Encriptación avanzada:</strong> Los
+        <strong>datos sensibles</strong> (nombres de conductores y ayudantes,
+        números de servicio, firmas biométricas, y otra información personal) se
+        protegen con <strong>encriptación AES-GCM 256-bit</strong> de nivel
+        militar. Las claves de encriptación se quedan únicamente en tu
+        dispositivo (encriptación zero-knowledge), así que ni siquiera el
+        desarrollador puede ver tus datos.
+      </p>
+      <p>
         <strong>Control total:</strong> Tú eres el único propietario y gestor de
         esta información. Si borras los datos de tu navegador, esta información
-        se eliminará de forma permanente.
+        se eliminará de forma permanente. Si pierdes las claves de encriptación,
+        los datos encriptados se vuelven irrecuperables.
       </p>
 
       <h3>b) Datos de Análisis (Google Analytics)</h3>
@@ -246,6 +256,45 @@
         La seguridad de tus datos reside en tu propio dispositivo. La aplicación
         no transmite esta información a través de internet, lo que elimina los
         riesgos asociados a transferencias de datos.
+      </p>
+      <p>
+        <strong>Protección fail-closed:</strong> Si por algún motivo el sistema
+        de encriptación no funciona, la aplicación
+        <strong>bloquea el guardado automáticamente</strong> para evitar que se
+        guarden datos sin protección. En ese caso, verás un mensaje claro
+        explicándote qué pasa.
+      </p>
+      <p>
+        <strong>Validación de integridad:</strong> La aplicación comprueba
+        constantemente que tus datos estén bien mediante códigos de verificación
+        criptográficos. Si nota algo raro, te avisa enseguida para que puedas
+        hacer algo al respecto.
+      </p>
+      <p>
+        <strong>Headers de seguridad:</strong> Hemos añadido medidas de
+        seguridad extra en las comunicaciones web (como X-Content-Type-Options,
+        X-XSS-Protection, X-Frame-Options) para proteger contra ataques comunes.
+      </p>
+
+      <h2>7. Integridad y Recuperación de Datos</h2>
+      <p>
+        <strong>Alertas de integridad:</strong> Si la aplicación nota que algo
+        no cuadra con tus datos (por corrupción o manipulación), te saldrá una
+        notificación clara en pantalla. Así puedes comprobarlo y, si hace falta,
+        recuperar tus datos desde una copia de seguridad.
+      </p>
+      <p>
+        <strong>Migración automática:</strong> Cuando actualizamos la aplicación
+        con mejoras de seguridad, tus datos antiguos se pasan automáticamente
+        manteniendo toda la protección. Si hay algún problemilla temporal, el
+        sistema lo intenta varias veces hasta que funciona.
+      </p>
+      <p>
+        <strong>Recuperación de claves:</strong> Las claves de encriptación se
+        crean y guardan de forma segura en tu dispositivo. Si se pierden (por
+        ejemplo, borrando el historial del navegador), los datos encriptados ya
+        no se pueden recuperar. Por eso es buena idea hacer copias de seguridad
+        de vez en cuando de tus datos importantes.
       </p>
 
       <p>Gracias por utilizar MisDietas.</p>
