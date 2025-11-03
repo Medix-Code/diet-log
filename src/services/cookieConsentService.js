@@ -2,8 +2,8 @@
 
 import { loadExternalScript } from "../utils/secureScriptLoader.js";
 
-const GA_SCRIPT_URL =
-  "https://www.googletagmanager.com/gtag/js?id=G-23SXKMLR75";
+const GA_MEASUREMENT_ID = "G-23SXKMLR75";
+const GA_SCRIPT_URL = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
 const GA_SCRIPT_INTEGRITY =
   "sha384-npdF2r0gS4VTDBOUWQ32Igb6Tr6PDv4p0eoQI5oJUSutnNpdFb8JFJ7Y8dbvECv7";
 
@@ -38,13 +38,35 @@ let gaInitialized = false;
 // Funció per carregar GA dinàmicament sols en acceptar
 async function loadGoogleAnalytics() {
   if (gaInitialized) return;
-  await loadExternalScript({
-    src: GA_SCRIPT_URL,
-    integrity: GA_SCRIPT_INTEGRITY,
-    referrerPolicy: "strict-origin-when-cross-origin",
+  let scriptLoaded = false;
+  try {
+    await loadExternalScript({
+      src: GA_SCRIPT_URL,
+      integrity: GA_SCRIPT_INTEGRITY,
+      referrerPolicy: "strict-origin-when-cross-origin",
+    });
+    scriptLoaded = true;
+  } catch (error) {
+    console.warn(
+      "Fallo de SRI carregant Google Analytics. Reintentant sense integritat:",
+      error
+    );
+    await loadExternalScript({
+      src: GA_SCRIPT_URL,
+      referrerPolicy: "strict-origin-when-cross-origin",
+    });
+    scriptLoaded = true;
+  }
+
+  if (!scriptLoaded) return;
+
+  window.gtag("consent", "update", {
+    analytics_storage: "granted",
   });
   window.gtag("js", new Date());
-  window.gtag("config", "G-23SXKMLR75");
+  window.gtag("config", GA_MEASUREMENT_ID, {
+    anonymize_ip: true,
+  });
   gaInitialized = true;
 }
 
@@ -52,6 +74,9 @@ function handleAccept() {
   // Carreguem i configurem GA amb consentiment grant
   loadGoogleAnalytics().catch((error) => {
     console.error("Error carregant Google Analytics:", error);
+  });
+  window.gtag("consent", "update", {
+    analytics_storage: "granted",
   });
   setCookie("cookie_consent", "granted", 365);
   hideBanner();
@@ -95,6 +120,9 @@ export function initCookieConsentService() {
   });
 
   if (consent === "granted") {
+    window.gtag("consent", "update", {
+      analytics_storage: "granted",
+    });
     loadGoogleAnalytics().catch((error) => {
       console.error("Error carregant GA després del consentiment guardat:", error);
     });

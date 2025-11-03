@@ -62,6 +62,8 @@ const DATA_ATTRIBUTES = {
   INDEX: "data-index",
 };
 const MAX_TEXT_WIDTH = 180;
+const ENCRYPTION_DISABLED_DEFAULT_MESSAGE =
+  "⚠️ L'encriptació de dotacions no està disponible. Les dotacions es guardaran sense xifrar fins que es resolgui el problema.";
 
 class DotacionService {
   constructor() {
@@ -71,6 +73,9 @@ class DotacionService {
     this.dotacioTemplateElement = null;
     this.noDotacioTextElement = null;
     this.isInitialized = false;
+    this.encryptionSupported = true;
+    this.encryptionDisabledReason = "";
+    this.hasShownEncryptionWarning = false;
   }
 
   /**
@@ -104,6 +109,11 @@ class DotacionService {
     }
 
     await this.loadDotacionsFromStorage();
+
+    if (!this.encryptionSupported) {
+      // Mostra avís després de carregar les dades sense encriptar
+      this.showEncryptionDisabledWarning();
+    }
 
     addDotacioBtn.addEventListener(
       "click",
@@ -151,9 +161,75 @@ class DotacionService {
   }
 
   /**
+   * Habilita o deshabilita l'encriptació per dotacions.
+   * @param {boolean} isSupported - Estat de suport.
+   * @param {string} [reason] - Missatge personalitzat a mostrar.
+   */
+  setEncryptionSupport(isSupported, reason = "") {
+    this.encryptionSupported = Boolean(isSupported);
+    if (!this.encryptionSupported) {
+      this.encryptionDisabledReason =
+        reason || ENCRYPTION_DISABLED_DEFAULT_MESSAGE;
+    } else {
+      this.encryptionDisabledReason = "";
+      this.hasShownEncryptionWarning = false;
+    }
+  }
+
+  /**
+   * Mostra l'avís d'encriptació deshabilitada només una vegada.
+   */
+  showEncryptionDisabledWarning() {
+    if (this.encryptionSupported || this.hasShownEncryptionWarning) return;
+
+    showToast(
+      this.encryptionDisabledReason || ENCRYPTION_DISABLED_DEFAULT_MESSAGE,
+      "warning",
+      7000
+    );
+    this.hasShownEncryptionWarning = true;
+  }
+
+  /**
+   * Carrega les dotacions des de localStorage quan l'encriptació no està disponible.
+   */
+  loadDotacionsFromLegacyStorage() {
+    try {
+      const rawData = localStorage.getItem(LS_KEY);
+      if (!rawData) {
+        this.savedDotacions = [];
+        return;
+      }
+
+      const parsed = JSON.parse(rawData);
+      this.savedDotacions = Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) {
+        log.warn(
+          "Format de dotacions sense encriptar invàlid. S'inicia llista buida."
+        );
+      }
+    } catch (error) {
+      log.error("Error carregant dotacions sense encriptació:", error);
+      this.savedDotacions = [];
+      showToast(
+        "Error carregant dotacions sense encriptació. Les dades poden no estar disponibles.",
+        "error",
+        6000
+      );
+    } finally {
+      this.showEncryptionDisabledWarning();
+    }
+  }
+
+  /**
    * Carga las dotaciones desde IndexedDB (con desencriptación).
    */
   async loadDotacionsFromStorage() {
+    if (!this.encryptionSupported) {
+      this.loadDotacionsFromLegacyStorage();
+      return;
+    }
+
     try {
       // 🔄 MIGRACIÓ AUTOMÀTICA: localStorage → IndexedDB (només primera vegada)
       await migrateDotacionsFromLocalStorage();
@@ -251,6 +327,23 @@ class DotacionService {
    * Guarda las dotaciones en IndexedDB (con encriptación OBLIGATORIA).
    */
   async saveDotacionsToStorage() {
+    if (!this.encryptionSupported) {
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(this.savedDotacions));
+        localStorage.setItem(LS_ENCRYPTED_FLAG, "false");
+        this.showEncryptionDisabledWarning();
+      } catch (error) {
+        log.error("Error guardant dotacions sense encriptació:", error);
+        showToast(
+          "Error guardant dotacions sense encriptació. Comproveu l'espai disponible.",
+          "error",
+          6000
+        );
+        throw error;
+      }
+      return;
+    }
+
     try {
       // 🔐 ENCRIPTACIÓ OBLIGATÒRIA (fail-closed): Sistema de claus REQUERIT
       if (!(await isKeySystemInitialized())) {

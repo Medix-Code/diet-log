@@ -53,58 +53,141 @@ export function updateDotacioListVisibility() {
 }
 
 export function initMouseSwipeToDeleteDotacio(dotacioItem, dotacioId) {
+  if (!dotacioItem) return;
+
+  const deleteReveal = dotacioItem.querySelector(".delete-reveal");
+
+  const handleDelete = async () => {
+    await dotacionService.handleDeleteById(dotacioId);
+    dotacioItem.remove();
+    updateDotacioListVisibility();
+  };
+
+  if (typeof window === "undefined" || !("PointerEvent" in window)) {
+    deleteReveal?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handleDelete().catch((error) => {
+        log.error("Error eliminant dotació des de fallback:", error);
+      });
+    });
+    return;
+  }
+
+  let pointerId = null;
   let startX = 0;
-  let currentX = 0;
+  let startY = 0;
   let isDragging = false;
 
-  dotacioItem.addEventListener("mousedown", (event) => {
-    if (event.target.closest("button") || event.target.closest(".button-container"))
-      return;
-    startX = event.clientX;
-    currentX = startX;
-    isDragging = false;
-  });
+  const cleanupPointerState = (withTransition = true) => {
+    if (pointerId !== null && typeof dotacioItem.releasePointerCapture === "function") {
+      const hasCapture =
+        typeof dotacioItem.hasPointerCapture === "function" &&
+        dotacioItem.hasPointerCapture(pointerId);
+      if (hasCapture) {
+        try {
+          dotacioItem.releasePointerCapture(pointerId);
+        } catch (error) {
+          log.debug("Error alliberant pointer capture:", error);
+        }
+      }
+    }
+    pointerId = null;
+    dotacioItem.classList.remove("swiping");
+    dotacioItem.style.transition = withTransition
+      ? "transform 0.3s ease, opacity 0.3s ease"
+      : "";
+  };
 
-  document.addEventListener("mousemove", (event) => {
-    currentX = event.clientX;
-    const diff = startX - currentX;
-    if (diff > 10 && !isDragging) {
+  const resetVisualState = () => {
+    dotacioItem.style.transform = "translateX(0)";
+    dotacioItem.style.opacity = "1";
+    setTimeout(() => {
+      dotacioItem.style.transition = "";
+    }, 300);
+  };
+
+  const onPointerDown = (event) => {
+    if (event.pointerType === "touch") return; // Gestos tàctils gestionats a initSwipeToDeleteDotacio
+    if (event.button !== 0) return;
+    if (event.target.closest("button") || event.target.closest(".button-container")) {
+      return;
+    }
+
+    pointerId = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    isDragging = false;
+    dotacioItem.style.transition = "";
+    if (typeof dotacioItem.setPointerCapture === "function") {
+      try {
+        dotacioItem.setPointerCapture(pointerId);
+      } catch (error) {
+        log.debug("No s'ha pogut establir pointer capture:", error);
+      }
+    }
+  };
+
+  const onPointerMove = (event) => {
+    if (pointerId === null || event.pointerId !== pointerId) return;
+
+    const diffX = event.clientX - startX;
+    const diffY = event.clientY - startY;
+
+    if (!isDragging) {
+      if (
+        Math.abs(diffX) < 12 ||
+        Math.abs(diffX) <= Math.abs(diffY) ||
+        diffX >= 0
+      ) {
+        return;
+      }
       isDragging = true;
       dotacioItem.classList.add("swiping");
     }
-    if (isDragging && diff > 10) {
-      dotacioItem.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+
+    if (isDragging) {
+      const limitedDiff = Math.max(Math.min(diffX, 0), -80);
+      dotacioItem.style.transform = `translateX(${limitedDiff}px)`;
       event.preventDefault();
     }
-  });
+  };
 
-  document.addEventListener("mouseup", async () => {
-    if (!isDragging) return;
-    isDragging = false;
-    const diff = startX - currentX;
+  const onPointerUp = (event) => {
+    if (pointerId === null || event.pointerId !== pointerId) return;
 
-    dotacioItem.classList.remove("swiping");
-    dotacioItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+    const diffX = event.clientX - startX;
+    const shouldDelete = isDragging && diffX <= -60;
 
-    if (diff > 50) {
+    cleanupPointerState();
+
+    if (shouldDelete) {
       dotacioItem.style.transform = "translateX(-100%)";
       dotacioItem.style.opacity = "0";
 
-      setTimeout(async () => {
-        await dotacionService.handleDeleteById(dotacioId);
-        dotacioItem.remove();
-        updateDotacioListVisibility();
-      }, 300);
+      setTimeout(() => {
+        handleDelete().catch((error) => {
+          log.error("Error eliminant dotació després del gest:", error);
+          resetVisualState();
+        });
+      }, 250);
     } else {
-      dotacioItem.style.transform = "translateX(0)";
-      dotacioItem.style.opacity = "1";
+      resetVisualState();
     }
 
-    setTimeout(() => {
-      dotacioItem.style.transition = "";
-      dotacioItem.style.opacity = "";
-    }, 300);
-  });
+    isDragging = false;
+  };
+
+  const onPointerCancel = () => {
+    cleanupPointerState();
+    resetVisualState();
+    isDragging = false;
+  };
+
+  dotacioItem.addEventListener("pointerdown", onPointerDown);
+  dotacioItem.addEventListener("pointermove", onPointerMove);
+  dotacioItem.addEventListener("pointerup", onPointerUp);
+  dotacioItem.addEventListener("pointercancel", onPointerCancel);
 }
 
 export function initSwipeToDeleteDotacio(dotacioItem, dotacioId) {

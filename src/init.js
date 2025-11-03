@@ -35,7 +35,11 @@ import { initLocationSuggestions } from "./services/locationSuggestions.js";
 import { logger } from "./utils/logger.js";
 
 // Sistema d'encriptació i migració
-import { initializeKeySystem } from "./utils/keyManager.js";
+import {
+  EncryptionSupportError,
+  initializeKeySystem,
+  isEncryptionEnvironmentSupported,
+} from "./utils/keyManager.js";
 import { dataMigration } from "./services/dataMigration.js";
 
 const log = logger.withScope("Init");
@@ -66,15 +70,33 @@ export async function initializeApp() {
     log.info("initializeApp() iniciant...");
 
     // 🔐 FASE 1: Inicialitzar sistema d'encriptació (primer de tot!)
-    try {
-      log.debug("🔐 Inicialitzant sistema de claus...");
-      await initializeKeySystem();
-      log.debug("✅ Sistema de claus inicialitzat");
-    } catch (keyError) {
+    let encryptionAvailable = true;
+    if (!isEncryptionEnvironmentSupported()) {
+      encryptionAvailable = false;
+      const fallbackReason =
+        "⚠️ Aquest navegador no permet inicialitzar l'encriptació (IndexedDB o WebCrypto no disponibles). Les dotacions es guardaran sense xifrar.";
+      dotacionService.setEncryptionSupport(false, fallbackReason);
       log.warn(
-        "Error inicialitzant sistema de claus (continuant sense encriptació):",
-        keyError
+        "Entorn sense suport d'encriptació. Es continua sense xifrar dotacions.",
+        new Error("Unsupported encryption environment")
       );
+    } else {
+      try {
+        log.debug("🔐 Inicialitzant sistema de claus...");
+        await initializeKeySystem();
+        log.debug("✅ Sistema de claus inicialitzat");
+      } catch (keyError) {
+        encryptionAvailable = false;
+        const fallbackReason =
+          keyError instanceof EncryptionSupportError && keyError.message
+            ? `⚠️ ${keyError.message} Les dotacions es guardaran sense xifrar temporalment.`
+            : "⚠️ No s'ha pogut inicialitzar l'encriptació. Les dotacions es guardaran sense xifrar fins que es resolgui el problema.";
+        dotacionService.setEncryptionSupport(false, fallbackReason);
+        log.warn(
+          "Error inicialitzant sistema de claus (continuant sense encriptació):",
+          keyError
+        );
+      }
     }
 
     // Prepara dades bàsiques

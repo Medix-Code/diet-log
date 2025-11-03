@@ -15,6 +15,21 @@
 import { logger } from "./logger.js";
 
 const log = logger.withScope("KeyManager");
+const globalScope = typeof globalThis !== "undefined" ? globalThis : {};
+
+export class EncryptionSupportError extends Error {
+  /**
+   * @param {string} message - Missatge descriptiu
+   * @param {Error} [cause] - Error original
+   */
+  constructor(message, cause) {
+    super(message);
+    this.name = "EncryptionSupportError";
+    if (cause) {
+      this.cause = cause;
+    }
+  }
+}
 
 // Constants
 const KEY_STORE_NAME = "encryption-keys";
@@ -34,6 +49,36 @@ const WRAPPING_CONFIG = {
   name: "AES-KW", // AES Key Wrap
   length: 256,
 };
+
+function assertEncryptionSupport() {
+  if (!globalScope || typeof window === "undefined") {
+    throw new EncryptionSupportError(
+      "Entorn sense API de navegador: l'encriptació necessita accedir a WebCrypto i IndexedDB."
+    );
+  }
+
+  const cryptoApi = globalScope.crypto;
+  if (!cryptoApi || typeof cryptoApi.subtle === "undefined") {
+    throw new EncryptionSupportError(
+      "WebCrypto API no disponible. Reviseu la configuració del navegador o el mode privat."
+    );
+  }
+
+  if (typeof globalScope.indexedDB === "undefined") {
+    throw new EncryptionSupportError(
+      "IndexedDB no disponible o bloquejat. L'encriptació queda deshabilitada."
+    );
+  }
+}
+
+export function isEncryptionEnvironmentSupported() {
+  try {
+    assertEncryptionSupport();
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 /**
  * Obre la base de dades de claus
@@ -266,6 +311,7 @@ async function unwrapMasterKey(wrappedKey, deviceKey) {
  */
 export async function initializeKeySystem() {
   try {
+    assertEncryptionSupport();
     log.debug("🔐 Inicialitzant sistema de claus...");
 
     // Comprovar si ja existeix
@@ -293,6 +339,22 @@ export async function initializeKeySystem() {
     log.debug("✅ Sistema de claus inicialitzat correctament");
     log.debug("🔒 Protecció de dades activada");
   } catch (error) {
+    if (!(error instanceof EncryptionSupportError)) {
+      const unsupportedErrorNames = new Set([
+        "SecurityError",
+        "InvalidStateError",
+        "NotAllowedError",
+        "QuotaExceededError",
+      ]);
+
+      if (unsupportedErrorNames.has(error?.name)) {
+        throw new EncryptionSupportError(
+          "El navegador ha bloquejat l'accés a IndexedDB o WebCrypto.",
+          error
+        );
+      }
+    }
+
     log.error("❌ Error inicialitzant sistema de claus:", error);
     throw error;
   }
@@ -304,6 +366,7 @@ export async function initializeKeySystem() {
  */
 export async function getMasterKey() {
   try {
+    assertEncryptionSupport();
     // 1. Recuperar clau protegida
     const wrappedKeyArray = await getFromKeyStore(WRAPPED_KEY_ID);
 
@@ -367,6 +430,10 @@ export async function getMasterKey() {
  * @returns {Promise<boolean>} True si està inicialitzat
  */
 export async function isKeySystemInitialized() {
+  if (!isEncryptionEnvironmentSupported()) {
+    return false;
+  }
+
   const wrappedKey = await getFromKeyStore(WRAPPED_KEY_ID);
   return !!wrappedKey;
 }
@@ -425,4 +492,6 @@ export default {
   resetKeySystem,
   exportRecoveryPhrase,
   importFromRecoveryPhrase,
+  EncryptionSupportError,
+  isEncryptionEnvironmentSupported,
 };
