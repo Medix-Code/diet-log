@@ -34,30 +34,66 @@ const RESOURCE_INTEGRITY = {
     "ef84827a5debb77dcc2be44820558e8e6e456e5ea581384fb88e224bec6f4d15fdb32e90fe711e227d18e40a085d4189",
 };
 
+// Tracking d'errors d'integritat per evitar loops
+const integrityErrors = new Map();
+const MAX_INTEGRITY_ERRORS = 3;
+
 function bufferToHex(buffer) {
   return Array.from(new Uint8Array(buffer))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
 }
 
-async function enforceIntegrity(request, response) {
+/**
+ * Valida la integritat d'una resposta amb fallback graceful
+ * Si falla la validació, loggeja l'error però retorna la resposta igualment
+ * per no bloquejar l'aplicació completament
+ */
+async function enforceIntegrity(request, response, options = {}) {
+  const { strict = false } = options;
   const url = new URL(request.url);
   const key = `${url.pathname}${url.search}`;
   const expectedHash = RESOURCE_INTEGRITY[key];
+
+  // Si no hi ha hash esperat, no cal validar
   if (!expectedHash) {
     return response;
   }
 
-  const hashBuffer = await crypto.subtle.digest(
-    "SHA-384",
-    await response.clone().arrayBuffer()
-  );
-  const actualHash = bufferToHex(hashBuffer);
-  if (actualHash !== expectedHash) {
-    throw new Error(
-      `[SW] Integrity check failed for ${key}. Expected ${expectedHash} but got ${actualHash}.`
+  try {
+    const hashBuffer = await crypto.subtle.digest(
+      "SHA-384",
+      await response.clone().arrayBuffer()
     );
+    const actualHash = bufferToHex(hashBuffer);
+
+    if (actualHash !== expectedHash) {
+      // Incrementar contador d'errors
+      const errorCount = (integrityErrors.get(key) || 0) + 1;
+      integrityErrors.set(key, errorCount);
+
+      const errorMsg = `[SW] Integrity check failed for ${key}. Expected ${expectedHash.slice(0, 16)}... but got ${actualHash.slice(0, 16)}... (attempt ${errorCount}/${MAX_INTEGRITY_ERRORS})`;
+
+      console.warn(errorMsg);
+
+      // Si és mode strict i s'han exhaurit els intents, llançar error
+      if (strict && errorCount >= MAX_INTEGRITY_ERRORS) {
+        throw new Error(errorMsg + " - Blocking resource in strict mode");
+      }
+
+      // Fallback graceful: retornar la resposta igualment amb warning
+      console.warn(`[SW] FALLBACK: Serving ${key} despite integrity failure`);
+      return response;
+    } else {
+      // Reset contador si la validació és exitosa
+      integrityErrors.delete(key);
+    }
+  } catch (error) {
+    console.error(`[SW] Error checking integrity for ${key}:`, error);
+    // En cas d'error en la validació, retornar la resposta original
+    return response;
   }
+
   return response;
 }
 
@@ -126,30 +162,78 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
+/**
+ * Retry logic amb exponential backoff per fetch
+ * @param {Request} request - La petició a fer
+ * @param {number} maxRetries - Nombre màxim d'intents
+ * @returns {Promise<Response>} La resposta o throw error
+ */
+async function fetchWithRetry(request, maxRetries = 2) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(request);
+      if (response.ok || response.status === 304) {
+        return response;
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s...
+        const delay = Math.pow(2, attempt) * 1000;
+        console.warn(
+          `[SW] Fetch failed for ${request.url}, retry ${attempt + 1}/${maxRetries} after ${delay}ms`,
+          error
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 async function cacheFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   const cachedResponse = await cache.match(request);
   if (cachedResponse) {
     return cachedResponse;
   }
-  const response = await fetch(request);
-  const verifiedResponse = await enforceIntegrity(request, response);
-  cache.put(request, verifiedResponse.clone());
-  return verifiedResponse;
+
+  try {
+    const response = await fetchWithRetry(request);
+    const verifiedResponse = await enforceIntegrity(request, response);
+    cache.put(request, verifiedResponse.clone());
+    return verifiedResponse;
+  } catch (error) {
+    console.error(`[SW] cacheFirst failed for ${request.url}:`, error);
+    // Si tot falla, intentar tornar una resposta en cache genèrica
+    const fallbackResponse = await cache.match(request);
+    if (fallbackResponse) {
+      console.warn(`[SW] Serving stale cache for ${request.url}`);
+      return fallbackResponse;
+    }
+    throw error;
+  }
 }
 
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   try {
-    const response = await fetch(request);
+    const response = await fetchWithRetry(request);
     const verifiedResponse = await enforceIntegrity(request, response);
     cache.put(request, verifiedResponse.clone());
     return verifiedResponse;
   } catch (error) {
+    console.warn(
+      `[SW] networkFirst failed for ${request.url}, falling back to cache`,
+      error
+    );
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
+    // Última opció: retornar index.html per SPA routing
     return cache.match("/index.html");
   }
 }

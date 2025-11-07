@@ -15,6 +15,25 @@
 
     <!-- Content Security Policy gestionat per Cloudflare Worker (_worker.js) -->
     <!-- El Worker afegeix nonces dinàmics a scripts i styles automàticament -->
+    <!-- CSP Fallback: Si el Worker falla, aquesta policy s'aplicarà com a mínim -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: blob:;
+        connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com;
+        worker-src 'self' blob:;
+        child-src 'self' blob:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+        upgrade-insecure-requests;
+      "
+    />
 
     <!-- Altres headers de seguretat -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
