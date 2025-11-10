@@ -1099,8 +1099,8 @@ button {
 .chip-group-title {
   display: block;
   font-size: var(--font-size-base);
-  font-weight: 500;
-  color: var(--subtext-color);
+  font-weight: 600;
+  color: var(--text-color);
   margin-top: 0;
   margin-bottom: 10px;
   text-align: left;
@@ -2227,8 +2227,8 @@ button {
   text-align: center;
   flex: 1;
   border-bottom: 1px solid var(--grey-border, #eee);
-  padding-top: 10px;
-  padding-bottom: 0;
+  padding-top: 20px;
+  padding-bottom: 10px;
 }
 
 .trash-modal-footer-btn {
@@ -2433,7 +2433,7 @@ button {
     background-color: var(--bg-textfield);
     color: var(--text-color);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
