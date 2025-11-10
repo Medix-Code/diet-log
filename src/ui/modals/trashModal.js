@@ -107,9 +107,7 @@ export async function displayTrashItems() {
     deletedDiets = applyFilters(deletedDiets);
 
     // Ordenar per data d'eliminació (més recent primer)
-    deletedDiets.sort(
-      (a, b) => new Date(b.deletedAt) - new Date(a.deletedAt)
-    );
+    deletedDiets.sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
 
     // Evitar duplicates per ID (ABANS de renderitzar)
     const seenFingerprints = new Set();
