@@ -184,6 +184,86 @@ export async function getAllDiets() {
 }
 
 /**
+ * Obté dietes paginades des d'IndexedDB.
+ * Utilitza un cursor per carregar només les dietes necessàries.
+ *
+ * @param {Object} options - Opcions de paginació
+ * @param {number} options.limit - Nombre màxim de dietes a retornar (per defecte 20)
+ * @param {number} options.offset - Nombre de dietes a saltar (per defecte 0)
+ * @param {string} options.sortBy - Camp per ordenar: "date" o "id" (per defecte "date")
+ * @param {string} options.sortOrder - Ordre: "asc" o "desc" (per defecte "desc")
+ * @returns {Promise<{diets: Diet[], total: number, hasMore: boolean}>}
+ */
+export async function getDietsPaginated(options = {}) {
+  const {
+    limit = 20,
+    offset = 0,
+    sortBy = "date",
+    sortOrder = "desc",
+  } = options;
+
+  const tx = await getTx();
+  const store = tx.objectStore(STORE_NAME);
+
+  // Obtenir el total de dietes
+  const totalCount = await wrap(store.count(), "Error comptant dietes");
+
+  // Si sortBy és "date", usar l'índex
+  const source = sortBy === "date" ? store.index(INDEX_DATE) : store;
+
+  // Direcció del cursor segons l'ordre
+  const direction = sortOrder === "desc" ? "prev" : "next";
+
+  return new Promise((resolve, reject) => {
+    const diets = [];
+    let skipped = 0;
+    let collected = 0;
+
+    const cursorRequest = source.openCursor(null, direction);
+
+    cursorRequest.onsuccess = (event) => {
+      const cursor = event.target.result;
+
+      if (!cursor) {
+        // Final del cursor
+        resolve({
+          diets,
+          total: totalCount,
+          hasMore: offset + collected < totalCount,
+        });
+        return;
+      }
+
+      // Saltar els primers 'offset' registres
+      if (skipped < offset) {
+        skipped++;
+        cursor.continue();
+        return;
+      }
+
+      // Recollir fins a 'limit' registres
+      if (collected < limit) {
+        diets.push(cursor.value);
+        collected++;
+        cursor.continue();
+        return;
+      }
+
+      // Ja tenim prou dietes
+      resolve({
+        diets,
+        total: totalCount,
+        hasMore: true,
+      });
+    };
+
+    cursorRequest.onerror = () => {
+      reject(new Error("Error paginant dietes: " + cursorRequest.error));
+    };
+  });
+}
+
+/**
  * Elimina una dieta d'IndexedDB per ID.
  * @param {string} id - ID de la dieta a eliminar
  */

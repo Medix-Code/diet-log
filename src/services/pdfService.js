@@ -15,10 +15,12 @@ import { fillPdf, PDF_SETTINGS, formatDateForPdf } from "./pdf/pdfTemplate.js";
 import { loadExternalScript } from "../utils/secureScriptLoader.js";
 import RateLimiter from "../utils/rateLimiter.js";
 
-// Lazy loading PDFLib
+// Lazy loading PDFLib amb fallback CDN → local
 let pdfLibLoaded = false;
 let pdfLibLoadPromise = null;
 const log = logger.withScope("PdfService");
+
+// CDN extern (més ràpid, però pot fallar)
 const PDF_LIB_SCRIPT_URL =
   "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
 const PDF_LIB_SCRIPT_INTEGRITY =
@@ -27,24 +29,56 @@ const PDF_LIB_SCRIPT_INTEGRITY =
 // Rate Limiter per generació de PDFs (20 PDFs per minut màx)
 const pdfRateLimiter = new RateLimiter(20, 60000, "generació de PDF");
 
+/**
+ * Carrega pdf-lib amb estratègia híbrida:
+ * 1. Intent CDN (més ràpid) amb integrity check
+ * 2. Si falla → Fallback al bundle local (més lent però fiable)
+ */
 async function loadPdfLib() {
   if (pdfLibLoaded && window.PDFLib) return;
+
   if (!pdfLibLoadPromise) {
-    pdfLibLoadPromise = loadExternalScript({
-      src: PDF_LIB_SCRIPT_URL,
-      integrity: PDF_LIB_SCRIPT_INTEGRITY,
-    })
-      .then(() => {
+    pdfLibLoadPromise = (async () => {
+      // Intent 1: CDN extern (més ràpid)
+      try {
+        log.debug("Carregant pdf-lib des del CDN...");
+        await loadExternalScript({
+          src: PDF_LIB_SCRIPT_URL,
+          integrity: PDF_LIB_SCRIPT_INTEGRITY,
+        });
+
         if (!window.PDFLib) {
-          throw new Error("PDF-Lib no disponible després de carregar script.");
+          throw new Error("PDF-Lib no disponible després de carregar CDN");
         }
+
+        log.debug("✅ pdf-lib carregat des del CDN");
         pdfLibLoaded = true;
-      })
-      .catch((error) => {
-        pdfLibLoadPromise = null;
-        throw error;
-      });
+        return;
+      } catch (cdnError) {
+        log.warn("⚠️ CDN falló, provant fallback local:", cdnError.message);
+
+        // Intent 2: Fallback al bundle local
+        try {
+          log.debug("Carregant pdf-lib des del bundle local...");
+          const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+
+          // Exposar globalment per compatibilitat amb el codi existent
+          window.PDFLib = { PDFDocument, rgb, StandardFonts };
+
+          log.debug("✅ pdf-lib carregat des del bundle local");
+          pdfLibLoaded = true;
+          return;
+        } catch (localError) {
+          log.error("❌ Error carregant pdf-lib (CDN i local):", localError);
+          pdfLibLoadPromise = null;
+          throw new Error(
+            "No s'ha pogut carregar pdf-lib. Comprova la connexió a internet."
+          );
+        }
+      }
+    })();
   }
+
   await pdfLibLoadPromise;
 }
 

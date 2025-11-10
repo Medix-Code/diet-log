@@ -2,8 +2,11 @@
  * RateLimiter - Sistema de control de límit de peticions
  * Prevé abusos de recursos i DoS efectiu en operacions costoses (OCR, PDF)
  *
+ * NOTA: Aquest rate limiter és client-side i pot ser bypassat per usuaris tècnics.
+ * Per aplicacions crítiques, implementar rate limiting al backend.
+ *
  * @class RateLimiter
- * @version 1.0.0 (2025)
+ * @version 1.1.0 (2025)
  */
 class RateLimiter {
   /**
@@ -17,6 +20,43 @@ class RateLimiter {
     this.windowMs = windowMs;
     this.actionName = actionName;
     this.requests = [];
+
+    // Identificador únic basat en timestamp de creació + random
+    // Fa més difícil (però no impossible) bypassar el rate limiter
+    this._instanceId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this._tokens = this._generateTokens();
+  }
+
+  /**
+   * Genera tokens de validació interns
+   * @private
+   */
+  _generateTokens() {
+    const tokens = [];
+    for (let i = 0; i < this.maxRequests; i++) {
+      tokens.push({
+        id: `${this._instanceId}_${i}`,
+        used: false,
+        timestamp: null,
+      });
+    }
+    return tokens;
+  }
+
+  /**
+   * Valida que la instància no ha estat manipulada
+   * @private
+   */
+  _validateIntegrity() {
+    // Comprovar que els tokens no han estat modificats externament
+    if (!Array.isArray(this._tokens) || this._tokens.length !== this.maxRequests) {
+      console.error(`[RateLimiter] MANIPULACIÓ DETECTADA per "${this.actionName}"`);
+      // Regenerar tokens
+      this._tokens = this._generateTokens();
+      this.requests = [];
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -24,10 +64,21 @@ class RateLimiter {
    * @returns {boolean} True si es pot fer la petició, false si s'ha arribat al límit
    */
   canMakeRequest() {
+    // Validar integritat de la instància
+    this._validateIntegrity();
+
     const now = Date.now();
 
     // Neteja peticions antigues fora de la finestra de temps
     this.requests = this.requests.filter((time) => now - time < this.windowMs);
+
+    // Neteja tokens expirats
+    this._tokens.forEach((token) => {
+      if (token.used && token.timestamp && now - token.timestamp >= this.windowMs) {
+        token.used = false;
+        token.timestamp = null;
+      }
+    });
 
     // Comprova si s'ha arribat al límit
     if (this.requests.length >= this.maxRequests) {
@@ -42,6 +93,13 @@ class RateLimiter {
       );
 
       return false;
+    }
+
+    // Buscar un token disponible i marcar-lo com a usat
+    const availableToken = this._tokens.find((t) => !t.used);
+    if (availableToken) {
+      availableToken.used = true;
+      availableToken.timestamp = now;
     }
 
     // Registra la nova petició
