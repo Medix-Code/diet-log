@@ -1846,11 +1846,13 @@ button .fa {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
-  line-height: 1.6;
-  padding: 20px 0px 20px;
 }
 #about-modal .modal-scrollable-content p {
   margin: 0 6px 6px;
+}
+#about-modal .modal-scrollable-content {
+  line-height: 1.6;
+  padding: 20px 0px 20px;
 }
 
 /* COLOR en <strong> */
@@ -2084,6 +2086,11 @@ button .fa {
   width: 100%;
   overflow: hidden;
 }
+.trash-modal-content h3 {
+  font-family: "Roboto Serif", serif;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
 
 .modal-header {
   display: flex;
@@ -2123,9 +2130,9 @@ button .fa {
 .trash-filters {
   display: flex;
   gap: 15px;
-  margin-top: 18px;
+  margin-top: 8px;
   margin-bottom: 20px;
-  padding-top: 18px;
+  padding-top: 8px;
   flex-wrap: wrap;
   align-items: flex-end;
 }
@@ -2137,18 +2144,20 @@ button .fa {
   min-width: 150px;
 }
 .trash-filters .filter-group label {
-  font-size: 13px;
+  font-family: "Roboto Serif", serif;
+  font-size: 15px;
   font-weight: 500;
-  color: var(--subtext-color);
+  color: var(--text-color);
 }
 .trash-filters .filter-group .filter-select,
 .trash-filters .filter-group .filter-input {
+  font-family: "Roboto Serif", serif;
   padding: 8px 12px;
   border: 1px solid var(--input-border);
   border-radius: 6px;
   background-color: var(--bg-textfield);
   color: var(--text-color);
-  font-size: 14px;
+  font-size: 15px;
 }
 .trash-filters .filter-group .filter-select:focus,
 .trash-filters .filter-group .filter-input:focus {
@@ -2156,12 +2165,13 @@ button .fa {
   border-color: var(--primary-color);
 }
 .trash-filters .filter-clear-btn {
+  font-family: "Roboto Serif", serif;
   padding: 8px 16px;
   border: 1px solid var(--input-border);
   border-radius: 6px;
   background-color: var(--bg-textfield);
   color: var(--text-color);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2326,7 +2336,7 @@ button .fa {
   justify-content: center;
   gap: 10px;
   margin-top: 24px;
-  padding-top: 5px;
+  padding-top: 20px;
   border-top: 1px solid var(--grey-border);
   flex-shrink: 0;
   align-items: flex-end;
@@ -4449,13 +4459,6 @@ body.app-ready #main-content {
   }
 }
 /* Elimina completament el datalist natiu */
-input[type=text].origin,
-input[type=text].destination {
-  background-image: none !important;
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
 input[type=text].origin::-webkit-calendar-picker-indicator,
 input[type=text].destination::-webkit-calendar-picker-indicator {
   display: none !important;
@@ -4468,6 +4471,13 @@ input[type=text].destination::-webkit-calendar-picker-indicator {
 input[type=text].origin::-webkit-list-button,
 input[type=text].destination::-webkit-list-button {
   display: none !important;
+}
+input[type=text].origin,
+input[type=text].destination {
+  background-image: none !important;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 input[type=text].origin.has-dropdown-open,
 input[type=text].destination.has-dropdown-open {
@@ -4555,3 +4565,5 @@ input[type=text].destination.has-dropdown-open {
   outline: 2px solid #004aad;
   outline-offset: 2px;
 }
+
+/*# sourceMappingURL=main.css.map */

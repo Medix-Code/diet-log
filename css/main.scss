@@ -2334,6 +2334,12 @@ button {
   max-width: 700px;
   width: 100%;
   overflow: hidden;
+
+  h3 {
+    font-family: "Roboto Serif", serif;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
 }
 
 // Header amb títol i botó paperera
@@ -2381,9 +2387,9 @@ button {
 .trash-filters {
   display: flex;
   gap: 15px;
-  margin-top: 18px;
+  margin-top: 8px;
   margin-bottom: 20px;
-  padding-top: 18px;
+  padding-top: 8px;
   flex-wrap: wrap;
   align-items: flex-end;
 
@@ -2395,19 +2401,21 @@ button {
     min-width: 150px;
 
     label {
-      font-size: 13px;
+      font-family: "Roboto Serif", serif;
+      font-size: 15px;
       font-weight: 500;
-      color: var(--subtext-color);
+      color: var(--text-color);
     }
 
     .filter-select,
     .filter-input {
+      font-family: "Roboto Serif", serif;
       padding: 8px 12px;
       border: 1px solid var(--input-border);
       border-radius: 6px;
       background-color: var(--bg-textfield);
       color: var(--text-color);
-      font-size: 14px;
+      font-size: 15px;
 
       &:focus {
         outline: none;
@@ -2417,12 +2425,13 @@ button {
   }
 
   .filter-clear-btn {
+    font-family: "Roboto Serif", serif;
     padding: 8px 16px;
     border: 1px solid var(--input-border);
     border-radius: 6px;
     background-color: var(--bg-textfield);
     color: var(--text-color);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -2583,7 +2592,7 @@ button {
   justify-content: center;
   gap: 10px;
   margin-top: 24px;
-  padding-top: 5px;
+  padding-top: 20px;
   border-top: 1px solid var(--grey-border);
   flex-shrink: 0;
   align-items: flex-end;
