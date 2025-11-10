@@ -35,17 +35,13 @@ export function openTrashModal() {
   displayTrashItems();
 }
 
-let shouldOpenDietModalOnClose = false;
-
 export function closeTrashModal() {
   const modal = document.getElementById("trash-modal");
   if (!modal) return;
 
   closeModal(modal);
-  if (shouldOpenDietModalOnClose) {
-    shouldOpenDietModalOnClose = false;
-    openDietModal();
-  }
+  // Sempre tornar al modal de dietes després de tancar la paperera
+  openDietModal();
 }
 
 // ============================================================================
@@ -185,7 +181,6 @@ async function handleRestore(id) {
 
     // Actualitzar llista de dietes actives
     displayDietOptions();
-    shouldOpenDietModalOnClose = true;
   } catch (error) {
     log.error("Error restaurant dieta:", error);
     showToast("Error restaurando la dieta", "error");
