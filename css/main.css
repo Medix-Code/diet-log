@@ -2366,11 +2366,11 @@ button .fa {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 .trash-footer .danger-btn {
-  background-color: var(--bg-confirm-no);
-  color: var(--txt-btn-confirm);
+  background-color: #be1e2d;
+  color: #ffffff;
 }
 .trash-footer .danger-btn:hover {
-  background-color: var(--bg-confirm-no-hover);
+  background-color: #d93f3f;
   transform: scale(1.02);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
