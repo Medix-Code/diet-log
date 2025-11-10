@@ -997,6 +997,13 @@ button {
     &:hover {
       background-color: var(--color-load-bg-hover, #dee2e6);
     }
+    // Assegurar que els fills no interceptin els clics
+    .icon,
+    .btn-text,
+    img,
+    span {
+      pointer-events: none;
+    }
     .icon {
       filter: grayscale(100%) brightness(0.6);
     }

@@ -830,6 +830,12 @@ button .fa {
 .dotacio-item .dotacio-load:hover {
   background-color: var(--color-load-bg-hover, #dee2e6);
 }
+.dotacio-item .dotacio-load .icon,
+.dotacio-item .dotacio-load .btn-text,
+.dotacio-item .dotacio-load img,
+.dotacio-item .dotacio-load span {
+  pointer-events: none;
+}
 .dotacio-item .dotacio-load .icon {
   filter: grayscale(100%) brightness(0.6);
 }
