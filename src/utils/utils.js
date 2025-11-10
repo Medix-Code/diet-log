@@ -155,7 +155,12 @@ function _showEasterEggAnimation() {
 
   const iconContainer = document.createElement("div");
   iconContainer.className = DOM_IDS.EASTER_EGG_ICON.substring(1);
-  iconContainer.innerHTML = `<img src="assets/icons/egg.svg" alt="Easter Egg">`;
+
+  // Seguretat XSS: usar createElement en lloc de innerHTML
+  const eggImg = document.createElement("img");
+  eggImg.src = "assets/icons/egg.svg";
+  eggImg.alt = "Easter Egg";
+  iconContainer.appendChild(eggImg);
 
   overlay.appendChild(iconContainer);
   document.body.appendChild(overlay);

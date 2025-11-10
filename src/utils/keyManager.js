@@ -39,6 +39,11 @@ const WRAPPED_KEY_ID = "wrapped-master-key";
 const DEVICE_SALT_ID = "device-salt";
 const MAX_KEY_RECOVERY_ATTEMPTS = 2;
 
+// Seguretat de memòria: Cache temporal amb WeakRef i timeouts
+const KEY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuts
+let cachedMasterKeyRef = null; // WeakRef per permetre garbage collection
+let keyCacheTimeout = null; // Timeout per neteja automàtica
+
 // Configuració de la clau mestra
 const MASTER_KEY_CONFIG = {
   name: "AES-GCM",
@@ -115,7 +120,7 @@ async function openKeyDatabase() {
  * @param {string} id - ID de la clau
  * @param {any} value - Valor a guardar
  */
-async function saveToKeyStore(id, value) {
+export async function saveToKeyStore(id, value) {
   const db = await openKeyDatabase();
 
   return new Promise((resolve, reject) => {
@@ -133,7 +138,7 @@ async function saveToKeyStore(id, value) {
  * @param {string} id - ID de la clau
  * @returns {Promise<any>} Valor guardat
  */
-async function getFromKeyStore(id) {
+export async function getFromKeyStore(id) {
   const db = await openKeyDatabase();
 
   return new Promise((resolve, reject) => {
@@ -171,11 +176,32 @@ async function getDeviceSalt() {
 }
 
 /**
- * Deriva una clau de wrapping del salt del dispositiu
- * NOTA: Ja no usem device fingerprint perquè pot canviar (mode responsiu, etc.)
+ * Genera un fingerprint del navegador basat en característiques estables
+ * NOTA: Només usa característiques que no canvien amb mode responsiu
+ * @returns {string} Fingerprint del navegador
+ */
+function getBrowserFingerprint() {
+  const components = [
+    navigator.userAgent || "",
+    navigator.language || "",
+    navigator.hardwareConcurrency || 0,
+    // NO usar screen.width/height (canvia amb mode responsiu)
+    navigator.platform || "",
+    // Timezone offset (més estable)
+    new Date().getTimezoneOffset(),
+  ];
+
+  // Combinar components
+  return components.join("|");
+}
+
+/**
+ * Deriva una clau de wrapping del salt del dispositiu + fingerprint
+ * IMPORTANT: Manté compatibilitat amb dietes antigues usant passphrase fixa com a fallback
+ * @param {boolean} useLegacyPassphrase - Si true, usa passphrase antiga (per compatibilitat)
  * @returns {Promise<CryptoKey>} Clau de wrapping
  */
-async function deriveDeviceKey() {
+async function deriveDeviceKey(useLegacyPassphrase = false) {
   try {
     log.debug("🔑 Derivant clau de dispositiu...");
 
@@ -183,9 +209,18 @@ async function deriveDeviceKey() {
     const salt = await getDeviceSalt();
     log.debug(`Salt length: ${salt.length} bytes`);
 
-    // Usar una passphrase fixa + salt aleatori
-    // El salt aleatori proporciona la unicitat necessària
-    const passphrase = "diet-log-encryption-v1";
+    let passphrase;
+
+    if (useLegacyPassphrase) {
+      // LEGACY: Passphrase fixa (per dietes antigues)
+      passphrase = "diet-log-encryption-v1";
+      log.debug("Usant passphrase legacy per compatibilitat");
+    } else {
+      // NOU: Derivar de fingerprint del navegador
+      const fingerprint = getBrowserFingerprint();
+      passphrase = `diet-log-v2-${fingerprint}`;
+      log.debug("Usant passphrase derivada de fingerprint");
+    }
 
     // Importar passphrase com a clau base
     const encoder = new TextEncoder();
@@ -265,12 +300,14 @@ async function wrapMasterKey(masterKey, deviceKey) {
 }
 
 /**
- * Desprotegeix (unwrap) la clau mestra
+ * Desprotegeix (unwrap) la clau mestra amb fallback per compatibilitat
+ * IMPORTANT: Intenta amb nova passphrase, si falla usa legacy (dietes antigues)
  * @param {ArrayBuffer|Uint8Array} wrappedKey - Clau mestra protegida
- * @param {CryptoKey} deviceKey - Clau de wrapping
+ * @param {CryptoKey} [deviceKey] - Clau de wrapping (opcional, es derivarà si no es proporciona)
+ * @param {boolean} [useLegacyPassphrase] - Si true, usa passphrase antiga
  * @returns {Promise<CryptoKey>} Clau mestra
  */
-async function unwrapMasterKey(wrappedKey, deviceKey) {
+async function unwrapMasterKey(wrappedKey, deviceKey = null, useLegacyPassphrase = false) {
   try {
     // Assegurar que tenim un ArrayBuffer proper
     let keyBuffer = wrappedKey;
@@ -289,10 +326,13 @@ async function unwrapMasterKey(wrappedKey, deviceKey) {
       `Unwrapping key with buffer length: ${keyBuffer.byteLength} bytes`
     );
 
+    // Derivar device key si no es proporciona
+    const unwrapDeviceKey = deviceKey || await deriveDeviceKey(useLegacyPassphrase);
+
     const masterKey = await crypto.subtle.unwrapKey(
       "raw",
       keyBuffer,
-      deviceKey,
+      unwrapDeviceKey,
       WRAPPING_CONFIG.name,
       MASTER_KEY_CONFIG,
       false, // No exportable després d'unwrap (més segur)
@@ -302,6 +342,17 @@ async function unwrapMasterKey(wrappedKey, deviceKey) {
     log.debug("✅ Clau desprotegida correctament");
     return masterKey;
   } catch (error) {
+    // Si falla i NO estem usant legacy, intentar amb legacy (dietes antigues)
+    if (!useLegacyPassphrase) {
+      log.warn("⚠️ Fallant amb nova passphrase, provant amb legacy per compatibilitat...");
+      try {
+        return await unwrapMasterKey(wrappedKey, null, true);
+      } catch (legacyError) {
+        log.error("Error desprotegint amb legacy passphrase:", legacyError);
+        throw new Error("No s'ha pogut desencriptar la clau mestra (incompatibilitat de versions)");
+      }
+    }
+
     log.error("Error desprotegint clau mestra:", error);
     throw error;
   }
@@ -402,12 +453,74 @@ export async function initializeKeySystem() {
 }
 
 /**
+ * Neteja el cache de claus forçant alliberament de memòria
+ * Exportat per permetre neteja manual si necessari (per exemple, al logout)
+ */
+export function clearKeyCache() {
+  if (keyCacheTimeout) {
+    clearTimeout(keyCacheTimeout);
+    keyCacheTimeout = null;
+  }
+  cachedMasterKeyRef = null;
+  log.debug("🧹 Cache de claus netejat");
+}
+
+/**
+ * Guarda clau al cache temporal amb TTL
+ * @param {CryptoKey} key - Clau a guardar temporalment
+ */
+function cacheKey(key) {
+  // Netejar timeout anterior
+  if (keyCacheTimeout) {
+    clearTimeout(keyCacheTimeout);
+  }
+
+  // Usar WeakRef per permetre garbage collection
+  cachedMasterKeyRef = new WeakRef(key);
+
+  // Programar neteja automàtica
+  keyCacheTimeout = setTimeout(() => {
+    clearKeyCache();
+    log.debug(`⏰ Cache de claus expirat després de ${KEY_CACHE_TTL_MS}ms`);
+  }, KEY_CACHE_TTL_MS);
+
+  log.debug(`💾 Clau guardada al cache (TTL: ${KEY_CACHE_TTL_MS}ms)`);
+}
+
+/**
+ * Intenta recuperar clau del cache si encara és vàlida
+ * @returns {CryptoKey|null} Clau si existeix i és vàlida, null altrament
+ */
+function getCachedKey() {
+  if (!cachedMasterKeyRef) {
+    return null;
+  }
+
+  const key = cachedMasterKeyRef.deref();
+  if (!key) {
+    log.debug("🗑️ Clau al cache ja ha estat garbage collected");
+    clearKeyCache();
+    return null;
+  }
+
+  log.debug("✅ Clau recuperada del cache");
+  return key;
+}
+
+/**
  * Recupera la clau mestra (desprotegida i llesta per usar)
+ * Utilitza cache temporal amb TTL per millorar rendiment
  * @returns {Promise<CryptoKey>} Clau mestra
  */
 export async function getMasterKey() {
   try {
     assertEncryptionSupport();
+
+    // 0. Intentar recuperar del cache primer
+    const cachedKey = getCachedKey();
+    if (cachedKey) {
+      return cachedKey;
+    }
 
     // 1. Recuperar clau protegida
     const wrappedKeyArray = await getFromKeyStore(WRAPPED_KEY_ID);
@@ -426,9 +539,9 @@ export async function getMasterKey() {
       }
 
       // Tornar a cridar recursivament (només una vegada)
-      const deviceKey = await deriveDeviceKey();
+      // Usa la nova passphrase per defecte (es farà fallback automàtic si cal)
       const wrappedKey = new Uint8Array(retryWrappedKey).buffer;
-      return await unwrapMasterKey(wrappedKey, deviceKey);
+      return await unwrapMasterKey(wrappedKey);
     }
 
     // 2. Validar format
@@ -441,12 +554,14 @@ export async function getMasterKey() {
     // 3. Convertir array a ArrayBuffer
     const wrappedKey = new Uint8Array(wrappedKeyArray).buffer;
 
-    // 4. Derivar clau de dispositiu
-    const deviceKey = await deriveDeviceKey();
-
-    // 5. Desprotegir clau mestra (amb retry si falla)
+    // 4. Desprotegir clau mestra (amb fallback automàtic a legacy)
+    // NO especifiquem deviceKey per permetre que unwrapMasterKey faci el fallback
     try {
-      const masterKey = await unwrapMasterKey(wrappedKey, deviceKey);
+      const masterKey = await unwrapMasterKey(wrappedKey);
+
+      // Guardar al cache amb TTL per futures operacions
+      cacheKey(masterKey);
+
       return masterKey;
     } catch (unwrapError) {
       // ❌ NO auto-resetjar - això destrueix les dades encriptades existents
@@ -501,6 +616,9 @@ export async function resetKeySystem(confirmed = false) {
   log.warn(
     "⚠️ RESETEJANT SISTEMA DE CLAUS - Les dades encriptades es perdran!"
   );
+
+  // Netejar cache de memòria abans de resetjar
+  clearKeyCache();
 
   const db = await openKeyDatabase();
 

@@ -4,7 +4,6 @@ import {
   getAllDeletedDiets,
   restoreDietFromTrash,
   deleteDietFromTrashPermanently,
-  emptyTrash,
 } from "../../db/indexedDbDietRepository.js";
 import {
   getDietDisplayInfo,
@@ -207,33 +206,6 @@ async function handleDeletePermanently(id, dietName) {
   }
 }
 
-async function handleEmptyTrash() {
-  const deletedDiets = await getAllDeletedDiets();
-
-  if (deletedDiets.length === 0) {
-    showToast("La papelera ya está vacía", "info");
-    return;
-  }
-
-  const confirmed = confirm(
-    `Vols buidar la paperera?\n\nS'eliminaran ${deletedDiets.length} dietes permanentment.\n\nAquesta acció no es pot desfer.`
-  );
-
-  if (!confirmed) return;
-
-  try {
-    await emptyTrash();
-
-    showToast("Papelera vaciada correctamente", "success", 3000);
-
-    // Actualitzar llista
-    displayTrashItems();
-  } catch (error) {
-    log.error("Error buidant paperera:", error);
-    showToast("Error vaciando la papelera", "error");
-  }
-}
-
 // ============================================================================
 // EVENT LISTENERS
 // ============================================================================
@@ -255,12 +227,6 @@ export function initTrashModal() {
         closeTrashModal();
       }
     });
-  }
-
-  // Botó buidar paperera
-  const emptyBtn = document.getElementById("empty-trash-btn");
-  if (emptyBtn) {
-    emptyBtn.addEventListener("click", handleEmptyTrash);
   }
 
   // Filtres

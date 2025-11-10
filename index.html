@@ -25,11 +25,12 @@
 
     <!-- Content Security Policy: Primer el Cloudflare Worker (_worker.js) intentarà afegir CSP amb nonces -->
     <!-- Si el Worker falla, aquest CSP fallback proporciona protecció bàsica -->
+    <!-- NOTA: 'unsafe-inline' eliminat per seguretat (XSS protection) -->
     <meta
       http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com;
+        script-src 'self' 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: blob: https://www.google-analytics.com;
@@ -42,6 +43,7 @@
       "
     />
     <!-- NOTA: frame-ancestors no funciona en <meta> CSP, només en HTTP headers (el Worker ho gestiona) -->
+    <!-- NOTA: style-src manté 'unsafe-inline' per <style> tag dins <head> (només CSS, no JS) -->
 
     <!-- Altres headers de seguretat -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -878,7 +880,13 @@
         aria-labelledby="trash-modal-title"
       >
         <div class="modal-content trash-modal-content">
-          <h3 id="trash-modal-title">Papelera</h3>
+          <div class="trash-header">
+            <h3 id="trash-modal-title">Papelera</h3>
+            <p class="trash-description">
+              La papelera contiene dietas eliminadas. Se eliminan automáticamente a
+              los 30 días.
+            </p>
+          </div>
 
           <!-- Filtres -->
           <div class="trash-filters">
@@ -911,11 +919,8 @@
 
           <!-- Footer amb accions -->
           <div class="modal-footer trash-footer">
-            <button id="empty-trash-btn" class="danger-btn">
-              Vaciar papelera
-            </button>
             <button id="close-trash-modal" class="close-modal-btn">
-              Cerrar
+              Volver
             </button>
           </div>
         </div>

@@ -2340,6 +2340,18 @@ button {
     margin-top: 0;
     margin-bottom: 10px;
   }
+  .trash-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 2px;
+  }
+  .trash-description {
+    margin: 0;
+    color: var(--subtext-color);
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
 }
 
 // Header amb títol i botó paperera
@@ -2589,19 +2601,18 @@ button {
 // Footer
 .trash-footer {
   display: flex;
-  justify-content: center;
   gap: 10px;
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--grey-border);
   flex-shrink: 0;
   align-items: flex-end;
+  justify-content: flex-end;
 
   button {
     padding: 10px 24px;
     height: 40px;
-    min-width: 120px;
-    flex: 1;
+    flex: 0 0 auto;
     min-width: 0;
     border-radius: 9999px;
     border: none;
@@ -2635,7 +2646,7 @@ button {
     }
   }
 
-  .close-button {
+  .close-modal-btn {
     background-color: var(--color-close-bg);
     color: var(--color-close-text);
 

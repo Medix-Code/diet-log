@@ -1,12 +1,15 @@
 /* ────────────────────────── pseudoId.js ────────────────────────── */
 
-/**
- * Retorna el *salt* permanent (unic per dispositiu).  Si no existeix, el crea.
- * S'al·loca a localStorage perquè segueixi disponible entre sessions.
- */
-export function getOrCreateSalt() {
-  const KEY = "dietSalt";
+import { saveToKeyStore, getFromKeyStore } from "./keyManager.js";
 
+const SALT_KEY = "pseudo-id-salt";
+const LEGACY_LS_KEY = "dietSalt";
+
+/**
+ * Retorna el *salt* permanent (únic per dispositiu). Si no existeix, el crea.
+ * Migrat a IndexedDB per major seguretat, amb fallback a localStorage per compatibilitat.
+ */
+export async function getOrCreateSalt() {
   // ─── Fallback per a contexts sense crypto.getRandomValues ───
   const getRandomHex = (len = 16) =>
     Array.from({ length: len }, () =>
@@ -15,22 +18,59 @@ export function getOrCreateSalt() {
         .padStart(2, "0")
     ).join("");
 
-  let salt = localStorage.getItem(KEY);
-  if (!salt) {
-    if (window.crypto?.getRandomValues) {
-      const random = crypto.getRandomValues(new Uint8Array(16));
-      salt = Array.from(random)
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-    } else {
-      console.warn(
-        "[pseudoId] crypto.getRandomValues no disponible; usant Math.random() (menys segur, només mode desenvolupament)."
-      );
-      salt = getRandomHex(16);
+  try {
+    // 1. Intentar recuperar d'IndexedDB
+    let salt = await getFromKeyStore(SALT_KEY);
+
+    // 2. Si no hi és, intentar migrar des de localStorage
+    if (!salt) {
+      const legacySalt = localStorage.getItem(LEGACY_LS_KEY);
+      if (legacySalt) {
+        console.log("[pseudoId] Migrant salt des de localStorage a IndexedDB");
+        await saveToKeyStore(SALT_KEY, legacySalt);
+        salt = legacySalt;
+      }
     }
-    localStorage.setItem(KEY, salt);
+
+    // 3. Si encara no tenim salt, generar-ne un de nou
+    if (!salt) {
+      if (window.crypto?.getRandomValues) {
+        const random = crypto.getRandomValues(new Uint8Array(16));
+        salt = Array.from(random)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      } else {
+        console.warn(
+          "[pseudoId] crypto.getRandomValues no disponible; usant Math.random() (menys segur, només mode desenvolupament)."
+        );
+        salt = getRandomHex(16);
+      }
+
+      // Guardar a IndexedDB
+      await saveToKeyStore(SALT_KEY, salt);
+
+      // Guardar també a localStorage per compatibilitat (però prioritzem IndexedDB)
+      localStorage.setItem(LEGACY_LS_KEY, salt);
+    }
+
+    return salt;
+  } catch (error) {
+    // Fallback a localStorage si IndexedDB falla
+    console.warn("[pseudoId] Error amb IndexedDB, usant localStorage:", error);
+    let salt = localStorage.getItem(LEGACY_LS_KEY);
+    if (!salt) {
+      if (window.crypto?.getRandomValues) {
+        const random = crypto.getRandomValues(new Uint8Array(16));
+        salt = Array.from(random)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      } else {
+        salt = getRandomHex(16);
+      }
+      localStorage.setItem(LEGACY_LS_KEY, salt);
+    }
+    return salt;
   }
-  return salt;
 }
 
 /**

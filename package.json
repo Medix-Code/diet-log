@@ -1,15 +1,20 @@
 {
   "name": "diet-log",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
   "main": "index.html",
   "scripts": {
     "inject-version": "node inject-version.js",
     "update-hashes": "node update-hashes.js",
+    "verify-hashes": "node verify-hashes.js",
     "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --loader:.js=jsx --format=esm --outfile=dist/bundle.js --define:process.env.NODE_ENV='\"production\"' && npm run update-hashes",
     "build:css": "sass css/main.scss css/main.css --style=expanded && sass css/main.scss css/main.min.css --style=compressed && npm run update-hashes",
     "test": "vitest",
-    "dev": "echo 'Serve index.html with compression'"
+    "pretest": "npm run verify-hashes",
+    "dev": "echo 'Serve index.html with compression'",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
+    "worker:tail": "wrangler tail"
   },
   "keywords": [],
   "author": "MisDietas",

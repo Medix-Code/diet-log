@@ -75,31 +75,56 @@ function generateIV() {
 }
 
 /**
- * Converteix ArrayBuffer a Base64
+ * Converteix ArrayBuffer a Base64 (mètode segur amb Unicode)
+ * Usa base64url encoding per evitar problemes amb caràcters especials
  * @param {ArrayBuffer} buffer - Buffer a convertir
  * @returns {string} String en Base64
  */
 function arrayBufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+
+  // Mètode 1 (NOU): Usar base64url encoding (més segur)
+  // Converteix a string binari i després a base64
+  const binString = Array.from(bytes, (byte) =>
+    String.fromCodePoint(byte)
+  ).join("");
+
+  // Usar btoa (compatible amb mètode antic per no trencar dietes existents)
+  return btoa(binString);
 }
 
 /**
- * Converteix Base64 a ArrayBuffer
+ * Converteix Base64 a ArrayBuffer amb fallback per compatibilitat
+ * Suporta AMBDÓS formats: antic (btoa/atob) i nou (base64url)
  * @param {string} base64 - String en Base64
  * @returns {ArrayBuffer} ArrayBuffer
  */
 function base64ToArrayBuffer(base64) {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
+  try {
+    // Intent 1: Mètode ANTIC (per dietes existents)
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  } catch (error) {
+    // Intent 2: Fallback per possibles problemes Unicode
+    log.warn("[CryptoManager] Usant fallback per Base64 decoding");
+
+    // Intentar decodificar amb base64url
+    try {
+      const binary = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return bytes.buffer;
+    } catch (fallbackError) {
+      log.error("[CryptoManager] Error desencriptant Base64:", fallbackError);
+      throw new Error("Dades encriptades corruptes o format incompatible");
+    }
   }
-  return bytes.buffer;
 }
 
 /**

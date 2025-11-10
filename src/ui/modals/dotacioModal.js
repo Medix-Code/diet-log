@@ -48,7 +48,13 @@ export function updateDotacioListVisibility() {
   noDotacioText.classList.toggle("hidden", hasItems);
 
   if (!hasItems) {
-    noDotacioText.innerHTML = `No hay dotaciones, guarde abans: <img src="assets/icons/save_green.svg" alt="Guardar" class="save-icon" />`;
+    // Seguretat XSS: usar createElement en lloc de innerHTML
+    noDotacioText.textContent = "No hay dotaciones, guarde abans: ";
+    const saveIcon = document.createElement("img");
+    saveIcon.src = "assets/icons/save_green.svg";
+    saveIcon.alt = "Guardar";
+    saveIcon.className = "save-icon";
+    noDotacioText.appendChild(saveIcon);
   }
 }
 

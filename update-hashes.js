@@ -55,4 +55,39 @@ swContent = swContent.replace(resourceIntegrityRegex, newResourceIntegrity);
 // Guardar
 fs.writeFileSync(swPath, swContent);
 console.log(`✅ Hashes actualitzats a ${swPath}`);
-console.log("🎉 Fet!");
+
+// Verificar que els hashes s'han escrit correctament
+console.log("\n🔍 Verificant integritat dels hashes...");
+const updatedContent = fs.readFileSync(swPath, "utf8");
+let allHashesValid = true;
+
+for (const [key, expectedHash] of Object.entries(hashes)) {
+  // Escapar caràcters especials per la regex
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const hashRegex = new RegExp(`"${escapedKey}":\\s*"([a-f0-9]{96})"`);
+  const match = updatedContent.match(hashRegex);
+
+  if (!match) {
+    console.error(`❌ No s'ha trobat el hash per ${key} al Service Worker`);
+    allHashesValid = false;
+    continue;
+  }
+
+  const writtenHash = match[1];
+  if (writtenHash !== expectedHash) {
+    console.error(`❌ HASH INCORRECTE per ${key}`);
+    console.error(`   Esperat:  ${expectedHash}`);
+    console.error(`   Escrit:   ${writtenHash}`);
+    allHashesValid = false;
+  } else {
+    console.log(`✅ Hash verificat per ${key}`);
+  }
+}
+
+if (!allHashesValid) {
+  console.error("\n❌ ERROR: Els hashes no s'han escrit correctament!");
+  console.error("   Això podria causar errors al Service Worker en producció.");
+  process.exit(1);
+}
+
+console.log("\n🎉 Fet! Tots els hashes verificats correctament.");

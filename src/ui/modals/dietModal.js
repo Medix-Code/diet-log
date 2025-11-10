@@ -91,17 +91,41 @@ function createDietListItem(diet) {
 
   const deleteReveal = document.createElement("div");
   deleteReveal.className = CSS_CLASSES.DIET_DELETE_REVEAL;
-  deleteReveal.innerHTML = `
-    <div class="delete-reveal-content">
-      <img src="assets/icons/delete.svg" alt="Eliminar" class="icon">
-      <span class="delete-text">Eliminar dieta</span>
-    </div>
-  `;
+
+  // Seguretat XSS: usar createElement en lloc de innerHTML
+  const deleteContent = document.createElement("div");
+  deleteContent.className = "delete-reveal-content";
+
+  const deleteIcon = document.createElement("img");
+  deleteIcon.src = "assets/icons/delete.svg";
+  deleteIcon.alt = "Eliminar";
+  deleteIcon.className = "icon";
+
+  const deleteText = document.createElement("span");
+  deleteText.className = "delete-text";
+  deleteText.textContent = "Eliminar dieta";
+
+  deleteContent.appendChild(deleteIcon);
+  deleteContent.appendChild(deleteText);
+  deleteReveal.appendChild(deleteContent);
 
   const loadBtn = document.createElement("button");
   loadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} ${CSS_CLASSES.LIST_ITEM_BTN_LOAD} ${CSS_CLASSES.DIET_LOAD_BTN}`;
   loadBtn.setAttribute("aria-label", `Editar dieta ${ddmmaa}`);
-  loadBtn.innerHTML = `<img src="assets/icons/ic_edit.svg" alt="" class="icon"><span class="btn-text visually-hidden">Editar</span>`;
+
+  // Seguretat XSS: usar createElement en lloc de innerHTML
+  const loadIcon = document.createElement("img");
+  loadIcon.src = "assets/icons/ic_edit.svg";
+  loadIcon.alt = "";
+  loadIcon.className = "icon";
+
+  const loadText = document.createElement("span");
+  loadText.className = "btn-text visually-hidden";
+  loadText.textContent = "Editar";
+
+  loadBtn.appendChild(loadIcon);
+  loadBtn.appendChild(loadText);
+
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, displayId);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_DATE, diet.date);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_TYPE, diet.dietType);
@@ -112,7 +136,20 @@ function createDietListItem(diet) {
     "aria-label",
     `Descarregar PDF de la dieta ${ddmmaa}`
   );
-  downloadBtn.innerHTML = `<img src="assets/icons/download_blue.svg" alt="" class="icon"><span class="btn-text visually-hidden">PDF</span>`;
+
+  // Seguretat XSS: usar createElement en lloc de innerHTML
+  const downloadIcon = document.createElement("img");
+  downloadIcon.src = "assets/icons/download_blue.svg";
+  downloadIcon.alt = "";
+  downloadIcon.className = "icon";
+
+  const downloadText = document.createElement("span");
+  downloadText.className = "btn-text visually-hidden";
+  downloadText.textContent = "PDF";
+
+  downloadBtn.appendChild(downloadIcon);
+  downloadBtn.appendChild(downloadText);
+
   downloadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, displayId);
 
   iconsContainer.appendChild(loadBtn);

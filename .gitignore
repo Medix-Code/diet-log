@@ -42,3 +42,8 @@ DEBUG-KEY-RESET.md
 # Temporary files
 *.tmp
 *.temp
+
+# Cloudflare Workers
+.wrangler/
+wrangler.toml.local
+*.workers.dev

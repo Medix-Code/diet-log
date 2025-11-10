@@ -1846,13 +1846,11 @@ button .fa {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
+  line-height: 1.6;
+  padding: 20px 0px 20px;
 }
 #about-modal .modal-scrollable-content p {
   margin: 0 6px 6px;
-}
-#about-modal .modal-scrollable-content {
-  line-height: 1.6;
-  padding: 20px 0px 20px;
 }
 
 /* COLOR en <strong> */
@@ -2090,6 +2088,18 @@ button .fa {
   font-family: "Roboto Serif", serif;
   margin-top: 0;
   margin-bottom: 10px;
+}
+.trash-modal-content .trash-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+.trash-modal-content .trash-description {
+  margin: 0;
+  color: var(--subtext-color);
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 .modal-header {
@@ -2333,19 +2343,18 @@ button .fa {
 
 .trash-footer {
   display: flex;
-  justify-content: center;
   gap: 10px;
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--grey-border);
   flex-shrink: 0;
   align-items: flex-end;
+  justify-content: flex-end;
 }
 .trash-footer button {
   padding: 10px 24px;
   height: 40px;
-  min-width: 120px;
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
   border-radius: 9999px;
   border: none;
@@ -2374,11 +2383,11 @@ button .fa {
   transform: scale(1.02);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
-.trash-footer .close-button {
+.trash-footer .close-modal-btn {
   background-color: var(--color-close-bg);
   color: var(--color-close-text);
 }
-.trash-footer .close-button:hover {
+.trash-footer .close-modal-btn:hover {
   background-color: var(--color-close-bg-hover);
   transform: scale(1.02);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
@@ -4458,6 +4467,13 @@ body.app-ready #main-content {
   }
 }
 /* Elimina completament el datalist natiu */
+input[type=text].origin,
+input[type=text].destination {
+  background-image: none !important;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 input[type=text].origin::-webkit-calendar-picker-indicator,
 input[type=text].destination::-webkit-calendar-picker-indicator {
   display: none !important;
@@ -4470,13 +4486,6 @@ input[type=text].destination::-webkit-calendar-picker-indicator {
 input[type=text].origin::-webkit-list-button,
 input[type=text].destination::-webkit-list-button {
   display: none !important;
-}
-input[type=text].origin,
-input[type=text].destination {
-  background-image: none !important;
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
-  appearance: textfield;
 }
 input[type=text].origin.has-dropdown-open,
 input[type=text].destination.has-dropdown-open {
@@ -4564,5 +4573,3 @@ input[type=text].destination.has-dropdown-open {
   outline: 2px solid #004aad;
   outline-offset: 2px;
 }
-
-/*# sourceMappingURL=main.css.map */
