@@ -1,14 +1,20 @@
 // Tests simplificats per DietService - només funcionalitats bàsiques
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
+
+let dietServiceModule;
+
+beforeAll(async () => {
+  dietServiceModule = await import("../src/services/dietService.js");
+});
 
 describe("DietService - Basic functionality", () => {
   it("should have Diet class", () => {
-    const { Diet } = require("../src/services/dietService.js");
+    const { Diet } = dietServiceModule;
     expect(typeof Diet).toBe("function");
   });
 
   it("should create Diet instance", () => {
-    const { Diet } = require("../src/services/dietService.js");
+    const { Diet } = dietServiceModule;
 
     const diet = new Diet({
       id: "test-id",
@@ -22,12 +28,12 @@ describe("DietService - Basic functionality", () => {
   });
 
   it("should have loadDietById function", () => {
-    const { loadDietById } = require("../src/services/dietService.js");
+    const { loadDietById } = dietServiceModule;
     expect(typeof loadDietById).toBe("function");
   });
 
   it("should have handleManualSave function", () => {
-    const { handleManualSave } = require("../src/services/dietService.js");
+    const { handleManualSave } = dietServiceModule;
     expect(typeof handleManualSave).toBe("function");
   });
 });

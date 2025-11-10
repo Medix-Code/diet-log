@@ -1,5 +1,7 @@
-import { vi } from "vitest";
 import { indexedDB as fakeIndexedDB, IDBKeyRange } from "fake-indexeddb";
+import { webcrypto } from "node:crypto";
+
+const g = globalThis;
 
 // Polyfills necessaris per a jsdom 27 amb Node 18
 if (!Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "resizable")) {
@@ -27,75 +29,24 @@ if (typeof SharedArrayBuffer !== "undefined") {
 }
 
 // ============================================
-// 🔐 MOCKS GLOBALS PER TESTS D'ENCRIPTACIÓ
+// 🔐 Web Crypto API disponible en entorns Node
 // ============================================
-
-// Mock Web Crypto API
-if (!global.crypto) {
-  Object.defineProperty(global, "crypto", {
-    value: {
-      subtle: {
-        generateKey: vi.fn().mockResolvedValue({
-          type: "secret",
-          algorithm: { name: "AES-GCM", length: 256 },
-        }),
-        importKey: vi.fn().mockResolvedValue("mock-imported-key"),
-        exportKey: vi
-          .fn()
-          .mockResolvedValue(new Uint8Array(32).fill(42).buffer),
-        encrypt: vi.fn().mockImplementation((algo, key, data) => {
-          const result = new Uint8Array(data.byteLength);
-          const view = new Uint8Array(data);
-          for (let i = 0; i < view.length; i++) {
-            result[i] = view[i] ^ 42;
-          }
-          return Promise.resolve(result.buffer);
-        }),
-        decrypt: vi.fn().mockImplementation((algo, key, data) => {
-          const result = new Uint8Array(data.byteLength);
-          const view = new Uint8Array(data);
-          for (let i = 0; i < view.length; i++) {
-            result[i] = view[i] ^ 42;
-          }
-          return Promise.resolve(result.buffer);
-        }),
-        digest: vi.fn().mockImplementation((algo, data) => {
-          const hash = new Uint8Array(32);
-          const view = new Uint8Array(data);
-          let sum = 0;
-          for (let i = 0; i < view.length; i++) {
-            sum += view[i];
-          }
-          hash.fill(sum % 256);
-          return Promise.resolve(hash.buffer);
-        }),
-        wrapKey: vi.fn().mockResolvedValue(new Uint8Array(64).fill(99).buffer),
-        unwrapKey: vi.fn().mockResolvedValue({
-          type: "secret",
-          algorithm: { name: "AES-GCM" },
-        }),
-        deriveKey: vi.fn().mockResolvedValue("mock-derived-key"),
-      },
-      getRandomValues: vi.fn((arr) => {
-        for (let i = 0; i < arr.length; i++) {
-          arr[i] = Math.floor(Math.random() * 256);
-        }
-        return arr;
-      }),
-    },
-    writable: true,
+if (!g.crypto || !g.crypto.subtle) {
+  Object.defineProperty(g, "crypto", {
+    value: webcrypto,
+    writable: false,
     configurable: true,
   });
 }
 
 // Mock IndexedDB
-if (!global.indexedDB) {
-  Object.defineProperty(global, "indexedDB", {
+if (!g.indexedDB) {
+  Object.defineProperty(g, "indexedDB", {
     value: fakeIndexedDB,
     writable: true,
     configurable: true,
   });
-  Object.defineProperty(global, "IDBKeyRange", {
+  Object.defineProperty(g, "IDBKeyRange", {
     value: IDBKeyRange,
     writable: true,
     configurable: true,
@@ -103,22 +54,22 @@ if (!global.indexedDB) {
 }
 
 // Mock navigator
-if (!global.navigator.userAgent) {
-  Object.defineProperty(global.navigator, "userAgent", {
+if (!g.navigator.userAgent) {
+  Object.defineProperty(g.navigator, "userAgent", {
     value: "Mozilla/5.0 Test Browser",
     writable: true,
     configurable: true,
   });
 }
-if (!global.navigator.language) {
-  Object.defineProperty(global.navigator, "language", {
+if (!g.navigator.language) {
+  Object.defineProperty(g.navigator, "language", {
     value: "ca-ES",
     writable: true,
     configurable: true,
   });
 }
-if (!global.navigator.hardwareConcurrency) {
-  Object.defineProperty(global.navigator, "hardwareConcurrency", {
+if (!g.navigator.hardwareConcurrency) {
+  Object.defineProperty(g.navigator, "hardwareConcurrency", {
     value: 8,
     writable: true,
     configurable: true,
@@ -126,8 +77,8 @@ if (!global.navigator.hardwareConcurrency) {
 }
 
 // Mock screen
-if (!global.screen) {
-  Object.defineProperty(global, "screen", {
+if (!g.screen) {
+  Object.defineProperty(g, "screen", {
     value: {
       width: 1920,
       height: 1080,
@@ -139,9 +90,9 @@ if (!global.screen) {
 }
 
 // Mock atob/btoa para Node.js (no son polyfills nativos en vitest)
-if (typeof global.atob === "undefined") {
-  global.atob = (str) => Buffer.from(str, "base64").toString("binary");
+if (typeof g.atob === "undefined") {
+  g.atob = (str) => Buffer.from(str, "base64").toString("binary");
 }
-if (typeof global.btoa === "undefined") {
-  global.btoa = (str) => Buffer.from(str, "binary").toString("base64");
+if (typeof g.btoa === "undefined") {
+  g.btoa = (str) => Buffer.from(str, "binary").toString("base64");
 }

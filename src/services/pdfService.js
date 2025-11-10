@@ -112,14 +112,14 @@ function handleValidationUIErrors(isDadesValid, isServeisValid) {
 
   let message = "";
   if (!isDadesValid && !isServeisValid) {
-    message = "Completa els camps obligatoris a Dades i Serveis.";
+    message = "Completa los campos obligatorios en Datos y Servicios.";
     dadesTab?.classList.add(CSS_CLASSES.ERROR_TAB);
     serveisTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else if (!isDadesValid) {
-    message = "Completa els camps obligatoris a Dades.";
+    message = "Completa los campos obligatorios en Datos.";
     dadesTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   } else {
-    message = "Completa els camps obligatoris a Serveis.";
+    message = "Completa los campos obligatorios en Servicios.";
     serveisTab?.classList.add(CSS_CLASSES.ERROR_TAB);
   }
 
@@ -168,7 +168,7 @@ export async function generateAndDownloadPdf() {
   if (!pdfRateLimiter.canMakeRequest()) {
     const remaining = pdfRateLimiter.getRemainingRequests();
     showToast(
-      `Has superat el límit de generació de PDFs. Espera uns segons. (${remaining} disponibles)`,
+      `Has superado el límite de generación de PDFs. Espera unos segundos. (${remaining} disponibles)`,
       "warning"
     );
     return;
@@ -226,7 +226,7 @@ export async function downloadDietPDF(dietId) {
   if (!pdfRateLimiter.canMakeRequest()) {
     const remaining = pdfRateLimiter.getRemainingRequests();
     showToast(
-      `Has superat el límit de generació de PDFs. Espera uns segons. (${remaining} disponibles)`,
+      `Has superado el límite de generación de PDFs. Espera unos segundos. (${remaining} disponibles)`,
       "warning"
     );
     return;
