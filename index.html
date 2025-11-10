@@ -828,12 +828,10 @@
         aria-labelledby="diet-modal-title"
       >
         <div class="modal-content diet-modal-content">
-          <div class="modal-header">
-            <h3 id="diet-modal-title">Gestor de dietas</h3>
-            <button id="open-trash-btn" class="icon-btn" aria-label="Obrir paperera" title="Paperera">
-              <img src="assets/icons/delete.svg" alt="Paperera" class="icon" />
-            </button>
-          </div>
+          <h3 id="diet-modal-title">Gestor de dietas</h3>
+          <button id="open-trash-btn" class="trash-icon-btn" aria-label="Obrir paperera" title="Paperera">
+            🗑️
+          </button>
           <p id="no-diets-text" class="no-diets-text hidden">
             No hay dietas guardadas.
           </p>
@@ -910,12 +908,12 @@
       >
         <div class="modal-content signature-modal-content">
           <h2 id="signature-title">Firma</h2>
-          <p class="signature-instruction">
-            Firma en el recuadro. Para borrarla, haz doble clic en el área.
-          </p>
           <div class="signature-canvas-container">
             <canvas id="signature-canvas"></canvas>
           </div>
+          <p class="signature-instruction">
+            Para borrarla, haz doble clic en el área.
+          </p>
           <div class="modal-buttons">
             <button id="signature-cancel" class="modal-button cancel">
               Cancelar

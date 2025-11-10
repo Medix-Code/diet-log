@@ -1933,6 +1933,7 @@ button .fa {
   overflow-x: hidden;
   box-sizing: border-box;
   pointer-events: auto !important;
+  position: relative;
 }
 .diet-modal-content * {
   pointer-events: auto !important;
@@ -1946,6 +1947,28 @@ button .fa {
   margin-bottom: 10px;
   text-align: center;
   flex-shrink: 0;
+}
+
+.trash-icon-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  z-index: 10;
+  line-height: 1;
+}
+.trash-icon-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.1);
+}
+.trash-icon-btn:active {
+  transform: scale(0.95);
 }
 
 .diet-icons button:active {
@@ -2436,9 +2459,13 @@ button .fa {
   position: relative;
 }
 .signature-modal-content p.signature-instruction {
-  text-align: left;
-  font-size: 15px;
-  font-weight: 200;
+  margin-top: 6px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 300;
+  color: var(--subtext-color);
+  opacity: 0.85;
+  letter-spacing: 0.01em;
 }
 
 .signature-canvas-container {

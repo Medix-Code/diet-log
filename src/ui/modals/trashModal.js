@@ -224,13 +224,20 @@ async function handleEmptyTrash() {
 // ============================================================================
 
 export function initTrashModal() {
+  log.debug("Inicialitzant modal de paperera...");
+
   // Botó obrir paperera des del modal de dietes
   const openBtn = document.getElementById("open-trash-btn");
   if (openBtn) {
+    log.debug("Botó paperera trobat, afegint event listener");
     openBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       e.stopPropagation();
+      log.debug("Botó paperera clicat!");
       openTrashModal();
     });
+  } else {
+    log.warn("Botó paperera NO trobat!");
   }
 
   // Botó tancar modal

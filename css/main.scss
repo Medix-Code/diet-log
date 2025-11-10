@@ -2190,6 +2190,7 @@ button {
   overflow-x: hidden;
   box-sizing: border-box;
   pointer-events: auto !important; // Força que el contingut sempre pugui rebre clics
+  position: relative;
 
   // Assegura que tots els fills també poden rebre events
   * {
@@ -2205,6 +2206,31 @@ button {
   margin-bottom: 10px;
   text-align: center;
   flex-shrink: 0; // Important: evita que el títol s'encongeixi
+}
+
+// Botó de paperera (posicionat absolut a dalt a la dreta)
+.trash-icon-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  z-index: 10;
+  line-height: 1;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .diet-icons button:active {
@@ -2703,9 +2729,13 @@ button {
   position: relative;
 
   p.signature-instruction {
-    text-align: left;
-    font-size: 15px;
-    font-weight: 200;
+    margin-top: 6px;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 300;
+    color: var(--subtext-color);
+    opacity: 0.85;
+    letter-spacing: 0.01em;
   }
 }
 
