@@ -7,21 +7,32 @@ const LEVELS = {
 };
 
 function detectEnv() {
+  // Detectar per hostname: localhost és development, resta és production
+  if (typeof window !== "undefined" && window.location) {
+    const hostname = window.location.hostname;
+    const isLocalhost =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "[::1]" ||
+      hostname.endsWith(".local");
+
+    if (isLocalhost) {
+      return "development";
+    }
+    return "production";
+  }
+
   if (typeof import.meta !== "undefined" && import.meta.env) {
     if (typeof import.meta.env.MODE === "string") return import.meta.env.MODE;
     if (typeof import.meta.env.NODE_ENV === "string")
       return import.meta.env.NODE_ENV;
   }
 
-  if (typeof process !== "undefined" && process.env) {
-    if (typeof process.env.NODE_ENV === "string") return process.env.NODE_ENV;
-  }
-
   if (typeof window !== "undefined" && typeof window.__APP_ENV__ === "string") {
     return window.__APP_ENV__;
   }
 
-  return "development";
+  return "production";
 }
 
 let currentLevel =
