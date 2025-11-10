@@ -64,7 +64,9 @@ class RateLimiter {
    */
   reset() {
     this.requests = [];
-    console.log(`[RateLimiter] Resetejat el límit per "${this.actionName}"`);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[RateLimiter] Resetejat el límit per "${this.actionName}"`);
+    }
   }
 
   /**

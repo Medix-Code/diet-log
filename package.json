@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/package.json",
   "name": "diet-log",
   "version": "2.2.9",
   "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
@@ -7,7 +6,7 @@
   "scripts": {
     "inject-version": "node inject-version.js",
     "update-hashes": "node update-hashes.js",
-    "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --loader:.js=jsx --format=esm --outfile=dist/bundle.js && npm run update-hashes",
+    "build": "esbuild src/app.js --bundle --minify --tree-shaking=true --loader:.js=jsx --format=esm --outfile=dist/bundle.js --define:process.env.NODE_ENV='\"production\"' && npm run update-hashes",
     "build:css": "sass css/main.scss css/main.css --style=expanded && sass css/main.scss css/main.min.css --style=compressed && npm run update-hashes",
     "test": "vitest",
     "dev": "echo 'Serve index.html with compression'"

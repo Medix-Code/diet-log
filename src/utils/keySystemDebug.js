@@ -16,6 +16,11 @@ const log = logger.withScope("KeySystemDebug");
  * Mostra diagnòstic complet del sistema de claus
  */
 export async function debugKeySystem() {
+  if (process.env.NODE_ENV === "production") {
+    log.warn("debugKeySystem() només està disponible en mode desenvolupament");
+    return null;
+  }
+
   console.group("🔐 Diagnòstic del Sistema de Claus");
 
   const diagnosis = await diagnoseKeySystem();
@@ -70,6 +75,11 @@ export async function debugKeySystem() {
  * Reseteja el sistema de claus amb confirmació
  */
 export async function fixKeySystem() {
+  if (process.env.NODE_ENV === "production") {
+    log.warn("fixKeySystem() només està disponible en mode desenvolupament");
+    return false;
+  }
+
   const confirmed = confirm(
     "⚠️ ATENCIÓ: Aquesta acció eliminarà TOTES les dotacions encriptades.\n\n" +
       "Les dietes NO es veuran afectades.\n\n" +
