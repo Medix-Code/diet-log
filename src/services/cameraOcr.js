@@ -495,27 +495,28 @@ async function _handleFileChange(event) {
   let worker = null;
 
   try {
-    _updateOcrProgress(5);
+    _updateOcrProgress(5, "Preparando imagen...");
     let imageBlob = await resizeImage(file);
 
-    _updateOcrProgress(20);
+    _updateOcrProgress(20, "Optimizando imagen...");
     imageBlob = await preprocessImage(imageBlob);
 
-    _updateOcrProgress(35);
+    _updateOcrProgress(35, "Procesando...");
     await new Promise((r) => setTimeout(r, 100));
 
-    _updateOcrProgress(45);
+    _updateOcrProgress(45, "Preparando OCR...");
 
     if (!tesseractScriptLoaded) {
-      _updateOcrProgress(50);
+      _updateOcrProgress(50, "Descargando motor OCR...");
       await loadExternalScript({
         src: TESSERACT_SCRIPT_URL,
         integrity: TESSERACT_SCRIPT_INTEGRITY,
       });
       tesseractScriptLoaded = true;
+      _updateOcrProgress(58, "Motor OCR descargado");
     }
 
-    _updateOcrProgress(60);
+    _updateOcrProgress(60, "Inicializando motor OCR...");
 
     worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
       logger: (m) => {
@@ -524,15 +525,19 @@ async function _handleFileChange(event) {
             85,
             Math.floor(m.progress * 100 * 0.15 + 85)
           );
-          _updateOcrProgress(percent);
+          _updateOcrProgress(percent, "Reconociendo texto...");
         } else if (m.status === "loading language model") {
-          _updateOcrProgress(65);
+          _updateOcrProgress(65, "Cargando modelo de lenguaje...");
+        } else if (m.status === "initializing tesseract") {
+          _updateOcrProgress(62, "Inicializando Tesseract...");
+        } else if (m.status === "initialized tesseract") {
+          _updateOcrProgress(70, "Tesseract inicializado");
         }
       },
       init: INIT_ONLY_PARAMS,
     });
 
-    _updateOcrProgress(75);
+    _updateOcrProgress(75, "Configurando parámetros...");
     await worker.setParameters(TESSERACT_PARAMS);
     _updateOcrProgress(80);
 
