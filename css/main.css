@@ -917,8 +917,8 @@ button .fa {
 .chip-group-title {
   display: block;
   font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--text-color);
+  font-weight: 400;
+  color: var(--subtext-color);
   margin-top: 0;
   margin-bottom: 10px;
   text-align: left;
@@ -2172,7 +2172,7 @@ button .fa {
   background-color: var(--bg-textfield);
   color: var(--text-color);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
