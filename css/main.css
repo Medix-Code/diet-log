@@ -1943,32 +1943,46 @@ button .fa {
   transition: overflow 0.2s ease;
 }
 
-#diet-modal-title {
+.diet-modal-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
   margin-bottom: 10px;
+}
+
+#diet-modal-title {
+  margin: 0;
   text-align: center;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 .trash-icon-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  right: 0;
   background: none;
   border: none;
-  font-size: 24px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  z-index: 10;
-  line-height: 1;
+  padding: 6px;
+  border-radius: 4px;
+  transition: opacity 0.2s ease;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.trash-icon-btn svg {
+  display: block;
 }
 .trash-icon-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  transform: scale(1.1);
+  opacity: 0.7;
 }
 .trash-icon-btn:active {
-  transform: scale(0.95);
+  opacity: 0.5;
+}
+.trash-icon-btn:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .diet-icons button:active {
@@ -2459,9 +2473,9 @@ button .fa {
   position: relative;
 }
 .signature-modal-content p.signature-instruction {
-  margin-top: 6px;
+  margin-top: 0;
   text-align: center;
-  font-size: 0.7rem;
+  font-size: 0.95rem;
   font-weight: 300;
   color: var(--subtext-color);
   opacity: 0.85;

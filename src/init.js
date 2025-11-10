@@ -132,7 +132,12 @@ export async function initializeApp() {
     setupClearSelectedService();
     setupNotesSelectedService(); // Ja definit gràcies a l'import nou
     setupModalGenerics();
-    initTrashModal(); // Inicialitzar modal de paperera
+
+    // Inicialitzar modal de paperera després que el DOM estigui llest
+    setTimeout(() => {
+      initTrashModal();
+    }, 100);
+
     setupDatePickers();
     setupTimePickers();
     initSettingsPanel();
