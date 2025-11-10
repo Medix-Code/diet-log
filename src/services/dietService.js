@@ -422,9 +422,15 @@ export async function deleteDietHandler(id, dietDate, dietType) {
 
     // Recuperem totes les dietes i ordenem com a displayDietOptions per calcular l'índex visual correcte
     const allDiets = await getAllDiets();
-    const sortedDiets = allDiets.sort(
-      (a, b) => new Date(b.timeStampDiet) - new Date(a.timeStampDiet)
-    );
+    const sortedDiets = allDiets.sort((a, b) => {
+      // Ordenar per date descendent (més recent primer)
+      const dateComparison = new Date(b.date) - new Date(a.date);
+      // Si tenen la mateixa data, ordenar per timeStampDiet descendent
+      if (dateComparison === 0) {
+        return new Date(b.timeStampDiet) - new Date(a.timeStampDiet);
+      }
+      return dateComparison;
+    });
     dietBackup.index = sortedDiets.findIndex((d) => d.id === id);
 
     await deleteDietById(id);

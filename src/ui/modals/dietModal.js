@@ -318,7 +318,15 @@ export async function displayDietOptions() {
 
     savedDiets
       .slice()
-      .sort((a, b) => new Date(b.timeStampDiet) - new Date(a.timeStampDiet))
+      .sort((a, b) => {
+        // Ordenar per date descendent (més recent primer)
+        const dateComparison = new Date(b.date) - new Date(a.date);
+        // Si tenen la mateixa data, ordenar per timeStampDiet descendent
+        if (dateComparison === 0) {
+          return new Date(b.timeStampDiet) - new Date(a.timeStampDiet);
+        }
+        return dateComparison;
+      })
       .forEach((diet, index) => {
         const listItem = createDietListItem(diet);
         listItem.setAttribute("data-index", String(index));
