@@ -31,7 +31,7 @@ const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.3":
     "617cd16080fa408b5828b9384a61453120effd35776ac0281f7c1d085d61ae9f15a684e148bb84bedf5c54567c2e726c",
   "/css/main.min.css?v=2.3.4":
-    "6b54ba0858eb59f0b3d8cb85abc7e8cddfa8b5abedd044df542105c22b8c4769ea0afc091f81de30bc5a8ddcf4594cfd",
+    "20bd5a2f661df707cc9c53f8e4ceb9661d4f7b52ee1478ddaad63c8f2e231ea0478153d64665240e352fed5fd7dd283b",
 };
 
 function bufferToHex(buffer) {

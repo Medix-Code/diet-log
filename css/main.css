@@ -1967,7 +1967,8 @@ button .fa {
   text-align: center;
   flex: 1;
   border-bottom: 1px solid var(--grey-border, #eee);
-  padding-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 0;
 }
 
 .trash-modal-footer-btn {
@@ -2146,7 +2147,7 @@ button .fa {
 .trash-filters .filter-group label {
   font-family: "Roboto Serif", serif;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-color);
 }
 .trash-filters .filter-group .filter-select,
