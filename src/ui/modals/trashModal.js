@@ -256,5 +256,16 @@ export function initTrashModal() {
     });
   }
 
+  const infoBtn = document.getElementById("trash-info-btn");
+  if (infoBtn) {
+    infoBtn.addEventListener("click", () => {
+      showToast(
+        "La papelera contiene dietas eliminadas. Se eliminan automáticamente a los 30 días.",
+        "info",
+        4000
+      );
+    });
+  }
+
   log.debug("Modal de paperera inicialitzat");
 }

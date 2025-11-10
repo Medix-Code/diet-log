@@ -880,48 +880,69 @@
         aria-labelledby="trash-modal-title"
       >
         <div class="modal-content trash-modal-content">
-          <div class="trash-header">
-            <h3 id="trash-modal-title">Papelera de dietas</h3>
-            <p class="trash-description">
-              La papelera contiene dietas eliminadas. Se eliminan
-              automáticamente a los 30 días.
-            </p>
-          </div>
+          <div class="trash-top">
+            <div class="trash-header">
+              <h3 id="trash-modal-title">Papelera de dietas</h3>
+              <button
+                type="button"
+                class="trash-info-btn"
+                id="trash-info-btn"
+                aria-label="Mostrar información de la papelera"
+              >
+                <img
+                  src="/assets/icons/info.svg"
+                  alt=""
+                  aria-hidden="true"
+                  class="trash-info-icon"
+                />
+              </button>
+            </div>
+            <div class="trash-divider"></div>
 
-          <!-- Filtres -->
-          <div class="trash-filters">
-            <div class="filter-group">
-              <label for="trash-filter-type">Tipo:</label>
-              <select id="trash-filter-type" class="filter-select">
-                <option value="all">Todas</option>
-                <option value="lunch">Comida</option>
-                <option value="dinner">Cena</option>
-              </select>
+            <!-- Filtres -->
+            <div class="trash-filters">
+              <div class="filter-group">
+                <label for="trash-filter-type">Tipo:</label>
+                <select id="trash-filter-type" class="filter-select">
+                  <option value="all">Todas</option>
+                  <option value="lunch">Comida</option>
+                  <option value="dinner">Cena</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="trash-filter-date">Fecha:</label>
+                <input
+                  type="date"
+                  id="trash-filter-date"
+                  class="filter-input"
+                />
+              </div>
+              <button id="trash-clear-filters" class="filter-clear-btn">
+                Borrar filtros
+              </button>
             </div>
-            <div class="filter-group">
-              <label for="trash-filter-date">Fecha:</label>
-              <input type="date" id="trash-filter-date" class="filter-input" />
-            </div>
-            <button id="trash-clear-filters" class="filter-clear-btn">
-              Borrar filtros
-            </button>
           </div>
 
           <!-- Llista de dietes eliminades -->
-          <p id="no-trash-text" class="no-trash-text hidden">
-            No hay dietas eliminadas.
-          </p>
-          <div
-            id="trash-options"
-            class="trash-list"
-            aria-label="Dietes eliminades"
-          ></div>
+          <div class="trash-scroll-area">
+            <p id="no-trash-text" class="no-trash-text hidden">
+              No hay dietas eliminadas.
+            </p>
+            <div
+              id="trash-options"
+              class="trash-list"
+              aria-label="Dietes eliminades"
+            ></div>
+          </div>
 
           <!-- Footer amb accions -->
-          <div class="modal-footer trash-footer">
-            <button id="close-trash-modal" class="close-modal-btn">
-              Volver
-            </button>
+          <div class="trash-bottom">
+            <div class="trash-divider"></div>
+            <div class="modal-footer trash-footer">
+              <button id="close-trash-modal" class="close-modal-btn">
+                Volver
+              </button>
+            </div>
           </div>
         </div>
       </div>
