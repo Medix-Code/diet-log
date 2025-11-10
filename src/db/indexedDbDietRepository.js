@@ -2,10 +2,11 @@
 
 // Constants de la base de dades
 const DB_NAME = "DietasDB";
-const DB_VERSION = 2; // Incrementat per suportar dotacions a IndexedDB
+const DB_VERSION = 3; // V3: Afegir store de dietes eliminades
 const STORE_NAME = "dietas";
 const INDEX_DATE = "dateIndex";
 const DOTACIONS_STORE = "dotacions";
+const DELETED_DIETS_STORE = "deleted_diets";
 
 let dbInstance = null;
 
@@ -40,6 +41,16 @@ function openInternal() {
         dotacionsStore.createIndex("timestamp", "timestamp", {
           unique: false,
         });
+      }
+
+      // V3: Crear objectStore de dietes eliminades
+      if (oldVersion < 3 && !db.objectStoreNames.contains(DELETED_DIETS_STORE)) {
+        const deletedStore = db.createObjectStore(DELETED_DIETS_STORE, {
+          keyPath: "id",
+        });
+        deletedStore.createIndex("deletedAt", "deletedAt", { unique: false });
+        deletedStore.createIndex("dietType", "dietType", { unique: false });
+        deletedStore.createIndex("date", "date", { unique: false });
       }
     };
 
@@ -188,4 +199,142 @@ export async function openDatabase() {
 export function closeDatabase() {
   dbInstance?.close();
   dbInstance = null;
+}
+
+// ============================================================================
+// GESTIÓ DE PAPERERA (DIETES ELIMINADES)
+// ============================================================================
+
+/**
+ * Mou una dieta a la paperera (deleted_diets store).
+ * @param {Diet} diet - Dieta a moure a la paperera
+ */
+export async function moveDietToTrash(diet) {
+  if (!diet || !diet.id) return;
+
+  const deletedDiet = {
+    ...diet,
+    deletedAt: new Date().toISOString(),
+  };
+
+  const tx = await getTx("readwrite");
+  const stores = [STORE_NAME, DELETED_DIETS_STORE];
+
+  // Eliminar de dietes actives
+  wrap(
+    tx.objectStore(STORE_NAME).delete(diet.id),
+    "Error eliminant dieta de store principal"
+  );
+
+  // Afegir a paperera
+  wrap(
+    tx.objectStore(DELETED_DIETS_STORE).put(deletedDiet),
+    "Error movent dieta a paperera"
+  );
+
+  await waitTx(tx);
+}
+
+/**
+ * Restaura una dieta de la paperera.
+ * @param {string} id - ID de la dieta a restaurar
+ */
+export async function restoreDietFromTrash(id) {
+  if (!id) return;
+
+  const tx = await getTx("readwrite");
+
+  // Obtenir dieta de paperera
+  const deletedDiet = await wrap(
+    tx.objectStore(DELETED_DIETS_STORE).get(id),
+    "Error obtenint dieta de paperera"
+  );
+
+  if (!deletedDiet) {
+    throw new Error("Dieta no trobada a la paperera");
+  }
+
+  // Eliminar camp deletedAt
+  const { deletedAt, ...restoredDiet } = deletedDiet;
+
+  // Moure de paperera a dietes actives
+  const tx2 = await getTx("readwrite");
+
+  wrap(
+    tx2.objectStore(DELETED_DIETS_STORE).delete(id),
+    "Error eliminant de paperera"
+  );
+
+  wrap(
+    tx2.objectStore(STORE_NAME).put(restoredDiet),
+    "Error restaurant dieta"
+  );
+
+  await waitTx(tx2);
+
+  return restoredDiet;
+}
+
+/**
+ * Elimina permanentment una dieta de la paperera.
+ * @param {string} id - ID de la dieta a eliminar permanentment
+ */
+export async function deleteDietFromTrashPermanently(id) {
+  if (!id) return;
+  const tx = await getTx("readwrite");
+  wrap(
+    tx.objectStore(DELETED_DIETS_STORE).delete(id),
+    "Error eliminant dieta permanentment"
+  );
+  await waitTx(tx);
+}
+
+/**
+ * Obté totes les dietes eliminades de la paperera.
+ * @returns {Diet[]} - Array de dietes eliminades
+ */
+export async function getAllDeletedDiets() {
+  const tx = await getTx();
+  return wrap(
+    tx.objectStore(DELETED_DIETS_STORE).getAll(),
+    "Error obtenint dietes eliminades"
+  );
+}
+
+/**
+ * Neteja dietes eliminades que portin més de X dies a la paperera.
+ * @param {number} daysToKeep - Dies a mantenir les dietes eliminades (per defecte 30)
+ */
+export async function cleanupOldDeletedDiets(daysToKeep = 30) {
+  const deletedDiets = await getAllDeletedDiets();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+
+  const tx = await getTx("readwrite");
+  const store = tx.objectStore(DELETED_DIETS_STORE);
+
+  let deletedCount = 0;
+
+  for (const diet of deletedDiets) {
+    if (diet.deletedAt && new Date(diet.deletedAt) < cutoffDate) {
+      wrap(store.delete(diet.id), "Error eliminant dieta antiga");
+      deletedCount++;
+    }
+  }
+
+  await waitTx(tx);
+
+  return deletedCount;
+}
+
+/**
+ * Buida completament la paperera.
+ */
+export async function emptyTrash() {
+  const tx = await getTx("readwrite");
+  wrap(
+    tx.objectStore(DELETED_DIETS_STORE).clear(),
+    "Error buidant paperera"
+  );
+  await waitTx(tx);
 }

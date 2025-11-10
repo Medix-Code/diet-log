@@ -4,7 +4,7 @@
 import { DOM_IDS, LS_IDS } from "./config/constants.js";
 import * as formService from "./services/formService.js";
 import { initOnboarding } from "./ui/onboarding.js";
-import { openDatabase } from "./db/indexedDbDietRepository.js";
+import { openDatabase, cleanupOldDeletedDiets } from "./db/indexedDbDietRepository.js";
 import {
   setTodaysDate,
   setupDietTypeSelectBehaviour,
@@ -20,6 +20,7 @@ import { initThemeSwitcher } from "./ui/theme.js";
 import { setupMainButtons } from "./ui/mainButtons.js";
 import { setupClearSelectedService } from "./ui/clearService.js";
 import { setupModalGenerics } from "./ui/modals.js";
+import { initTrashModal } from "./ui/modals/trashModal.js";
 import { setupDatePickers, setupTimePickers } from "./ui/pickers.js";
 import { setupServiceNumberRestrictions } from "./utils/restrictions.js";
 import { initSettingsPanel } from "./ui/settingsPanel.js";
@@ -131,11 +132,24 @@ export async function initializeApp() {
     setupClearSelectedService();
     setupNotesSelectedService(); // Ja definit gràcies a l'import nou
     setupModalGenerics();
+    initTrashModal(); // Inicialitzar modal de paperera
     setupDatePickers();
     setupTimePickers();
     initSettingsPanel();
     initThemeSwitcher();
     setupDonationLink();
+
+    // 🗑️ Neteja automàtica de dietes antigues a la paperera (30 dies)
+    setTimeout(async () => {
+      try {
+        const deletedCount = await cleanupOldDeletedDiets(30);
+        if (deletedCount > 0) {
+          log.info(`Auto-cleanup: ${deletedCount} dietes antigues eliminades de la paperera`);
+        }
+      } catch (error) {
+        log.error("Error en auto-cleanup de paperera:", error);
+      }
+    }, 2000); // Esperar 2 segons per no bloquejar la càrrega inicial
 
     // Prepara validacions i listeners del formulari
     setupServiceNumberRestrictions();

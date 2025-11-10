@@ -2263,6 +2263,255 @@ button {
   opacity: 1;
 }
 
+// ============================================================================
+// MODAL DE PAPERERA
+// ============================================================================
+
+.trash-modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  max-width: 700px;
+  width: 100%;
+  overflow: hidden;
+}
+
+// Header amb títol i botó paperera
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+
+  h3 {
+    margin: 0;
+    flex: 1;
+  }
+
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--input-border);
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      filter: brightness(0) saturate(100%);
+      opacity: 0.6;
+    }
+
+    &:hover {
+      background-color: var(--bg-tab-hover);
+      border-color: var(--primary-color);
+
+      .icon {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// Filtres
+.trash-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 150px;
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--subtext-color);
+    }
+
+    .filter-select,
+    .filter-input {
+      padding: 8px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background-color: var(--bg-textfield);
+      color: var(--text-color);
+      font-size: 14px;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+    }
+  }
+
+  .filter-clear-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    background-color: var(--bg-textfield);
+    color: var(--text-color);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: var(--bg-tab-hover);
+      border-color: var(--primary-color);
+    }
+  }
+}
+
+// Llista de paperera
+.trash-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 5px 10px 5px;
+  @include custom-scrollbar-style;
+}
+
+.no-trash-text {
+  text-align: center;
+  color: var(--subtext-color);
+  padding: 40px 20px;
+  font-size: 15px;
+}
+
+// Item de paperera
+.trash-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.trash-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  span {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .trash-item-type {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .trash-item-date {
+    color: var(--subtext-color);
+    font-size: 13px;
+  }
+
+  .trash-item-deleted-at {
+    color: #999;
+    font-size: 12px;
+    font-style: italic;
+  }
+}
+
+.trash-item-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    .icon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .trash-restore-btn {
+    background-color: color-mix(in srgb, #10b981 10%, white);
+    border-color: #10b981;
+    color: #065f46;
+
+    .icon {
+      filter: brightness(0) saturate(100%) invert(24%) sepia(56%) saturate(3131%) hue-rotate(131deg) brightness(96%) contrast(101%);
+    }
+
+    &:hover {
+      background-color: color-mix(in srgb, #10b981 20%, white);
+    }
+  }
+
+  .trash-delete-btn {
+    background-color: color-mix(in srgb, #ef4444 10%, white);
+    border-color: #ef4444;
+    color: #991b1b;
+
+    .icon {
+      filter: brightness(0) saturate(100%) invert(14%) sepia(84%) saturate(3682%) hue-rotate(348deg) brightness(89%) contrast(92%);
+    }
+
+    &:hover {
+      background-color: color-mix(in srgb, #ef4444 20%, white);
+    }
+  }
+}
+
+// Footer
+.trash-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.danger-btn {
+  padding: 10px 20px;
+  background-color: color-mix(in srgb, #ef4444 10%, white);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, #ef4444 20%, white);
+  }
+}
+
 // Text informatiu
 .diet-date {
   font-size: 15px;

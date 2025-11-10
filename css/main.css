@@ -2021,6 +2021,242 @@ button .fa {
   opacity: 1;
 }
 
+.trash-modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  max-width: 700px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.modal-header h3 {
+  margin: 0;
+  flex: 1;
+}
+.modal-header .icon-btn {
+  background: none;
+  border: 1px solid var(--input-border);
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-header .icon-btn .icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) saturate(100%);
+  opacity: 0.6;
+}
+.modal-header .icon-btn:hover {
+  background-color: var(--bg-tab-hover);
+  border-color: var(--primary-color);
+}
+.modal-header .icon-btn:hover .icon {
+  opacity: 1;
+}
+
+.trash-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.trash-filters .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 150px;
+}
+.trash-filters .filter-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--subtext-color);
+}
+.trash-filters .filter-group .filter-select,
+.trash-filters .filter-group .filter-input {
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background-color: var(--bg-textfield);
+  color: var(--text-color);
+  font-size: 14px;
+}
+.trash-filters .filter-group .filter-select:focus,
+.trash-filters .filter-group .filter-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+.trash-filters .filter-clear-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background-color: var(--bg-textfield);
+  color: var(--text-color);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.trash-filters .filter-clear-btn:hover {
+  background-color: var(--bg-tab-hover);
+  border-color: var(--primary-color);
+}
+
+.trash-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 5px 10px 5px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) var(--scrollbar-track, transparent);
+  scrollbar-gutter: stable;
+}
+.trash-list::-webkit-scrollbar {
+  width: 6px;
+  background: var(--scrollbar-track, transparent);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+.trash-list:hover::-webkit-scrollbar, .trash-list:active::-webkit-scrollbar {
+  opacity: 1;
+}
+.trash-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2));
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.trash-list::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, rgba(0, 0, 0, 0.4));
+}
+
+.no-trash-text {
+  text-align: center;
+  color: var(--subtext-color);
+  padding: 40px 20px;
+  font-size: 15px;
+}
+
+.trash-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.trash-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trash-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.trash-item-info span {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.trash-item-info .trash-item-type {
+  font-weight: 600;
+  color: var(--text-color);
+}
+.trash-item-info .trash-item-date {
+  color: var(--subtext-color);
+  font-size: 13px;
+}
+.trash-item-info .trash-item-deleted-at {
+  color: #999;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.trash-item-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.trash-item-actions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.trash-item-actions button .icon {
+  width: 16px;
+  height: 16px;
+}
+.trash-item-actions .trash-restore-btn {
+  background-color: color-mix(in srgb, #10b981 10%, white);
+  border-color: #10b981;
+  color: #065f46;
+}
+.trash-item-actions .trash-restore-btn .icon {
+  filter: brightness(0) saturate(100%) invert(24%) sepia(56%) saturate(3131%) hue-rotate(131deg) brightness(96%) contrast(101%);
+}
+.trash-item-actions .trash-restore-btn:hover {
+  background-color: color-mix(in srgb, #10b981 20%, white);
+}
+.trash-item-actions .trash-delete-btn {
+  background-color: color-mix(in srgb, #ef4444 10%, white);
+  border-color: #ef4444;
+  color: #991b1b;
+}
+.trash-item-actions .trash-delete-btn .icon {
+  filter: brightness(0) saturate(100%) invert(14%) sepia(84%) saturate(3682%) hue-rotate(348deg) brightness(89%) contrast(92%);
+}
+.trash-item-actions .trash-delete-btn:hover {
+  background-color: color-mix(in srgb, #ef4444 20%, white);
+}
+
+.trash-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.danger-btn {
+  padding: 10px 20px;
+  background-color: color-mix(in srgb, #ef4444 10%, white);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.danger-btn:hover {
+  background-color: color-mix(in srgb, #ef4444 20%, white);
+}
+
 .diet-date {
   font-size: 15px;
   text-align: left;

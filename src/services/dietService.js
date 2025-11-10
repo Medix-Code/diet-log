@@ -22,6 +22,7 @@ import {
   getDiet,
   deleteDietById,
   updateDiet,
+  moveDietToTrash,
 } from "../db/indexedDbDietRepository.js";
 import {
   setModeForService,
@@ -414,43 +415,19 @@ export async function deleteDietHandler(id, dietDate, dietType) {
   if (!id) return;
 
   try {
-    const dietBackup = await getDiet(id);
-    if (!dietBackup) {
+    const diet = await getDiet(id);
+    if (!diet) {
       showToast("Error: Dieta no trobada", "error");
       return;
     }
 
-    // Recuperem totes les dietes i ordenem com a displayDietOptions per calcular l'índex visual correcte
-    const allDiets = await getAllDiets();
-    const sortedDiets = allDiets.sort((a, b) => {
-      // Ordenar per date descendent (més recent primer)
-      const dateComparison = new Date(b.date) - new Date(a.date);
-      // Si tenen la mateixa data, ordenar per timeStampDiet descendent
-      if (dateComparison === 0) {
-        return new Date(b.timeStampDiet) - new Date(a.timeStampDiet);
-      }
-      return dateComparison;
-    });
-    dietBackup.index = sortedDiets.findIndex((d) => d.id === id);
+    // Moure a paperera
+    await moveDietToTrash(diet);
 
-    await deleteDietById(id);
+    // Eliminar de la llista visual
+    removeDietItemFromList(id);
 
-    showToast("Dieta eliminada", "success", 5000, {
-      priority: 2,
-      queueable: false,
-      undoCallback: async () => {
-        await addDiet(dietBackup);
-
-        restoreDietItemToList(dietBackup);
-
-        showToast("Dieta restaurada", "success", 3000, {
-          priority: 0,
-        });
-      },
-      onExpire: () => {
-        removeDietItemFromList(id);
-      },
-    });
+    showToast("Dieta moguda a la paperera", "success", 3000);
 
     captureInitialFormState();
     resetDirty();
