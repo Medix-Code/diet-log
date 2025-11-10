@@ -7,11 +7,13 @@
 import { generateAndDownloadPdf } from "../services/pdfService.js";
 import { handleManualSave } from "../services/dietService.js";
 import { openDietModal } from "./modals.js";
+import { openTrashModal } from "./modals/trashModal.js";
 
 const BUTTON_SELECTORS = {
   GENERATE_PDF: ".generate-pdf",
   SAVE_DIET: "#save-diet",
   MANAGE_DIETS: "#manage-diets",
+  TRASH_MODAL: "#open-trash-modal",
 };
 
 /**
@@ -36,5 +38,12 @@ export function setupMainButtons() {
   );
   if (manageDietsButton && typeof openDietModal === "function") {
     manageDietsButton.addEventListener("click", openDietModal);
+  }
+
+  const trashButton = document.getElementById(
+    BUTTON_SELECTORS.TRASH_MODAL.substring(1)
+  );
+  if (trashButton && typeof openTrashModal === "function") {
+    trashButton.addEventListener("click", openTrashModal);
   }
 }

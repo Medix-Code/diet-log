@@ -830,12 +830,6 @@
         <div class="modal-content diet-modal-content">
           <div class="diet-modal-header">
             <h3 id="diet-modal-title">Gestor de dietas</h3>
-            <button id="open-trash-btn" class="trash-icon-btn" aria-label="Obrir paperera" title="Paperera">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
           </div>
           <p id="no-diets-text" class="no-diets-text hidden">
             No hay dietas guardadas.
@@ -846,6 +840,13 @@
             aria-label="Opciones de dietas"
           ></div>
           <div class="modal-footer">
+            <button
+              type="button"
+              id="open-trash-modal"
+              class="trash-modal-footer-btn"
+            >
+              Papelera
+            </button>
             <button id="close-diet-modal" class="close-modal-btn">
               Cerrar
             </button>
@@ -860,32 +861,30 @@
         aria-labelledby="trash-modal-title"
       >
         <div class="modal-content trash-modal-content">
-          <h3 id="trash-modal-title">Paperera de dietes</h3>
+          <h3 id="trash-modal-title">Papelera de dietas</h3>
 
           <!-- Filtres -->
           <div class="trash-filters">
             <div class="filter-group">
-              <label for="trash-filter-type">Tipus:</label>
+              <label for="trash-filter-type">Tipo:</label>
               <select id="trash-filter-type" class="filter-select">
-                <option value="all">Totes</option>
-                <option value="1">Esmorzar</option>
-                <option value="2">Dinar</option>
-                <option value="3">Berenar</option>
-                <option value="4">Sopar</option>
+                <option value="all">Todas</option>
+                <option value="lunch">Comida</option>
+                <option value="dinner">Cena</option>
               </select>
             </div>
             <div class="filter-group">
-              <label for="trash-filter-date">Data:</label>
+              <label for="trash-filter-date">Fecha:</label>
               <input type="date" id="trash-filter-date" class="filter-input" />
             </div>
             <button id="trash-clear-filters" class="filter-clear-btn">
-              Esborrar filtres
+              Borrar filtros
             </button>
           </div>
 
           <!-- Llista de dietes eliminades -->
           <p id="no-trash-text" class="no-trash-text hidden">
-            No hi ha dietes eliminades.
+            No hay dietas eliminadas.
           </p>
           <div
             id="trash-options"
@@ -896,7 +895,7 @@
           <!-- Footer amb accions -->
           <div class="modal-footer trash-footer">
             <button id="empty-trash-btn" class="danger-btn">
-              Buidar paperera
+              Vaciar papelera
             </button>
             <button id="close-trash-modal" class="close-modal-btn">
               Cerrar
@@ -916,7 +915,7 @@
           <div class="signature-canvas-container">
             <canvas id="signature-canvas"></canvas>
           </div>
-          <p class="signature-instruction">
+          <p class="signature-instruction signature-instruction-small">
             Para borrarla, haz doble clic en el área.
           </p>
           <div class="modal-buttons">
@@ -1239,20 +1238,28 @@
       </template>
       <template id="trash-item-template">
         <div class="trash-item">
-          <div class="trash-item-info">
-            <span class="trash-item-type"></span>
-            <span class="trash-item-date"></span>
-            <span class="trash-item-deleted-at"></span>
-          </div>
-          <div class="trash-item-actions">
-            <button class="trash-restore-btn" aria-label="Restaurar dieta">
-              <img src="assets/icons/undo.svg" alt="Restaurar" class="icon" />
-              <span class="btn-text">Restaurar</span>
-            </button>
-            <button class="trash-delete-btn" aria-label="Eliminar permanentment">
-              <img src="assets/icons/delete.svg" alt="Eliminar" class="icon" />
-              <span class="btn-text">Eliminar</span>
-            </button>
+          <div class="trash-item-content">
+            <div class="trash-item-date-row">
+              <span class="trash-item-date"></span>
+              <span class="trash-item-type-badge"></span>
+            </div>
+            <div class="trash-item-actions">
+              <button class="trash-restore-btn" aria-label="Restaurar dieta">
+                <img src="assets/icons/undo.svg" alt="Restaurar" class="icon" />
+                <span class="btn-text">Restaurar</span>
+              </button>
+              <button
+                class="trash-delete-btn"
+                aria-label="Eliminar permanentment"
+              >
+                <img
+                  src="assets/icons/delete.svg"
+                  alt="Eliminar"
+                  class="icon"
+                />
+                <span class="btn-text">Eliminar</span>
+              </button>
+            </div>
           </div>
         </div>
       </template>

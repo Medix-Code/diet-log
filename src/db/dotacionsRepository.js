@@ -6,13 +6,17 @@
  */
 
 import { logger } from "../utils/logger.js";
+import {
+  DB_NAME,
+  DB_VERSION,
+  STORE_NAMES,
+  INDEXES,
+} from "./dbConfig.js";
 
 const log = logger.withScope("DotacionsRepository");
 
 // Constants
-const DB_NAME = "DietasDB"; // Usem la mateixa DB que les dietes
-const DB_VERSION = 2; // Incrementem versió per afegir object store
-const DOTACIONS_STORE = "dotacions";
+const DOTACIONS_STORE = STORE_NAMES.DOTACIONS;
 
 let dbInstance = null;
 
@@ -32,9 +36,11 @@ async function openDatabase() {
       log.debug(`Actualitzant DB de v${oldVersion} a v${newVersion}`);
 
       // Crear object store de dietes si no existeix (v1)
-      if (!db.objectStoreNames.contains("dietas")) {
-        const dietasStore = db.createObjectStore("dietas", { keyPath: "id" });
-        dietasStore.createIndex("dateIndex", "date", { unique: false });
+      if (!db.objectStoreNames.contains(STORE_NAMES.DIETAS)) {
+        const dietasStore = db.createObjectStore(STORE_NAMES.DIETAS, {
+          keyPath: "id",
+        });
+        dietasStore.createIndex(INDEXES.DIET_DATE, "date", { unique: false });
         log.debug("Object store 'dietas' creat");
       }
 
@@ -43,10 +49,36 @@ async function openDatabase() {
         const dotacionsStore = db.createObjectStore(DOTACIONS_STORE, {
           keyPath: "id",
         });
-        dotacionsStore.createIndex("timestamp", "timestamp", {
+        dotacionsStore.createIndex(INDEXES.DOTACIONS_TIMESTAMP, "timestamp", {
           unique: false,
         });
         log.debug("Object store 'dotacions' creat");
+      }
+
+      // Assegurar paperera (v3)
+      if (!db.objectStoreNames.contains(STORE_NAMES.DELETED_DIETS)) {
+        const deletedStore = db.createObjectStore(
+          STORE_NAMES.DELETED_DIETS,
+          {
+            keyPath: "id",
+          }
+        );
+        deletedStore.createIndex(
+          INDEXES.DELETED_DIETS_DELETED_AT,
+          "deletedAt",
+          { unique: false }
+        );
+        deletedStore.createIndex(
+          INDEXES.DELETED_DIETS_TYPE,
+          "dietType",
+          { unique: false }
+        );
+        deletedStore.createIndex(
+          INDEXES.DELETED_DIETS_DATE,
+          "date",
+          { unique: false }
+        );
+        log.debug("Object store 'deleted_diets' creat");
       }
     };
 

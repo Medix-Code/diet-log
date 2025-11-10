@@ -310,7 +310,7 @@ async function performSave(requestedManual) {
       renderLastSaved();
 
       if (isManual) {
-        showToast("Dieta guardada correctament.", "success");
+        showToast("Dieta guardada correctamente.", "success");
       }
 
       captureInitialFormState();
@@ -417,7 +417,7 @@ export async function deleteDietHandler(id, dietDate, dietType) {
   try {
     const diet = await getDiet(id);
     if (!diet) {
-      showToast("Error: Dieta no trobada", "error");
+      showToast("Error: Dieta no encontrada", "error");
       return;
     }
 
@@ -427,7 +427,7 @@ export async function deleteDietHandler(id, dietDate, dietType) {
     // Eliminar de la llista visual
     removeDietItemFromList(id);
 
-    showToast("Dieta moguda a la paperera", "success", 3000);
+    showToast("Dieta movida a la papelera", "success", 3000);
 
     captureInitialFormState();
     resetDirty();

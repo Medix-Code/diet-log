@@ -1,6 +1,6 @@
 {
   "name": "diet-log",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
   "main": "index.html",
   "scripts": {
@@ -16,14 +16,15 @@
   "license": "ISC",
   "dependencies": {
     "pdf-lib": "^1.17.1",
-    "tesseract.js": "^6.0.1",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@vitest/ui": "^4.0.5",
     "esbuild": "^0.25.12",
-    "jsdom": "^27.1.0",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^21.1.1",
     "vitest": "^4.0.5"
   },
   "pnpm": {

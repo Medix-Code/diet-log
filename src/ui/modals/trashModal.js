@@ -6,10 +6,14 @@ import {
   deleteDietFromTrashPermanently,
   emptyTrash,
 } from "../../db/indexedDbDietRepository.js";
-import { getDietDisplayInfo } from "../../utils/utils.js";
+import {
+  getDietDisplayInfo,
+  capitalizeFirstLetter,
+} from "../../utils/utils.js";
 import { showToast } from "../toast.js";
 import { logger } from "../../utils/logger.js";
-import { displayDietOptions } from "./dietModal.js";
+import { displayDietOptions, openDietModal } from "./dietModal.js";
+import { openModal, closeModal } from "./modalManager.js";
 
 const log = logger.withScope("Modals:Trash");
 
@@ -21,20 +25,27 @@ let currentFilters = {
   type: "all",
   date: null,
 };
+let trashRenderToken = 0;
 
 export function openTrashModal() {
   const modal = document.getElementById("trash-modal");
   if (!modal) return;
 
-  modal.classList.add("visible");
+  openModal(modal);
   displayTrashItems();
 }
+
+let shouldOpenDietModalOnClose = false;
 
 export function closeTrashModal() {
   const modal = document.getElementById("trash-modal");
   if (!modal) return;
 
-  modal.classList.remove("visible");
+  closeModal(modal);
+  if (shouldOpenDietModalOnClose) {
+    shouldOpenDietModalOnClose = false;
+    openDietModal();
+  }
 }
 
 // ============================================================================
@@ -52,25 +63,11 @@ function createTrashItemElement(diet) {
   const item = clone.querySelector(".trash-item");
 
   // Informació de la dieta
-  const { displayText } = getDietDisplayInfo(diet.dietType);
-  const typeSpan = clone.querySelector(".trash-item-type");
+  const { ddmmaa, franjaText } = getDietDisplayInfo(diet.date, diet.dietType);
   const dateSpan = clone.querySelector(".trash-item-date");
-  const deletedAtSpan = clone.querySelector(".trash-item-deleted-at");
-
-  if (typeSpan) typeSpan.textContent = displayText;
-  if (dateSpan) dateSpan.textContent = diet.date || "Sense data";
-  if (deletedAtSpan) {
-    const deletedDate = new Date(diet.deletedAt);
-    const daysAgo = Math.floor(
-      (Date.now() - deletedDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    deletedAtSpan.textContent =
-      daysAgo === 0
-        ? "Avui"
-        : daysAgo === 1
-          ? "Ahir"
-          : `Fa ${daysAgo} dies`;
-  }
+  const typeBadge = clone.querySelector(".trash-item-type-badge");
+  if (dateSpan) dateSpan.textContent = ddmmaa;
+  if (typeBadge) typeBadge.textContent = capitalizeFirstLetter(franjaText);
 
   // Botons d'acció
   const restoreBtn = clone.querySelector(".trash-restore-btn");
@@ -82,9 +79,10 @@ function createTrashItemElement(diet) {
     });
   }
 
+  const cardLabel = ddmmaa;
   if (deleteBtn) {
     deleteBtn.addEventListener("click", async () => {
-      await handleDeletePermanently(diet.id, displayText);
+      await handleDeletePermanently(diet.id, cardLabel);
     });
   }
 
@@ -94,17 +92,16 @@ function createTrashItemElement(diet) {
 export async function displayTrashItems() {
   const trashList = document.getElementById("trash-options");
   const noTrashText = document.getElementById("no-trash-text");
+  const currentToken = ++trashRenderToken;
 
   if (!trashList || !noTrashText) {
     log.error("Elements del modal de paperera no trobats");
     return;
   }
 
-  // Netejar llista
-  trashList.innerHTML = "";
-
   try {
     let deletedDiets = await getAllDeletedDiets();
+    if (currentToken !== trashRenderToken) return;
 
     // Aplicar filtres
     deletedDiets = applyFilters(deletedDiets);
@@ -113,6 +110,25 @@ export async function displayTrashItems() {
     deletedDiets.sort(
       (a, b) => new Date(b.deletedAt) - new Date(a.deletedAt)
     );
+
+    // Evitar duplicates per ID (ABANS de renderitzar)
+    const seenFingerprints = new Set();
+    deletedDiets = deletedDiets.filter((diet) => {
+      // Usar només l'ID com a fingerprint únic
+      if (!diet.id) {
+        log.warn("Dieta sense ID trobada a la paperera:", diet);
+        return false; // Excloure dietes sense ID
+      }
+      if (seenFingerprints.has(diet.id)) {
+        log.warn("Dieta duplicada detectada i exclosa:", diet.id);
+        return false;
+      }
+      seenFingerprints.add(diet.id);
+      return true;
+    });
+
+    // Netejar llista DESPRÉS de processar les dades
+    trashList.innerHTML = "";
 
     if (deletedDiets.length === 0) {
       trashList.classList.add("hidden");
@@ -123,13 +139,18 @@ export async function displayTrashItems() {
     trashList.classList.remove("hidden");
     noTrashText.classList.add("hidden");
 
+    // Crear un fragment per afegir tots els items d'un cop (millor rendiment)
+    const fragment = document.createDocumentFragment();
     deletedDiets.forEach((diet) => {
+      if (currentToken !== trashRenderToken) return;
       const item = createTrashItemElement(diet);
-      if (item) trashList.appendChild(item);
+      if (item) fragment.appendChild(item);
     });
+
+    trashList.appendChild(fragment);
   } catch (error) {
     log.error("Error mostrant dietes eliminades:", error);
-    showToast("Error carregant dietes eliminades", "error");
+    showToast("Error cargando dietas eliminadas", "error");
   }
 }
 
@@ -159,16 +180,17 @@ async function handleRestore(id) {
   try {
     const restoredDiet = await restoreDietFromTrash(id);
 
-    showToast("Dieta restaurada correctament", "success", 3000);
+    showToast("Dieta restaurada correctamente", "success", 3000);
 
     // Actualitzar modal de paperera
     displayTrashItems();
 
     // Actualitzar llista de dietes actives
     displayDietOptions();
+    shouldOpenDietModalOnClose = true;
   } catch (error) {
     log.error("Error restaurant dieta:", error);
-    showToast("Error restaurant la dieta", "error");
+    showToast("Error restaurando la dieta", "error");
   }
 }
 
@@ -182,13 +204,13 @@ async function handleDeletePermanently(id, dietName) {
   try {
     await deleteDietFromTrashPermanently(id);
 
-    showToast("Dieta eliminada permanentment", "success", 3000);
+    showToast("Dieta eliminada permanentemente", "success", 3000);
 
     // Actualitzar llista
     displayTrashItems();
   } catch (error) {
     log.error("Error eliminant dieta permanentment:", error);
-    showToast("Error eliminant la dieta", "error");
+    showToast("Error eliminando la dieta", "error");
   }
 }
 
@@ -196,7 +218,7 @@ async function handleEmptyTrash() {
   const deletedDiets = await getAllDeletedDiets();
 
   if (deletedDiets.length === 0) {
-    showToast("La paperera ja està buida", "info");
+    showToast("La papelera ya está vacía", "info");
     return;
   }
 
@@ -209,13 +231,13 @@ async function handleEmptyTrash() {
   try {
     await emptyTrash();
 
-    showToast("Paperera buidada correctament", "success", 3000);
+    showToast("Papelera vaciada correctamente", "success", 3000);
 
     // Actualitzar llista
     displayTrashItems();
   } catch (error) {
     log.error("Error buidant paperera:", error);
-    showToast("Error buidant la paperera", "error");
+    showToast("Error vaciando la papelera", "error");
   }
 }
 
@@ -225,20 +247,6 @@ async function handleEmptyTrash() {
 
 export function initTrashModal() {
   log.debug("Inicialitzant modal de paperera...");
-
-  // Botó obrir paperera des del modal de dietes
-  const openBtn = document.getElementById("open-trash-btn");
-  if (openBtn) {
-    log.debug("Botó paperera trobat, afegint event listener");
-    openBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      log.debug("Botó paperera clicat!");
-      openTrashModal();
-    });
-  } else {
-    log.warn("Botó paperera NO trobat!");
-  }
 
   // Botó tancar modal
   const closeBtn = document.getElementById("close-trash-modal");

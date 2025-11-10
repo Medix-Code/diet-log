@@ -14,6 +14,7 @@ import {
   getActiveModalElement,
 } from "./modalManager.js";
 import { logger } from "../../utils/logger.js";
+import { openTrashModal } from "./trashModal.js";
 
 const log = logger.withScope("Modals:Diet");
 
@@ -31,6 +32,15 @@ function ensureElements() {
   if (!dietModalElement || !dietOptionsListElement || !noDietsTextElement) {
     log.warn("No s'han trobat els elements del modal de dietes.");
     return false;
+  }
+
+  const trashTrigger = document.getElementById("open-trash-modal");
+  if (trashTrigger && !trashTrigger.dataset.modalPrepared) {
+    trashTrigger.addEventListener("click", () => {
+      closeDietModal();
+      openTrashModal();
+    });
+    trashTrigger.dataset.modalPrepared = "true";
   }
 
   const closeDietBtn = document.getElementById("close-diet-modal");
@@ -163,6 +173,7 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let startX = 0;
   let currentX = 0;
   let isDragging = false;
+  let isDeleting = false; // Flag per evitar duplicats
 
   dietItem.addEventListener("mousedown", (event) => {
     if (event.target.closest("button") || event.target.closest(".diet-icons"))
@@ -186,7 +197,7 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   });
 
   document.addEventListener("mouseup", async () => {
-    if (!isDragging) return;
+    if (!isDragging || isDeleting) return;
     isDragging = false;
     const diff = startX - currentX;
 
@@ -194,6 +205,7 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
 
     if (diff > 50) {
+      isDeleting = true; // Marca que s'està eliminant
       dietItem.style.transform = "translateX(-100%)";
       dietItem.style.opacity = "0";
 
@@ -218,6 +230,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let startX = 0;
   let currentX = 0;
   let isSwiping = false;
+  let isDeleting = false; // Flag per evitar duplicats
 
   dietItem.addEventListener(
     "touchstart",
@@ -252,7 +265,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   );
 
   dietItem.addEventListener("touchend", async (event) => {
-    if (!isSwiping) return;
+    if (!isSwiping || isDeleting) return;
     isSwiping = false;
     const diff = startX - currentX;
 
@@ -260,6 +273,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
 
     if (diff > 50) {
+      isDeleting = true; // Marca que s'està eliminant
       dietItem.style.transform = "translateX(-100%)";
       dietItem.style.opacity = "0";
 

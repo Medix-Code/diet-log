@@ -171,12 +171,12 @@ export async function generateAndDownloadPdf() {
       });
     }
 
-    showToast("Descàrrega iniciada correctament.", "success");
+    showToast("Descarga iniciada correctamente.", "success");
     requestInstallPromptAfterAction();
   } catch (error) {
     log.error("Error generant PDF des del formulari principal:", error);
     showToast(
-      `Error en la generació del PDF: ${error.message || "Desconegut"}`,
+      `Error en la generación del PDF: ${error.message || "Desconocido"}`,
       "error"
     );
   }

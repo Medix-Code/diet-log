@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import { indexedDB as fakeIndexedDB, IDBKeyRange } from "fake-indexeddb";
 
 // Polyfills necessaris per a jsdom 27 amb Node 18
 if (!Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "resizable")) {
@@ -89,56 +90,13 @@ if (!global.crypto) {
 
 // Mock IndexedDB
 if (!global.indexedDB) {
-  const mockIndexedDB = {
-    open: vi.fn().mockImplementation((name, version) => {
-      const request = {
-        onsuccess: null,
-        onerror: null,
-        onupgradeneeded: null,
-        result: {
-          objectStoreNames: { contains: vi.fn().mockReturnValue(false) },
-          createObjectStore: vi.fn().mockReturnValue({
-            createIndex: vi.fn(),
-          }),
-          transaction: vi.fn().mockReturnValue({
-            objectStore: vi.fn().mockReturnValue({
-              get: vi.fn().mockReturnValue({
-                onsuccess: null,
-                onerror: null,
-                result: null,
-              }),
-              put: vi.fn().mockReturnValue({
-                onsuccess: null,
-                onerror: null,
-              }),
-              delete: vi.fn().mockReturnValue({
-                onsuccess: null,
-                onerror: null,
-              }),
-              getAll: vi.fn().mockReturnValue({
-                onsuccess: null,
-                onerror: null,
-                result: [],
-              }),
-            }),
-          }),
-        },
-      };
-      setTimeout(() => {
-        if (request.onupgradeneeded) {
-          request.onupgradeneeded({ target: request });
-        }
-        if (request.onsuccess) {
-          request.onsuccess({ target: request });
-        }
-      }, 0);
-      return request;
-    }),
-    deleteDatabase: vi.fn(),
-  };
-
   Object.defineProperty(global, "indexedDB", {
-    value: mockIndexedDB,
+    value: fakeIndexedDB,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(global, "IDBKeyRange", {
+    value: IDBKeyRange,
     writable: true,
     configurable: true,
   });

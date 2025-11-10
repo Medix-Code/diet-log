@@ -1,12 +1,17 @@
+import {
+  DB_NAME,
+  DB_VERSION,
+  STORE_NAMES,
+  INDEXES,
+} from "./dbConfig.js";
+
 // Gestió de dietes amb IndexedDB
 
 // Constants de la base de dades
-const DB_NAME = "DietasDB";
-const DB_VERSION = 3; // V3: Afegir store de dietes eliminades
-const STORE_NAME = "dietas";
-const INDEX_DATE = "dateIndex";
-const DOTACIONS_STORE = "dotacions";
-const DELETED_DIETS_STORE = "deleted_diets";
+const STORE_NAME = STORE_NAMES.DIETAS;
+const INDEX_DATE = INDEXES.DIET_DATE;
+const DOTACIONS_STORE = STORE_NAMES.DOTACIONS;
+const DELETED_DIETS_STORE = STORE_NAMES.DELETED_DIETS;
 
 let dbInstance = null;
 
@@ -38,7 +43,7 @@ function openInternal() {
         const dotacionsStore = db.createObjectStore(DOTACIONS_STORE, {
           keyPath: "id",
         });
-        dotacionsStore.createIndex("timestamp", "timestamp", {
+        dotacionsStore.createIndex(INDEXES.DOTACIONS_TIMESTAMP, "timestamp", {
           unique: false,
         });
       }
@@ -48,9 +53,21 @@ function openInternal() {
         const deletedStore = db.createObjectStore(DELETED_DIETS_STORE, {
           keyPath: "id",
         });
-        deletedStore.createIndex("deletedAt", "deletedAt", { unique: false });
-        deletedStore.createIndex("dietType", "dietType", { unique: false });
-        deletedStore.createIndex("date", "date", { unique: false });
+        deletedStore.createIndex(
+          INDEXES.DELETED_DIETS_DELETED_AT,
+          "deletedAt",
+          { unique: false }
+        );
+        deletedStore.createIndex(
+          INDEXES.DELETED_DIETS_TYPE,
+          "dietType",
+          { unique: false }
+        );
+        deletedStore.createIndex(
+          INDEXES.DELETED_DIETS_DATE,
+          "date",
+          { unique: false }
+        );
       }
     };
 
@@ -68,9 +85,10 @@ function openInternal() {
   });
 }
 
-async function getTx(mode = "readonly") {
+async function getTx(mode = "readonly", stores = STORE_NAME) {
   const db = dbInstance ?? (dbInstance = await openInternal());
-  return db.transaction(STORE_NAME, mode);
+  const storeList = Array.isArray(stores) ? stores : [stores];
+  return db.transaction(storeList, mode);
 }
 
 function wrap(req, msg) {
@@ -217,8 +235,7 @@ export async function moveDietToTrash(diet) {
     deletedAt: new Date().toISOString(),
   };
 
-  const tx = await getTx("readwrite");
-  const stores = [STORE_NAME, DELETED_DIETS_STORE];
+  const tx = await getTx("readwrite", [STORE_NAME, DELETED_DIETS_STORE]);
 
   // Eliminar de dietes actives
   wrap(
@@ -242,13 +259,14 @@ export async function moveDietToTrash(diet) {
 export async function restoreDietFromTrash(id) {
   if (!id) return;
 
-  const tx = await getTx("readwrite");
+  const tx = await getTx("readonly", DELETED_DIETS_STORE);
 
   // Obtenir dieta de paperera
   const deletedDiet = await wrap(
     tx.objectStore(DELETED_DIETS_STORE).get(id),
     "Error obtenint dieta de paperera"
   );
+  await waitTx(tx);
 
   if (!deletedDiet) {
     throw new Error("Dieta no trobada a la paperera");
@@ -258,7 +276,7 @@ export async function restoreDietFromTrash(id) {
   const { deletedAt, ...restoredDiet } = deletedDiet;
 
   // Moure de paperera a dietes actives
-  const tx2 = await getTx("readwrite");
+  const tx2 = await getTx("readwrite", [STORE_NAME, DELETED_DIETS_STORE]);
 
   wrap(
     tx2.objectStore(DELETED_DIETS_STORE).delete(id),
@@ -281,7 +299,7 @@ export async function restoreDietFromTrash(id) {
  */
 export async function deleteDietFromTrashPermanently(id) {
   if (!id) return;
-  const tx = await getTx("readwrite");
+  const tx = await getTx("readwrite", DELETED_DIETS_STORE);
   wrap(
     tx.objectStore(DELETED_DIETS_STORE).delete(id),
     "Error eliminant dieta permanentment"
@@ -294,7 +312,7 @@ export async function deleteDietFromTrashPermanently(id) {
  * @returns {Diet[]} - Array de dietes eliminades
  */
 export async function getAllDeletedDiets() {
-  const tx = await getTx();
+  const tx = await getTx("readonly", DELETED_DIETS_STORE);
   return wrap(
     tx.objectStore(DELETED_DIETS_STORE).getAll(),
     "Error obtenint dietes eliminades"
@@ -310,7 +328,7 @@ export async function cleanupOldDeletedDiets(daysToKeep = 30) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
-  const tx = await getTx("readwrite");
+  const tx = await getTx("readwrite", DELETED_DIETS_STORE);
   const store = tx.objectStore(DELETED_DIETS_STORE);
 
   let deletedCount = 0;
@@ -331,7 +349,7 @@ export async function cleanupOldDeletedDiets(daysToKeep = 30) {
  * Buida completament la paperera.
  */
 export async function emptyTrash() {
-  const tx = await getTx("readwrite");
+  const tx = await getTx("readwrite", DELETED_DIETS_STORE);
   wrap(
     tx.objectStore(DELETED_DIETS_STORE).clear(),
     "Error buidant paperera"
