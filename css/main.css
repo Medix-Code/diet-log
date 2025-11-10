@@ -1958,8 +1958,7 @@ button .fa {
   gap: 20px;
   width: 100%;
   max-width: 100%;
-  padding: 0 0 10px 5px;
-  padding-right: 12px;
+  padding: 0 5px 10px 5px;
   overflow-x: hidden;
   flex-grow: 1;
   overflow-y: auto;
@@ -2293,79 +2292,157 @@ button .fa {
   gap: 10px;
   pointer-events: none;
   width: 100%;
-  max-width: 600px; /* Límit màxim per pantalles grans */
-  padding: 0 16px; /* Espai lateral per mòbils */
+  max-width: 600px;
+  padding: 0 16px;
   box-sizing: border-box;
 }
 
 /* Estils base per als toasts */
 .toast {
-  width: 100%; /* Amplada completa dins del contenidor */
-  background-color: var(--toast-info-bg, #323232); /* Fons fosc per defecte, com Google dark mode */
-  color: var(--toast-text-color, #ffffff); /* Text clar per contrast */
-  padding: 16px 24px; /* Padding més ample per comoditat */
-  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12); /* Shadow elevat */
-  font-size: 14px; /* Font més petit i llegible */
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid;
+  padding: 14px 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
   line-height: 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animació suau */
+  gap: 12px;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   opacity: 0;
-  transform: translateY(100%); /* Inici des de baix per slide-up */
+  transform: translateY(100%) scale(0.9);
   pointer-events: auto;
+  backdrop-filter: blur(8px);
 }
 
-/* Estils per a tipus de toast (inspirats en Google Material) */
+/* Icona del toast */
+.toast-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Missatge del toast */
+.toast-message {
+  flex: 1;
+  font-weight: 500;
+}
+
+/* Estils per a tipus de toast (colors més subtils i professionals) */
 .toast.info {
-  background-color: var(--toast-info-bg, #2196f3); /* Blau */
-  color: white;
+  background-color: color-mix(in srgb, #3b82f6 15%, white);
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+.toast.info .toast-icon {
+  color: #3b82f6;
 }
 
 .toast.success {
-  background-color: var(--toast-success-bg, #4caf50); /* Verd */
-  color: white;
+  background-color: color-mix(in srgb, #10b981 15%, white);
+  border-color: #10b981;
+  color: #065f46;
+}
+.toast.success .toast-icon {
+  color: #10b981;
 }
 
 .toast.error {
-  background-color: var(--toast-error-bg, #f44336); /* Vermell */
-  color: white;
+  background-color: color-mix(in srgb, #ef4444 15%, white);
+  border-color: #ef4444;
+  color: #991b1b;
+}
+.toast.error .toast-icon {
+  color: #ef4444;
 }
 
 .toast.warning {
-  background-color: var(--toast-warning-bg, #ff9800); /* Taronja */
-  color: white;
+  background-color: color-mix(in srgb, #f59e0b 15%, white);
+  border-color: #f59e0b;
+  color: #92400e;
+}
+.toast.warning .toast-icon {
+  color: #f59e0b;
 }
 
-/* Botó Desfés (més prominent i accessible) */
+/* Botó Desfés */
 .toast-undo-btn {
-  margin-left: auto; /* Alinea a la dreta */
+  margin-left: auto;
   background: none;
   border: none;
-  color: #ffffff; /* Blanc per contrast en fons fosc */
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 0 8px;
-  transition: opacity 0.2s ease;
+  padding: 4px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
-.toast-undo-btn:hover,
+.toast.info .toast-undo-btn {
+  color: #1e40af;
+}
+.toast.info .toast-undo-btn:hover, .toast.info .toast-undo-btn:focus {
+  background-color: color-mix(in srgb, #3b82f6 10%, white);
+}
+
+.toast.success .toast-undo-btn {
+  color: #065f46;
+}
+.toast.success .toast-undo-btn:hover, .toast.success .toast-undo-btn:focus {
+  background-color: color-mix(in srgb, #10b981 10%, white);
+}
+
+.toast.error .toast-undo-btn {
+  color: #991b1b;
+}
+.toast.error .toast-undo-btn:hover, .toast.error .toast-undo-btn:focus {
+  background-color: color-mix(in srgb, #ef4444 10%, white);
+}
+
+.toast.warning .toast-undo-btn {
+  color: #92400e;
+}
+.toast.warning .toast-undo-btn:hover, .toast.warning .toast-undo-btn:focus {
+  background-color: color-mix(in srgb, #f59e0b 10%, white);
+}
+
 .toast-undo-btn:focus {
-  opacity: 0.7; /* Efecte hover/focus subtil */
-  outline: none; /* Elimina outline per defecte */
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 /* Animacions d'entrada i sortida */
 .toast.toast-enter {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .toast.toast-exit {
   opacity: 0;
-  transform: translateY(100%);
+  transform: translateY(100%) scale(0.9);
+}
+
+/* Animació shake per errors */
+@keyframes shake {
+  0%, 100% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateY(0) translateX(-4px) scale(1);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateY(0) translateX(4px) scale(1);
+  }
+}
+.toast.error.toast-enter {
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
 @keyframes fadeInOut {

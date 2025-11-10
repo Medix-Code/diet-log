@@ -98,6 +98,16 @@ function clearCurrentToast(el) {
   processQueue();
 }
 
+function getToastIcon(type) {
+  const icons = {
+    info: "ℹ️",
+    success: "✓",
+    error: "✕",
+    warning: "⚠",
+  };
+  return icons[type] || icons.info;
+}
+
 function displayToast({ message, type, duration, options }) {
   const container = getContainer();
   if (!container) return;
@@ -107,7 +117,19 @@ function displayToast({ message, type, duration, options }) {
   toastEl.setAttribute("role", "alert");
   toastEl.setAttribute("aria-live", "polite");
   toastEl.setAttribute("aria-atomic", "true");
-  toastEl.textContent = sanitize(message);
+
+  // Afegir icona
+  const iconEl = document.createElement("span");
+  iconEl.className = "toast-icon";
+  iconEl.textContent = getToastIcon(type);
+  iconEl.setAttribute("aria-hidden", "true");
+  toastEl.appendChild(iconEl);
+
+  // Afegir missatge
+  const messageEl = document.createElement("span");
+  messageEl.className = "toast-message";
+  messageEl.textContent = sanitize(message);
+  toastEl.appendChild(messageEl);
 
   let expiredWithoutUndo = true;
 
