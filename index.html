@@ -12,6 +12,16 @@
       name="description"
       content="Aplicació per gestionar dietes amb formularis accessibles i funcionalitat PWA."
     />
+    <!-- Desactivar la barra de progrés de càrrega del navegador -->
+    <style>
+      #nprogress,
+      [role="progressbar"],
+      ::-webkit-progress-bar,
+      ::-webkit-progress-value {
+        display: none !important;
+        opacity: 0 !important;
+      }
+    </style>
 
     <!-- Content Security Policy gestionat per Cloudflare Worker (_worker.js) -->
     <!-- El Worker afegeix nonces dinàmics a scripts i styles automàticament -->

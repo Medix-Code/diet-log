@@ -202,6 +202,13 @@
 // =============================================================================
 // ESTILS BASE I GLOBALS
 // =============================================================================
+
+// Ocultar la barra de progrés de càrrega del navegador (Chrome/Edge)
+// Aquesta barra apareix automàticament quan es carrega la pàgina
+#nprogress {
+  display: none !important;
+}
+
 html {
   font-size: 16px;
   color-scheme: light dark;

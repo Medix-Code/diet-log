@@ -120,6 +120,10 @@
   --bg-dietas: #f7f7f7;
 }
 
+#nprogress {
+  display: none !important;
+}
+
 html {
   font-size: 16px;
   color-scheme: light dark;
