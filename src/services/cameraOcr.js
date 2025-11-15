@@ -119,6 +119,8 @@ let lastPressOcr = 0;
 let ocrFeedback = null; // Nou gestor de feedback OCR
 let currentProgress = 0; // Seguiment del progrés actual per evitar que baixi
 let lastOcrProcessAt = 0;
+let currentWorker = null; // Referencia al worker actual para poder cancelarlo
+let isCancelled = false; // Flag de cancelación
 const log = logger.withScope("CameraOCR");
 
 // Rate Limiter per OCR (10 scans per minut màx)
@@ -260,6 +262,28 @@ function _updateOcrProgress(percent, statusText) {
 
 function _hideOcrProgress() {
   currentProgress = 0;
+}
+
+// Función para cancelar el proceso OCR
+function _cancelOCR() {
+  log.info("Usuario canceló el proceso OCR");
+  isCancelled = true;
+
+  // Terminar el worker si existe
+  if (currentWorker) {
+    currentWorker.terminate().catch((err) => {
+      log.debug("Error al terminar worker durante cancelación:", err);
+    });
+    currentWorker = null;
+  }
+
+  // Reset del feedback y estado
+  ocrFeedback?.reset?.();
+  _closeCameraModal();
+  setControlsDisabled(false);
+  isProcessing = false;
+
+  showToast("Escaneo cancelado", "info");
 }
 
 function _safeSetFieldValue(fieldId, value, fieldName) {
@@ -483,11 +507,19 @@ async function _handleFileChange(event) {
   }
 
   isProcessing = true;
+  isCancelled = false; // Reset flag de cancelación
   setControlsDisabled(true);
   currentProgress = 0;
 
   if (!ocrFeedback) ocrFeedback = getOCRFeedbackManager();
+
+  // Obtener el número de servicio actual (1-4)
+  const currentServiceIndex = getCurrentServiceIndex();
+  const serviceNumber = currentServiceIndex !== null ? currentServiceIndex + 1 : null;
+
   ocrFeedback.start(file);
+  ocrFeedback.setOnCancel(_cancelOCR); // Configurar callback de cancelación
+  ocrFeedback.setServiceNumber(serviceNumber); // Establecer número de servicio
   _updateOcrProgress(0);
   _scrollToBottom();
   lastOcrProcessAt = Date.now();
@@ -498,8 +530,20 @@ async function _handleFileChange(event) {
     _updateOcrProgress(5, "Preparando imagen...");
     let imageBlob = await resizeImage(file);
 
+    // Checkpoint de cancelación
+    if (isCancelled) {
+      log.debug("OCR cancelado después de resize");
+      return;
+    }
+
     _updateOcrProgress(20, "Optimizando imagen...");
     imageBlob = await preprocessImage(imageBlob);
+
+    // Checkpoint de cancelación
+    if (isCancelled) {
+      log.debug("OCR cancelado después de preprocess");
+      return;
+    }
 
     _updateOcrProgress(35, "Procesando...");
     await new Promise((r) => setTimeout(r, 100));
@@ -518,8 +562,15 @@ async function _handleFileChange(event) {
 
     _updateOcrProgress(60, "Iniciando escáner...");
 
-    worker = await Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
+    // Crear worker con timeout para evitar hangs indefinidos
+    const WORKER_TIMEOUT_MS = 30000; // 30 segundos
+    const workerCreationPromise = Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
       logger: (m) => {
+        // Logging seguro: solo en desarrollo, sin datos sensibles
+        if (import.meta.env.DEV) {
+          log.debug(`Tesseract status: ${m.status}, progress: ${m.progress || 0}`);
+        }
+
         if (m.status === "recognizing text") {
           const percent = Math.max(
             85,
@@ -537,13 +588,47 @@ async function _handleFileChange(event) {
       init: INIT_ONLY_PARAMS,
     });
 
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Worker initialization timeout')), WORKER_TIMEOUT_MS)
+    );
+
+    try {
+      worker = await Promise.race([workerCreationPromise, timeoutPromise]);
+      currentWorker = worker; // Guardar referencia para poder cancelar
+
+      // Checkpoint de cancelación después de crear worker
+      if (isCancelled) {
+        log.debug("OCR cancelado después de crear worker");
+        return;
+      }
+    } catch (error) {
+      if (error.message === 'Worker initialization timeout') {
+        log.error("Timeout al inicializar Tesseract después de 30s");
+        throw new Error("Timeout al cargar el escáner. Verifica tu conexión a internet.");
+      }
+      throw error;
+    }
+
     _updateOcrProgress(75, "Ajustando configuración...");
     await worker.setParameters(TESSERACT_PARAMS);
+
+    // Checkpoint de cancelación después de setParameters
+    if (isCancelled) {
+      log.debug("OCR cancelado después de setParameters");
+      return;
+    }
+
     _updateOcrProgress(80);
 
     const {
       data: { text: ocrText },
     } = await worker.recognize(imageBlob);
+
+    // Checkpoint de cancelación después de recognize
+    if (isCancelled) {
+      log.debug("OCR cancelado después de recognize");
+      return;
+    }
 
     const updateFieldsCallback = (fieldsStatus) => {
       const statusMessage = _generateFieldsListText(fieldsStatus);
@@ -565,7 +650,11 @@ async function _handleFileChange(event) {
   } catch (error) {
     log.error("Error durant el processament OCR:", error);
     // Error inesperat → mostra TOAST d'error i tanquem modal suaument
-    showToast("Error al escanear. Imagen no válida", "error");
+    // Mostrar mensaje específico para timeouts, genérico para otros errores
+    const errorMessage = error.message?.includes('Timeout') || error.message?.includes('timeout')
+      ? "Timeout al escanear. Verifica tu conexión a internet."
+      : "Error al escanear. Imagen no válida";
+    showToast(errorMessage, "error");
     ocrFeedback?.reset?.();
     // Espera 3 segons perquè es llegeixi el TOAST abans de tancar modal
     setTimeout(() => {
@@ -576,6 +665,7 @@ async function _handleFileChange(event) {
     try {
       if (worker) await worker.terminate();
     } catch {}
+    currentWorker = null; // Limpiar referencia al worker
     if (cameraInput) cameraInput.value = "";
     _hideOcrProgress();
     setControlsDisabled(false);

@@ -60,6 +60,12 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
   // Timer intern per auto-tancar en 'error' / 'done' sense toasts
   let _autoCloseTimer = null;
 
+  // Callback de cancelación
+  let _onCancelCallback = null;
+
+  // Número de servicio actual
+  let _serviceNumber = null;
+
   // Estat intern (controlat pel bridge; el component és purament presentacional)
   let state = {
     imageUrl: null,
@@ -84,6 +90,8 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
         status={state.status}
         statusText={state.statusText}
         onClose={() => manager.reset()}
+        onCancel={_onCancelCallback}
+        serviceNumber={_serviceNumber}
       />
     );
   };
@@ -285,6 +293,24 @@ export function createOCRFeedbackManager(containerId = "ocr-feedback-root") {
      */
     isProcessing() {
       return state.isProcessing;
+    },
+
+    /**
+     * Establece el callback que se ejecutará cuando el usuario cancele el OCR.
+     * @param {Function|null} callback
+     */
+    setOnCancel(callback) {
+      _onCancelCallback = callback;
+      render();
+    },
+
+    /**
+     * Establece el número de servicio actual para mostrar en el título.
+     * @param {number|null} serviceNum - Número del servicio (1, 2, 3, 4)
+     */
+    setServiceNumber(serviceNum) {
+      _serviceNumber = serviceNum;
+      render();
     },
   };
 

@@ -23,6 +23,8 @@ export function OCRFeedback({
   status = "idle",
   statusText = "Reconociendo texto",
   onClose = null,
+  onCancel = null,
+  serviceNumber = null,
 }) {
   const containerRef = useRef(null);
   const [animatedProgress, setAnimatedProgress] = useState(0);
@@ -51,6 +53,31 @@ export function OCRFeedback({
     }, 500);
     return () => clearInterval(interval);
   }, [status]);
+
+  // Deshabilitar scroll del body mientras OCR está activo
+  useEffect(() => {
+    const shouldRender =
+      (Boolean(imageUrl) && isProcessing) ||
+      (Boolean(imageUrl) && (status === "done" || status === "warning"));
+
+    if (shouldRender && status !== "error" && status !== "idle") {
+      // Guardar el scroll actual y deshabilitar
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        // Restaurar scroll al desmontar
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [imageUrl, isProcessing, status]);
 
   // El component NO es mostra mai en cas d'error o idle
   if (status === "error" || status === "idle") {
@@ -82,6 +109,11 @@ export function OCRFeedback({
       aria-label="OCR en progreso"
     >
       <div className="ocr-feedback-container" ref={containerRef}>
+        {serviceNumber && (
+          <div className="ocr-title">
+            Escaneando Servicio {serviceNumber}
+          </div>
+        )}
         {imageUrl && (
           <div className="ocr-image-preview fade-in">
             <img
@@ -117,10 +149,22 @@ export function OCRFeedback({
                 {status === "error" ? "" : `${Math.round(animatedProgress)}%`}
               </span>
             </div>
-            <div className={`ocr-status-line ${status}`}>
-              {displayStatus
-                ?.split("\n")
-                .map((line, i) => <div key={i}>{line}</div>) || ""}
+            <div className="ocr-status-container">
+              <div className={`ocr-status-line ${status}`}>
+                {displayStatus
+                  ?.split("\n")
+                  .map((line, i) => <div key={i}>{line}</div>) || ""}
+              </div>
+              {isProcessing && onCancel && (
+                <button
+                  className="ocr-cancel-button"
+                  onClick={onCancel}
+                  aria-label="Cancelar escaneo OCR"
+                  title="Cancelar"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           </div>
         )}
