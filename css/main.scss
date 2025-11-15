@@ -4566,15 +4566,17 @@ body.app-ready {
 }
 
 .ocr-progress-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+  background: linear-gradient(90deg, var(--primary-color), #0066cc, var(--primary-color));
   background-size: 200% 100%;
   border-radius: 999px;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 74, 173, 0.4);
   animation: gradientShift 3s ease infinite;
 }
 
