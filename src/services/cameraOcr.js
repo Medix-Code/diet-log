@@ -567,7 +567,7 @@ async function _handleFileChange(event) {
     const workerCreationPromise = Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
       logger: (m) => {
         // Logging seguro: solo en desarrollo, sin datos sensibles
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV !== 'production') {
           log.debug(`Tesseract status: ${m.status}, progress: ${m.progress || 0}`);
         }
 
