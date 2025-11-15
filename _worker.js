@@ -265,7 +265,7 @@ function applySecurityHeaders(headers, nonce, isHtml) {
       "object-src 'none'",
       "frame-ancestors 'none'",
       "upgrade-insecure-requests",
-      `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+      `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval' 'unsafe-eval'`,
       `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
       "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' data: blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com https://static.cloudflareinsights.com https://www.google-analytics.com https://region1.google-analytics.com",
