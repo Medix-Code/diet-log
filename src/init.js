@@ -67,6 +67,22 @@ function setupDonationLink() {
   }
 }
 
+function toggleVersionBadgeForEnv() {
+  const versionEl = document.querySelector(".version-text");
+  if (!versionEl) return;
+
+  const hostname = window.location?.hostname || "";
+  const isLocalhost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]" ||
+    hostname.endsWith(".local");
+
+  const appEnv = (window.__APP_ENV__ || "").toLowerCase();
+  const shouldShow = isLocalhost || appEnv === "development";
+  versionEl.hidden = !shouldShow;
+}
+
 export async function initializeApp() {
   try {
     log.info("initializeApp() iniciant...");
@@ -180,6 +196,8 @@ export async function initializeApp() {
 
     // Guardo estat inicial del formulari
     formService.captureInitialFormState();
+
+    toggleVersionBadgeForEnv();
 
     // Altres coses
     activateEasterEgg();
