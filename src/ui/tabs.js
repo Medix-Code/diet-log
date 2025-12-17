@@ -37,6 +37,7 @@ let isSwipeEnabled = true;
 let swipeTouchStartHandler = null;
 let swipeTouchEndHandler = null;
 let hasLoadedInitialTab = false;
+let isInitialRender = true;
 
 // --- Funcions Públiques ---
 
@@ -80,15 +81,22 @@ export function setSwipeEnabled(enable) {
 // --- Funcions Privades ---
 
 function switchToTab(tabName) {
-  if (currentTab === tabName && document.scrollingElement.scrollTop !== 0) {
+  const shouldSkipGuard = isInitialRender;
+
+  if (
+    !shouldSkipGuard &&
+    currentTab === tabName &&
+    document.scrollingElement.scrollTop !== 0
+  ) {
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
   }
-  if (currentTab === tabName) return;
+  if (!shouldSkipGuard && currentTab === tabName) return;
   if (tabName !== TABS.DADES && tabName !== TABS.SERVEIS) return;
 
   window.scrollTo({ top: 0, behavior: "auto" });
   currentTab = tabName;
+  isInitialRender = false;
 
   const tabDadesElement = document.getElementById(DOM_IDS.TAB_DADES);
   const tabServeisElement = document.getElementById(DOM_IDS.TAB_SERVEIS);

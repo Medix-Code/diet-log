@@ -17,7 +17,7 @@ if (fs.existsSync(indexPath)) {
   // Replace version in span with class "version-text"
   indexContent = indexContent.replace(
     /<span[^>]*class="[^"]*version-text[^"]*"[^>]*>([^<]*)<\/span>/,
-    `<span class="version-text">${version}</span>`
+    `<span class="version-text" hidden>${version}</span>`
   );
 
   fs.writeFileSync(indexPath, indexContent);
