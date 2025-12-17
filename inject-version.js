@@ -1,23 +1,29 @@
 #!/usr/bin/env node
 
 const fs = require("fs");
-const path = require("path");
 
-// Read package.json to get the version
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const version = packageJson.version;
+const cssVersion = "2.3.6";
 
 console.log(`Injecting version ${version} into files...`);
 
-// Update index.html - replace version in span.version-text
 const indexPath = "index.html";
 if (fs.existsSync(indexPath)) {
   let indexContent = fs.readFileSync(indexPath, "utf8");
 
-  // Replace version in span with class "version-text"
   indexContent = indexContent.replace(
     /<span[^>]*class="[^"]*version-text[^"]*"[^>]*>([^<]*)<\/span>/,
     `<span class="version-text" hidden>${version}</span>`
+  );
+
+  indexContent = indexContent.replace(
+    /href="\/css\/main\.min\.css\?v=[^"]+"/g,
+    `href="/css/main.min.css?v=${cssVersion}"`
+  );
+  indexContent = indexContent.replace(
+    /href="\/dist\/bundle\.js\?v=[^"]+"/g,
+    `href="/dist/bundle.js?v=2.5.4"`
   );
 
   fs.writeFileSync(indexPath, indexContent);
@@ -26,12 +32,10 @@ if (fs.existsSync(indexPath)) {
   console.warn(`⚠️  ${indexPath} not found`);
 }
 
-// Update service-worker.js - replace VERSION constant
 const swPath = "service-worker.js";
 if (fs.existsSync(swPath)) {
   let swContent = fs.readFileSync(swPath, "utf8");
 
-  // Replace VERSION constant (avoiding CDN URLs)
   swContent = swContent.replace(
     /const VERSION = ["'][^"']*["']/,
     `const VERSION = "${version}"`
@@ -43,4 +47,4 @@ if (fs.existsSync(swPath)) {
   console.warn(`⚠️  ${swPath} not found`);
 }
 
-console.log(`🎉 Version injection completed!`);
+console.log("🎉 Version injection completed!");
