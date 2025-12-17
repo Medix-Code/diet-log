@@ -38,6 +38,8 @@ let swipeTouchStartHandler = null;
 let swipeTouchEndHandler = null;
 let hasLoadedInitialTab = false;
 let isInitialRender = true;
+let tabsContainerEl = null;
+let tabsContentContainerEl = null;
 
 // --- Funcions Públiques ---
 
@@ -57,6 +59,8 @@ export function getCurrentTab() {
 export function setupTabs() {
   const tabDadesElement = document.getElementById(DOM_IDS.TAB_DADES);
   const tabServeisElement = document.getElementById(DOM_IDS.TAB_SERVEIS);
+  tabsContainerEl = document.querySelector(".tabs-container");
+  tabsContentContainerEl = document.getElementById(DOM_IDS.MAIN_CONTENT_AREA);
 
   if (!tabDadesElement || !tabServeisElement) return;
 
@@ -67,6 +71,7 @@ export function setupTabs() {
   _setupSwipeListeners();
 
   switchToTab(currentTab);
+  _markTabsReady();
 }
 
 /**
@@ -163,6 +168,12 @@ function _hydrateInitialTab() {
   } catch {
     // ignore storage errors
   }
+}
+
+function _markTabsReady() {
+  [tabsContainerEl, tabsContentContainerEl]
+    .filter(Boolean)
+    .forEach((el) => el.setAttribute("data-tabs-ready", "true"));
 }
 
 function _setupSwipeListeners() {

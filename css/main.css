@@ -517,6 +517,11 @@ button .fa {
   transition: padding-bottom 0.3s ease;
   scroll-behavior: smooth;
   transition: padding-bottom 0.3s ease-out;
+  visibility: visible;
+}
+
+.tab-content-container[data-tabs-ready=false] {
+  visibility: hidden;
 }
 
 .tab-content {
@@ -524,6 +529,10 @@ button .fa {
 }
 .tab-content.active {
   display: block;
+}
+
+.tabs-container[data-tabs-ready=false] {
+  visibility: hidden;
 }
 
 .tab.error-tab {
