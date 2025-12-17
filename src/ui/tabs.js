@@ -12,6 +12,7 @@ const TABS = {
   DADES: "dades",
   SERVEIS: "serveis",
 };
+const LS_SELECTED_TAB_KEY = "selectedTab";
 const DOM_IDS = {
   TAB_DADES: `tab-${TABS.DADES}`,
   TAB_SERVEIS: `tab-${TABS.SERVEIS}`,
@@ -35,6 +36,7 @@ let touchStartY = 0;
 let isSwipeEnabled = true;
 let swipeTouchStartHandler = null;
 let swipeTouchEndHandler = null;
+let hasLoadedInitialTab = false;
 
 // --- Funcions Públiques ---
 
@@ -57,6 +59,7 @@ export function setupTabs() {
 
   if (!tabDadesElement || !tabServeisElement) return;
 
+  _hydrateInitialTab();
   tabDadesElement.addEventListener("click", () => switchToTab(TABS.DADES));
   tabServeisElement.addEventListener("click", () => switchToTab(TABS.SERVEIS));
 
@@ -129,6 +132,28 @@ function switchToTab(tabName) {
     typeof updateExternalStylesForCurrentService === "function"
   ) {
     updateExternalStylesForCurrentService();
+  }
+
+  if (typeof localStorage !== "undefined") {
+    try {
+      localStorage.setItem(LS_SELECTED_TAB_KEY, currentTab);
+    } catch {
+      // ignore storage errors
+    }
+  }
+}
+
+function _hydrateInitialTab() {
+  if (hasLoadedInitialTab) return;
+  hasLoadedInitialTab = true;
+  if (typeof localStorage === "undefined") return;
+  try {
+    const stored = localStorage.getItem(LS_SELECTED_TAB_KEY);
+    if (stored === TABS.DADES || stored === TABS.SERVEIS) {
+      currentTab = stored;
+    }
+  } catch {
+    // ignore storage errors
   }
 }
 
