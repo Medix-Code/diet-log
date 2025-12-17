@@ -29,9 +29,9 @@ const STATIC_EXTENSIONS = [
 ];
 const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.4":
-    "9d2256de0f297f8a928db4452bb467bec1bd960df4db8d97bdf20b2b3d5ba205b6714e16102020aa80196a6f85303fac",
+    "6cb8431626d59e196294a4bb2c97a1b08beb6967d57493f915a9c038dd4dffc20b50821211086bbae01d9923121a00de",
   "/css/main.min.css?v=2.3.5":
-    "7a10c797f30f93ae2e58fc100ddd45de709f48cd1193880d0095d08e86f04233c85c1901ea237ac8aa2d789c8bed61f4",
+    "48fd8e78a0c6a85b244f4435e83c1dad339ca56b818d6fd03e39bef1e934f7ce3e658f7f812fcebe13a4c31f1152cdfe",
 };
 
 function bufferToHex(buffer) {

@@ -31,6 +31,13 @@ export class EncryptionSupportError extends Error {
   }
 }
 
+export class RecoveryPhraseNotSupportedError extends Error {
+  constructor(message = "Funcionalitat de recovery phrase desactivada") {
+    super(message);
+    this.name = "RecoveryPhraseNotSupportedError";
+  }
+}
+
 // Constants
 const KEY_STORE_NAME = "encryption-keys";
 const KEY_STORE_VERSION = 1;
@@ -38,6 +45,7 @@ const MASTER_KEY_ID = "master-key-v1";
 const WRAPPED_KEY_ID = "wrapped-master-key";
 const DEVICE_SALT_ID = "device-salt";
 const MAX_KEY_RECOVERY_ATTEMPTS = 2;
+export const RECOVERY_PHRASE_ENABLED = false;
 
 // Seguretat de memòria: Cache temporal amb WeakRef i timeouts
 const KEY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuts
@@ -700,24 +708,22 @@ export async function diagnoseKeySystem() {
 /**
  * Exporta la clau mestra com a recovery phrase (12 paraules)
  * @returns {Promise<string>} Recovery phrase
- * @todo Implementar generació de mnemònic (BIP39)
  */
 export async function exportRecoveryPhrase() {
-  // TODO: Implementar amb BIP39 o similar
-  log.warn("Recovery phrase no implementat encara");
-  throw new Error("Not implemented yet");
+  log.warn("Export de recovery phrase desactivat (feature no disponible)");
+  throw new RecoveryPhraseNotSupportedError();
 }
 
 /**
  * Importa clau mestra des d'una recovery phrase
  * @param {string} phrase - Recovery phrase
  * @returns {Promise<CryptoKey>} Clau mestra
- * @todo Implementar validació i importació de mnemònic
  */
 export async function importFromRecoveryPhrase(phrase) {
-  // TODO: Implementar amb BIP39 o similar
-  log.warn("Import from recovery phrase no implementat encara");
-  throw new Error("Not implemented yet");
+  log.warn("Import de recovery phrase desactivat (feature no disponible)", {
+    hasPhrase: !!phrase,
+  });
+  throw new RecoveryPhraseNotSupportedError();
 }
 
 export default {
@@ -729,5 +735,7 @@ export default {
   exportRecoveryPhrase,
   importFromRecoveryPhrase,
   EncryptionSupportError,
+  RecoveryPhraseNotSupportedError,
   isEncryptionEnvironmentSupported,
+  RECOVERY_PHRASE_ENABLED,
 };

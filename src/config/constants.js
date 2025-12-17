@@ -228,7 +228,7 @@ export const TIMEOUTS = {
 };
 
 // --- Service Types ---
-export const SERVICE_TYPES = ["3.6", "3.51", "3.22", "3.11"];
+export const SERVICE_TYPES = ["3.6", "3.51", "3.52", "3.22", "3.11"];
 export const DIET_TYPES = { LUNCH: "lunch", DINNER: "dinner" };
 
 // --- Service-specific exports for dietService.js compatibility ---
