@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-# Build outputs
+# Build outputs (keep bundle.js for static deploy)
 dist/
+!dist/bundle.js
 
 # Environment variables
 .env
