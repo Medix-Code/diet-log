@@ -1,6 +1,6 @@
 {
   "name": "diet-log",
-  "version": "2.3.12",
+  "version": "2.3.13",
   "description": "Aplicación para registrar dietas, generar informes PDF y agilizar la gestión.",
   "main": "index.html",
   "scripts": {
