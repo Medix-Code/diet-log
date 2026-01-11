@@ -64,7 +64,9 @@ async function enforceIntegrity(request, response, options = {}) {
 
       // Si estem en mode fallback, acceptar la resposta igualment
       if (options.allowFallback) {
-        console.warn(`[SW] Acceptant resposta amb hash incorrecte (mode fallback)`);
+        console.warn(
+          `[SW] Acceptant resposta amb hash incorrecte (mode fallback)`
+        );
         return response;
       }
 
@@ -99,11 +101,17 @@ self.addEventListener("install", (event) => {
             try {
               verifiedResponse = await enforceIntegrity(request, response);
             } catch (integrityError) {
-              console.warn(`[SW] Integrity check failed for ${url}, trying fallback...`);
+              console.warn(
+                `[SW] Integrity check failed for ${url}, trying fallback...`
+              );
               // Segon intent: amb fallback
-              verifiedResponse = await enforceIntegrity(request, response.clone(), {
-                allowFallback: true,
-              });
+              verifiedResponse = await enforceIntegrity(
+                request,
+                response.clone(),
+                {
+                  allowFallback: true,
+                }
+              );
             }
 
             await cache.put(request, verifiedResponse.clone());
@@ -175,7 +183,10 @@ async function cacheFirst(request) {
   try {
     verifiedResponse = await enforceIntegrity(request, response);
   } catch (integrityError) {
-    console.warn(`[SW] Integrity check failed, using fallback for:`, request.url);
+    console.warn(
+      `[SW] Integrity check failed, using fallback for:`,
+      request.url
+    );
     verifiedResponse = await enforceIntegrity(request, response.clone(), {
       allowFallback: true,
     });
@@ -195,7 +206,10 @@ async function networkFirst(request) {
     try {
       verifiedResponse = await enforceIntegrity(request, response);
     } catch (integrityError) {
-      console.warn(`[SW] Integrity check failed, using fallback for:`, request.url);
+      console.warn(
+        `[SW] Integrity check failed, using fallback for:`,
+        request.url
+      );
       verifiedResponse = await enforceIntegrity(request, response.clone(), {
         allowFallback: true,
       });
