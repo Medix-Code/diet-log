@@ -213,8 +213,14 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let isDeleting = false; // Flag per evitar duplicats
 
   dietItem.addEventListener("mousedown", (event) => {
-    if (event.target.closest("button") || event.target.closest(".diet-icons"))
+    // Comprovar si el clic està dins d'un botó o dels seus elements interns
+    if (event.target.closest("button") || event.target.closest(".diet-icons")) {
       return;
+    }
+    // Comprovar si el target és un element interactiu
+    if (event.target.tagName === "BUTTON" || event.target.closest(".icon") || event.target.closest(".btn-text")) {
+      return;
+    }
     startX = event.clientX;
     currentX = startX;
     isDragging = false;
@@ -272,8 +278,14 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   dietItem.addEventListener(
     "touchstart",
     (event) => {
-      if (event.target.closest("button") || event.target.closest(".diet-icons"))
+      // Comprovar si el clic està dins d'un botó o dels seus elements interns
+      if (event.target.closest("button") || event.target.closest(".diet-icons")) {
         return;
+      }
+      // Comprovar si el target és un element interactiu
+      if (event.target.tagName === "BUTTON" || event.target.closest(".icon") || event.target.closest(".btn-text")) {
+        return;
+      }
       startX = event.touches[0].clientX;
       currentX = startX;
       isSwiping = false;
