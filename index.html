@@ -21,6 +21,10 @@
         display: none !important;
         opacity: 0 !important;
       }
+
+      body.hide-footer .footer {
+        display: none !important;
+      }
     </style>
 
     <!-- Content Security Policy: Primer el Cloudflare Worker (_worker.js) intentarà afegir CSP amb nonces -->
@@ -74,7 +78,7 @@
 
     <script src="./sw-register.js" type="module" data-csp-nonce></script>
   </head>
-  <body id="app-body" class="no-js">
+  <body id="app-body" class="no-js hide-footer">
     <!-- ========= ONBOARDING CAROUSEL (CON MEJORAS) ========= -->
     <div id="onboarding-container" class="onboarding-container hidden">
       <div class="onboarding-carousel">

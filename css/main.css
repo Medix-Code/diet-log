@@ -517,9 +517,7 @@ button .fa {
   transition: padding-bottom 0.3s ease;
   scroll-behavior: smooth;
   transition: padding-bottom 0.3s ease-out;
-  visibility: visible;
 }
-
 .tab-content-container[data-tabs-ready=false] {
   visibility: hidden;
 }

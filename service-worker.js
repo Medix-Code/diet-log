@@ -29,7 +29,7 @@ const STATIC_EXTENSIONS = [
 ];
 const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.4":
-    "4cb87e018b1af744deb6fa9916860cbd52cfa91bd36b2b19da7282381d680d86bdbe610e4bcbd4cabcdc27658a47886d",
+    "1d3f4ce40a06b0135a5e1730716c36bcf7de534ec2aeb20818377a6b5b11b24e0d4d227c0e842230d6aa5d1f4612db95",
   "/css/main.min.css?v=2.3.6":
     "71a4ee73218b0468a1ede2f70b32a2d898061e85362b8b1c3d31792bcf6ec5da5522b188544531fab15b734a270cebe6",
 };

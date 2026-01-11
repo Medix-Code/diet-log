@@ -35,6 +35,46 @@ if (typeof console !== "undefined" && !window.__DISABLE_CONSOLE_WARN_FILTER) {
   };
 }
 
+const DEV_HOSTNAMES = new Set([
+  "localhost",
+  "127.0.0.1",
+  "0.0.0.0",
+  "[::1]",
+]);
+
+function shouldShowFooterForEnvironment() {
+  // Mostra el footer quan treballem en entorn de desenvolupament.
+  if (process.env.NODE_ENV && process.env.NODE_ENV !== "production") {
+    return true;
+  }
+
+  if (typeof window === "undefined") return false;
+
+  const params = new URLSearchParams(window.location.search);
+  const urlOverride = params.get("showFooter");
+
+  if (urlOverride === "1") return true;
+  if (urlOverride === "0") return false;
+
+  const hostname = window.location.hostname || "";
+  return (
+    DEV_HOSTNAMES.has(hostname) ||
+    hostname.endsWith(".local") ||
+    hostname === ""
+  );
+}
+
+function applyFooterVisibilityFlag() {
+  if (typeof document === "undefined") return;
+  const body = document.body;
+  if (!body) return;
+
+  const showFooter = shouldShowFooterForEnvironment();
+  body.classList.toggle("hide-footer", !showFooter);
+}
+
+applyFooterVisibilityFlag();
+
 // Exporta les funcions OCR globalment per poder-les utilitzar des de l'HTML
 import {
   getOCRFeedbackManager,
