@@ -23,13 +23,13 @@
     "pdf-lib": "^1.17.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "tesseract.js": "^6.0.1"
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@vitest/ui": "^4.0.16",
     "esbuild": "^0.27.2",
     "fake-indexeddb": "^6.2.5",
-    "jsdom": "^26.1.0",
+    "jsdom": "^27.4.0",
     "vitest": "^4.0.16"
   },
   "pnpm": {

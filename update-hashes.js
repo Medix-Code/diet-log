@@ -46,8 +46,8 @@ const resourceIntegrityRegex = /const RESOURCE_INTEGRITY = \{[^}]+\}/s;
 const newResourceIntegrity = `const RESOURCE_INTEGRITY = {
   "/dist/bundle.js?v=2.5.4":
     "${hashes["/dist/bundle.js?v=2.5.4"]}",
-  "/css/main.min.css?v=2.3.5":
-    "${hashes["/css/main.min.css?v=2.3.5"]}",
+  "/css/main.min.css?v=2.3.6":
+    "${hashes["/css/main.min.css?v=2.3.6"]}",
 }`;
 
 swContent = swContent.replace(resourceIntegrityRegex, newResourceIntegrity);

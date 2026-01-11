@@ -49,9 +49,9 @@ const MODAL_TRANSITION_DURATION = 300;
 const PROGRESS_HIDE_DELAY = 1000;
 const OCR_SEARCH_WINDOW = 200;
 const TESSERACT_SCRIPT_URL =
-  "https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js";
+  "https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js";
 const TESSERACT_SCRIPT_INTEGRITY =
-  "sha384-r1ru3tcf6FhnCFR4B7pIFG+BhFF9LlFtz/P1y4pblWn3AGs9y3lBx5SKLNf4+rED";
+  "sha384-2BQ3U3OdKOb0Uczxqr41I9UvZkzr4V9Hv8uSzMMZAlmhsFClvdZX5wi5fDCzG+tM";
 
 // Paràmetres d'inicialització (només es poden passar durant la creació del worker)
 const INIT_ONLY_PARAMS = {
@@ -515,7 +515,8 @@ async function _handleFileChange(event) {
 
   // Obtener el número de servicio actual (1-4)
   const currentServiceIndex = getCurrentServiceIndex();
-  const serviceNumber = currentServiceIndex !== null ? currentServiceIndex + 1 : null;
+  const serviceNumber =
+    currentServiceIndex !== null ? currentServiceIndex + 1 : null;
 
   ocrFeedback.start(file);
   ocrFeedback.setOnCancel(_cancelOCR); // Configurar callback de cancelación
@@ -564,32 +565,41 @@ async function _handleFileChange(event) {
 
     // Crear worker con timeout para evitar hangs indefinidos
     const WORKER_TIMEOUT_MS = 30000; // 30 segundos
-    const workerCreationPromise = Tesseract.createWorker(OCR_LANGUAGE, TESSERACT_ENGINE_MODE, {
-      logger: (m) => {
-        // Logging seguro: solo en desarrollo, sin datos sensibles
-        if (process.env.NODE_ENV !== 'production') {
-          log.debug(`Tesseract status: ${m.status}, progress: ${m.progress || 0}`);
-        }
+    const workerCreationPromise = Tesseract.createWorker(
+      OCR_LANGUAGE,
+      TESSERACT_ENGINE_MODE,
+      {
+        logger: (m) => {
+          // Logging seguro: solo en desarrollo, sin datos sensibles
+          if (process.env.NODE_ENV !== "production") {
+            log.debug(
+              `Tesseract status: ${m.status}, progress: ${m.progress || 0}`
+            );
+          }
 
-        if (m.status === "recognizing text") {
-          const percent = Math.max(
-            85,
-            Math.floor(m.progress * 100 * 0.15 + 85)
-          );
-          _updateOcrProgress(percent, "Reconociendo texto...");
-        } else if (m.status === "loading language model") {
-          _updateOcrProgress(65, "Cargando recursos...");
-        } else if (m.status === "initializing tesseract") {
-          _updateOcrProgress(62, "Preparando escáner...");
-        } else if (m.status === "initialized tesseract") {
-          _updateOcrProgress(70, "Escáner listo");
-        }
-      },
-      init: INIT_ONLY_PARAMS,
-    });
+          if (m.status === "recognizing text") {
+            const percent = Math.max(
+              85,
+              Math.floor(m.progress * 100 * 0.15 + 85)
+            );
+            _updateOcrProgress(percent, "Reconociendo texto...");
+          } else if (m.status === "loading language model") {
+            _updateOcrProgress(65, "Cargando recursos...");
+          } else if (m.status === "initializing tesseract") {
+            _updateOcrProgress(62, "Preparando escáner...");
+          } else if (m.status === "initialized tesseract") {
+            _updateOcrProgress(70, "Escáner listo");
+          }
+        },
+        init: INIT_ONLY_PARAMS,
+      }
+    );
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Worker initialization timeout')), WORKER_TIMEOUT_MS)
+      setTimeout(
+        () => reject(new Error("Worker initialization timeout")),
+        WORKER_TIMEOUT_MS
+      )
     );
 
     try {
@@ -602,9 +612,11 @@ async function _handleFileChange(event) {
         return;
       }
     } catch (error) {
-      if (error.message === 'Worker initialization timeout') {
+      if (error.message === "Worker initialization timeout") {
         log.error("Timeout al inicializar Tesseract después de 30s");
-        throw new Error("Timeout al cargar el escáner. Verifica tu conexión a internet.");
+        throw new Error(
+          "Timeout al cargar el escáner. Verifica tu conexión a internet."
+        );
       }
       throw error;
     }
@@ -651,9 +663,10 @@ async function _handleFileChange(event) {
     log.error("Error durant el processament OCR:", error);
     // Error inesperat → mostra TOAST d'error i tanquem modal suaument
     // Mostrar mensaje específico para timeouts, genérico para otros errores
-    const errorMessage = error.message?.includes('Timeout') || error.message?.includes('timeout')
-      ? "Timeout al escanear. Verifica tu conexión a internet."
-      : "Error al escanear. Imagen no válida";
+    const errorMessage =
+      error.message?.includes("Timeout") || error.message?.includes("timeout")
+        ? "Timeout al escanear. Verifica tu conexión a internet."
+        : "Error al escanear. Imagen no válida";
     showToast(errorMessage, "error");
     ocrFeedback?.reset?.();
     // Espera 3 segons perquè es llegeixi el TOAST abans de tancar modal
