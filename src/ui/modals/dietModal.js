@@ -218,7 +218,11 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       return;
     }
     // Comprovar si el target és un element interactiu
-    if (event.target.tagName === "BUTTON" || event.target.closest(".icon") || event.target.closest(".btn-text")) {
+    if (
+      event.target.tagName === "BUTTON" ||
+      event.target.closest(".icon") ||
+      event.target.closest(".btn-text")
+    ) {
       return;
     }
     startX = event.clientX;
@@ -279,11 +283,18 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     "touchstart",
     (event) => {
       // Comprovar si el clic està dins d'un botó o dels seus elements interns
-      if (event.target.closest("button") || event.target.closest(".diet-icons")) {
+      if (
+        event.target.closest("button") ||
+        event.target.closest(".diet-icons")
+      ) {
         return;
       }
       // Comprovar si el target és un element interactiu
-      if (event.target.tagName === "BUTTON" || event.target.closest(".icon") || event.target.closest(".btn-text")) {
+      if (
+        event.target.tagName === "BUTTON" ||
+        event.target.closest(".icon") ||
+        event.target.closest(".btn-text")
+      ) {
         return;
       }
       startX = event.touches[0].clientX;
