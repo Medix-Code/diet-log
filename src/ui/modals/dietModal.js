@@ -118,10 +118,12 @@ function createDietListItem(diet) {
   loadIcon.src = "assets/icons/ic_edit.svg";
   loadIcon.alt = "";
   loadIcon.className = "icon";
+  loadIcon.style.pointerEvents = "none"; // Evitar que la icona intercepti events
 
   const loadText = document.createElement("span");
   loadText.className = "btn-text visually-hidden";
   loadText.textContent = "Editar";
+  loadText.style.pointerEvents = "none"; // Evitar que el text intercepti events
 
   loadBtn.appendChild(loadIcon);
   loadBtn.appendChild(loadText);
@@ -129,6 +131,35 @@ function createDietListItem(diet) {
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, displayId);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_DATE, diet.date);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_TYPE, diet.dietType);
+
+  // Prevenir que els botons activin el swipe-to-delete
+  loadBtn.addEventListener("mousedown", (e) => e.stopPropagation());
+  loadBtn.addEventListener("touchstart", (e) => e.stopPropagation(), {
+    passive: true,
+  });
+
+  // Afegir listener de clic directament al botó per garantir que funcioni
+  loadBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const rawId = loadBtn.getAttribute(DATA_ATTRIBUTES.DIET_ID);
+    const dietDate = loadBtn.getAttribute(DATA_ATTRIBUTES.DIET_DATE);
+    const dietType = loadBtn.getAttribute(DATA_ATTRIBUTES.DIET_TYPE);
+    if (!rawId || !dietDate || !dietType) return;
+
+    const { ddmmaa: dateStr, franjaText } = getDietDisplayInfo(
+      dietDate,
+      dietType
+    );
+
+    loadDietById(rawId)
+      .then(() => {
+        log.debug(`Dieta ${dateStr} carregada (${franjaText}).`);
+        closeModal(dietModalElement);
+      })
+      .catch((error) => {
+        log.error("Error en carregar la dieta:", error);
+      });
+  });
 
   const downloadBtn = document.createElement("button");
   downloadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} diet-download`;
@@ -142,15 +173,33 @@ function createDietListItem(diet) {
   downloadIcon.src = "assets/icons/download_blue.svg";
   downloadIcon.alt = "";
   downloadIcon.className = "icon";
+  downloadIcon.style.pointerEvents = "none"; // Evitar que la icona intercepti events
 
   const downloadText = document.createElement("span");
   downloadText.className = "btn-text visually-hidden";
   downloadText.textContent = "PDF";
+  downloadText.style.pointerEvents = "none"; // Evitar que el text intercepti events
 
   downloadBtn.appendChild(downloadIcon);
   downloadBtn.appendChild(downloadText);
 
   downloadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, displayId);
+
+  // Prevenir que el botó PDF activi el swipe-to-delete
+  downloadBtn.addEventListener("mousedown", (e) => e.stopPropagation());
+  downloadBtn.addEventListener("touchstart", (e) => e.stopPropagation(), {
+    passive: true,
+  });
+
+  // Afegir listener de clic directament al botó per garantir que funcioni
+  downloadBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const dietId = downloadBtn.getAttribute(DATA_ATTRIBUTES.DIET_ID);
+    if (dietId) {
+      downloadDietPDF(dietId);
+    }
+  });
 
   iconsContainer.appendChild(loadBtn);
   iconsContainer.appendChild(downloadBtn);
@@ -188,6 +237,7 @@ function handleDietListClick(event) {
       });
   } else if (downloadButton) {
     event.stopPropagation();
+    event.preventDefault();
     const dietId = downloadButton.getAttribute(DATA_ATTRIBUTES.DIET_ID);
     if (dietId) {
       downloadDietPDF(dietId);
@@ -210,27 +260,12 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let startX = 0;
   let currentX = 0;
   let isDragging = false;
-  let isDeleting = false; // Flag per evitar duplicats
+  let isDeleting = false;
+  let isSwipeActive = false;
 
-  dietItem.addEventListener("mousedown", (event) => {
-    // Comprovar si el clic està dins d'un botó o dels seus elements interns
-    if (event.target.closest("button") || event.target.closest(".diet-icons")) {
-      return;
-    }
-    // Comprovar si el target és un element interactiu
-    if (
-      event.target.tagName === "BUTTON" ||
-      event.target.closest(".icon") ||
-      event.target.closest(".btn-text")
-    ) {
-      return;
-    }
-    startX = event.clientX;
-    currentX = startX;
-    isDragging = false;
-  });
-
-  document.addEventListener("mousemove", (event) => {
+  // Handlers que s'afegiran/trauran dinàmicament
+  const handleMouseMove = (event) => {
+    if (!isSwipeActive) return;
     currentX = event.clientX;
     const diff = startX - currentX;
     if (diff > 10 && !isDragging) {
@@ -241,18 +276,27 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       dietItem.style.transform = `translateX(-${Math.min(diff, 120)}px)`;
       event.preventDefault();
     }
-  });
+  };
 
-  document.addEventListener("mouseup", async () => {
-    if (!isDragging || isDeleting) return;
-    isDragging = false;
+  const handleMouseUp = async () => {
+    // Neteja dels listeners globals
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+
+    if (!isSwipeActive || isDeleting) {
+      isSwipeActive = false;
+      isDragging = false;
+      return;
+    }
+
     const diff = startX - currentX;
+    isSwipeActive = false;
 
     dietItem.classList.remove(CSS_CLASSES.DIET_ITEM_SWIPING);
     dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
 
-    if (diff > 50) {
-      isDeleting = true; // Marca que s'està eliminant
+    if (isDragging && diff > 50) {
+      isDeleting = true;
       dietItem.style.transform = "translateX(-100%)";
       dietItem.style.opacity = "0";
 
@@ -266,10 +310,34 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       dietItem.style.opacity = "1";
     }
 
+    isDragging = false;
     setTimeout(() => {
       dietItem.style.transition = "";
       dietItem.style.opacity = "";
     }, 300);
+  };
+
+  dietItem.addEventListener("mousedown", (event) => {
+    // ⛔ IGNORAR si el clic és dins de botons o elements interactius
+    if (
+      event.target.closest("button") ||
+      event.target.closest(".diet-icons") ||
+      event.target.closest(".list-item-btn") ||
+      event.target.tagName === "BUTTON" ||
+      event.target.tagName === "IMG" ||
+      event.target.tagName === "SPAN"
+    ) {
+      return;
+    }
+
+    isSwipeActive = true;
+    startX = event.clientX;
+    currentX = startX;
+    isDragging = false;
+
+    // Afegir listeners globals NOMÉS quan s'inicia un swipe vàlid
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   });
 }
 
@@ -277,63 +345,45 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let startX = 0;
   let currentX = 0;
   let isSwiping = false;
-  let isDeleting = false; // Flag per evitar duplicats
+  let isDeleting = false;
+  let isSwipeActive = false;
 
-  dietItem.addEventListener(
-    "touchstart",
-    (event) => {
-      // Comprovar si el clic està dins d'un botó o dels seus elements interns
-      if (
-        event.target.closest("button") ||
-        event.target.closest(".diet-icons")
-      ) {
-        return;
-      }
-      // Comprovar si el target és un element interactiu
-      if (
-        event.target.tagName === "BUTTON" ||
-        event.target.closest(".icon") ||
-        event.target.closest(".btn-text")
-      ) {
-        return;
-      }
-      startX = event.touches[0].clientX;
-      currentX = startX;
-      isSwiping = false;
-      event.stopPropagation();
-    },
-    { passive: false }
-  );
-
-  dietItem.addEventListener(
-    "touchmove",
-    (event) => {
-      currentX = event.touches[0].clientX;
-      const diff = startX - currentX;
-      if (diff > 10 && !isSwiping) {
-        isSwiping = true;
-        dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
-        if (dietModalElement) dietModalElement.style.overflow = "hidden";
-      }
-      if (isSwiping && diff > 10) {
-        dietItem.style.transform = `translateX(-${Math.min(diff, 120)}px)`;
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    },
-    { passive: false }
-  );
-
-  dietItem.addEventListener("touchend", async (event) => {
-    if (!isSwiping || isDeleting) return;
-    isSwiping = false;
+  const handleTouchMove = (event) => {
+    if (!isSwipeActive) return;
+    currentX = event.touches[0].clientX;
     const diff = startX - currentX;
+    if (diff > 10 && !isSwiping) {
+      isSwiping = true;
+      dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
+      if (dietModalElement) dietModalElement.style.overflow = "hidden";
+    }
+    if (isSwiping && diff > 10) {
+      dietItem.style.transform = `translateX(-${Math.min(diff, 120)}px)`;
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
+  const handleTouchEnd = async (event) => {
+    // Neteja dels listeners
+    dietItem.removeEventListener("touchmove", handleTouchMove);
+    dietItem.removeEventListener("touchend", handleTouchEnd);
+
+    if (!isSwipeActive || isDeleting) {
+      isSwipeActive = false;
+      isSwiping = false;
+      if (dietModalElement) dietModalElement.style.overflow = "";
+      return;
+    }
+
+    const diff = startX - currentX;
+    isSwipeActive = false;
 
     dietItem.classList.remove(CSS_CLASSES.DIET_ITEM_SWIPING);
     dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
 
-    if (diff > 50) {
-      isDeleting = true; // Marca que s'està eliminant
+    if (isSwiping && diff > 50) {
+      isDeleting = true;
       dietItem.style.transform = "translateX(-100%)";
       dietItem.style.opacity = "0";
 
@@ -348,13 +398,43 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       if (dietModalElement) dietModalElement.style.overflow = "";
     }
 
+    isSwiping = false;
     setTimeout(() => {
       dietItem.style.transition = "";
       dietItem.style.opacity = "";
     }, 300);
 
     event.stopPropagation();
-  });
+  };
+
+  dietItem.addEventListener(
+    "touchstart",
+    (event) => {
+      // ⛔ IGNORAR si el touch és dins de botons o elements interactius
+      if (
+        event.target.closest("button") ||
+        event.target.closest(".diet-icons") ||
+        event.target.closest(".list-item-btn") ||
+        event.target.tagName === "BUTTON" ||
+        event.target.tagName === "IMG" ||
+        event.target.tagName === "SPAN"
+      ) {
+        return;
+      }
+
+      isSwipeActive = true;
+      startX = event.touches[0].clientX;
+      currentX = startX;
+      isSwiping = false;
+
+      // Afegir listeners NOMÉS quan s'inicia un swipe vàlid
+      dietItem.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      dietItem.addEventListener("touchend", handleTouchEnd);
+    },
+    { passive: false }
+  );
 
   initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType);
 }

@@ -23,7 +23,7 @@ if (fs.existsSync(indexPath)) {
   );
   indexContent = indexContent.replace(
     /href="\/dist\/bundle\.js\?v=[^"]+"/g,
-    `href="/dist/bundle.js?v=2.5.4"`
+    `href="/dist/bundle.js?v=2.5.5"`
   );
 
   fs.writeFileSync(indexPath, indexContent);

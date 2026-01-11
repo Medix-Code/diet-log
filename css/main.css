@@ -2025,6 +2025,7 @@ button .fa {
   width: 100%;
   max-width: 100%;
   padding: 10px 5px 10px 5px;
+  min-height: 0;
   overflow-x: hidden;
   flex-grow: 1;
   overflow-y: auto;
@@ -2492,6 +2493,7 @@ button .fa {
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 15;
+  pointer-events: none;
 }
 .delete-reveal .delete-reveal-content {
   display: flex;
@@ -2515,6 +2517,7 @@ button .fa {
 
 .swiping .delete-reveal {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .diet-icons {

@@ -17,7 +17,7 @@ console.log("🔍 Verificant hashes d'integritat...\n");
 
 // Fitxers a verificar
 const files = {
-  "/dist/bundle.js?v=2.5.4": "dist/bundle.js",
+  "/dist/bundle.js?v=2.5.5": "dist/bundle.js",
   "/css/main.min.css?v=2.3.6": "css/main.min.css",
 };
 
@@ -78,8 +78,12 @@ if (!allHashesValid) {
   console.error("\n❌ ERROR: Hashes d'integritat NO vàlids!");
   console.error("   Problemes detectats:");
   errors.forEach((err) => console.error(`   - ${err}`));
-  console.error("\n💡 Solució: Executa 'npm run update-hashes' per actualitzar els hashes.");
+  console.error(
+    "\n💡 Solució: Executa 'npm run update-hashes' per actualitzar els hashes."
+  );
   process.exit(1);
 }
 
-console.log("🎉 Tots els hashes són correctes! El Service Worker està sincronitzat.\n");
+console.log(
+  "🎉 Tots els hashes són correctes! El Service Worker està sincronitzat.\n"
+);

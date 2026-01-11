@@ -2290,7 +2290,7 @@ button {
   width: 100%;
   max-width: 100%;
   padding: 10px 5px 10px 5px;
-
+  min-height: 0; // Permet que el flex funcioni correctament
   overflow-x: hidden;
   flex-grow: 1;
   overflow-y: auto;
@@ -2769,6 +2769,7 @@ button {
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 15; // Per sobre de tot, inclòs l'overlay (z-index: 10)
+  pointer-events: none; // ⚠️ IMPORTANT: No bloquejar clics als botons
 
   .delete-reveal-content {
     display: flex;
@@ -2796,6 +2797,7 @@ button {
 
 .swiping .delete-reveal {
   opacity: 1; // Apareix gradualment
+  pointer-events: auto; // Permetre clics quan es fa swipe
 }
 
 .diet-icons {
@@ -4583,7 +4585,12 @@ body.app-ready {
   left: 0;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--primary-color), #0066cc, var(--primary-color));
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    #0066cc,
+    var(--primary-color)
+  );
   background-size: 200% 100%;
   border-radius: 999px;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);

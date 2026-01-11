@@ -186,6 +186,7 @@ async function getDeviceSalt() {
 /**
  * Genera un fingerprint del navegador basat en característiques estables
  * NOTA: Només usa característiques que no canvien amb mode responsiu
+ * ⚠️ NO MODIFICAR AIXÒ - Canviar el fingerprint trencaria l'accés a claus existents!
  * @returns {string} Fingerprint del navegador
  */
 function getBrowserFingerprint() {
@@ -315,7 +316,11 @@ async function wrapMasterKey(masterKey, deviceKey) {
  * @param {boolean} [useLegacyPassphrase] - Si true, usa passphrase antiga
  * @returns {Promise<CryptoKey>} Clau mestra
  */
-async function unwrapMasterKey(wrappedKey, deviceKey = null, useLegacyPassphrase = false) {
+async function unwrapMasterKey(
+  wrappedKey,
+  deviceKey = null,
+  useLegacyPassphrase = false
+) {
   try {
     // Assegurar que tenim un ArrayBuffer proper
     let keyBuffer = wrappedKey;
@@ -335,7 +340,8 @@ async function unwrapMasterKey(wrappedKey, deviceKey = null, useLegacyPassphrase
     );
 
     // Derivar device key si no es proporciona
-    const unwrapDeviceKey = deviceKey || await deriveDeviceKey(useLegacyPassphrase);
+    const unwrapDeviceKey =
+      deviceKey || (await deriveDeviceKey(useLegacyPassphrase));
 
     const masterKey = await crypto.subtle.unwrapKey(
       "raw",
@@ -352,12 +358,16 @@ async function unwrapMasterKey(wrappedKey, deviceKey = null, useLegacyPassphrase
   } catch (error) {
     // Si falla i NO estem usant legacy, intentar amb legacy (dietes antigues)
     if (!useLegacyPassphrase) {
-      log.warn("⚠️ Fallant amb nova passphrase, provant amb legacy per compatibilitat...");
+      log.warn(
+        "⚠️ Fallant amb nova passphrase, provant amb legacy per compatibilitat..."
+      );
       try {
         return await unwrapMasterKey(wrappedKey, null, true);
       } catch (legacyError) {
         log.error("Error desprotegint amb legacy passphrase:", legacyError);
-        throw new Error("No s'ha pogut desencriptar la clau mestra (incompatibilitat de versions)");
+        throw new Error(
+          "No s'ha pogut desencriptar la clau mestra (incompatibilitat de versions)"
+        );
       }
     }
 
@@ -381,21 +391,31 @@ export async function initializeKeySystem() {
       log.debug("⚠️ Sistema de claus ja inicialitzat. Validant integritat...");
 
       // VALIDAR que la clau existent funciona!
+      // NO passem deviceKey per permetre el fallback automàtic a legacy passphrase
       try {
-        const deviceKey = await deriveDeviceKey();
         const testWrappedKey = new Uint8Array(existingWrappedKey);
-        await unwrapMasterKey(testWrappedKey, deviceKey);
+        const existingMasterKey = await unwrapMasterKey(testWrappedKey);
         log.debug("✅ Clau existent validada correctament");
+
+        // ✅ IMPORTANT: Cachear la clau per a futures operacions
+        cacheKey(existingMasterKey);
+        log.debug("💾 Clau existent cacheada per a futures operacions");
         return; // Tot OK
       } catch (validationError) {
-        log.warn(
-          "⚠️ Clau existent corrupta o incompatible. Re-inicialitzant..."
+        // ⚠️ IMPORTANT: NO resetar el sistema de claus!
+        // Això destruiria l'accés a les dades encriptades existents.
+        // En lloc d'això, llançar un error per a que l'usuari sàpiga del problema.
+        log.error(
+          "❌ No s'ha pogut desprotegir la clau mestra existent. Les dades encriptades no són accessibles des d'aquest navegador/dispositiu."
         );
-        log.warn("Error de validació:", validationError);
+        log.error("Error de validació:", validationError);
 
-        // Resetjar i continuar amb la creació d'una nova clau
-        await resetKeySystem(true);
-        log.debug("🔄 Sistema resetejat. Creant nova clau...");
+        // Llançar error en lloc de resetar
+        throw new Error(
+          "No s'ha pogut accedir a la clau d'encriptació. " +
+            "Pot ser que estiguis usant un navegador diferent o en mode incògnit. " +
+            "Les dades encriptades només són accessibles des del navegador original."
+        );
       }
     }
 
@@ -422,6 +442,10 @@ export async function initializeKeySystem() {
       const testWrappedKey = new Uint8Array(wrappedKeyArray);
       await unwrapMasterKey(testWrappedKey, deviceKey);
       log.debug("✅ Validació exitosa: la clau es pot recuperar correctament");
+
+      // ✅ IMPORTANT: Cachear la clau per evitar problemes de re-derivació
+      cacheKey(masterKey);
+      log.debug("💾 Clau mestra cacheada després d'inicialització");
     } catch (validationError) {
       log.error(
         "❌ VALIDACIÓ FALLIDA: La clau no es pot recuperar després de crear-la!"
@@ -540,7 +564,14 @@ export async function getMasterKey() {
       );
       await initializeKeySystem();
 
-      // Retry després d'inicialitzar
+      // ✅ Primer comprovar el cache (initializeKeySystem ja la guarda)
+      const cachedKeyAfterInit = getCachedKey();
+      if (cachedKeyAfterInit) {
+        log.debug("✅ Clau recuperada del cache després d'inicialització");
+        return cachedKeyAfterInit;
+      }
+
+      // Retry després d'inicialitzar (fallback si el cache ha fallat)
       const retryWrappedKey = await getFromKeyStore(WRAPPED_KEY_ID);
       if (!retryWrappedKey) {
         throw new Error("Failed to initialize key system");
