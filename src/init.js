@@ -231,7 +231,7 @@ export async function initializeApp() {
  * Espera fins que l'onboarding estigui completat abans de mostrar-se
  */
 function showVersionNotificationIfNeeded() {
-  const CURRENT_VERSION = "2.4.0";
+  const CURRENT_VERSION = "2.4.1";
   const LS_VERSION_KEY = "diet-log-last-version-seen";
   const ONBOARDING_KEY = "onboardingCompleted";
 
