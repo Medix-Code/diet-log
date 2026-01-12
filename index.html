@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#004aad" />
+    <meta name="author" content="TESHub" />
+    <meta
+      name="description"
+      content="Aplicació per gestionar dietes amb formularis accessibles i funcionalitat PWA."
+    />
+    <!-- Desactivar la barra de progrés de càrrega del navegador -->
+    <style>
+      #nprogress,
+      [role="progressbar"],
+      ::-webkit-progress-bar,
+      ::-webkit-progress-value {
+        display: none !important;
+        opacity: 0 !important;
+      }
+
+      body.hide-footer .footer {
+        display: none !important;
+      }
+    </style>
+
+    <!-- Content Security Policy: Primer el Cloudflare Worker (_worker.js) intentarà afegir CSP amb nonces -->
+    <!-- Si el Worker falla, aquest CSP fallback proporciona protecció bàsica -->
+    <!-- NOTA: 'unsafe-inline' eliminat per seguretat (XSS protection) -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: blob: https://www.google-analytics.com;
+        connect-src 'self' https://cdn.jsdelivr.net https://www.google-analytics.com https://region1.google-analytics.com data: blob:;
+        worker-src 'self' blob:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+      "
+    />
+    <!-- NOTA: frame-ancestors no funciona en <meta> CSP, només en HTTP headers (el Worker ho gestiona) -->
+    <!-- NOTA: style-src manté 'unsafe-inline' per <style> tag dins <head> (només CSS, no JS) -->
+
+    <!-- Altres headers de seguretat -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <title>MisDietas</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/images/icons-192.png" type="image/png" />
+
+    <!-- Preconnects crítics per rendiment (millora connexions 2025) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+
+    <!-- Preloads de recursos crítics -->
+    <link
+      rel="preload"
+      href="assets/icons/moon.svg"
+      as="image"
+      type="image/svg+xml"
+    />
+    <link rel="prefetch" href="assets/icons/sun.svg" />
+    <link rel="preload" href="/css/main.min.css?v=2.3.6" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.3.6" />
+
+    <!-- Tesseract.js carregat dinàmicament sols quan s'usi OCR -->
+
+    <!-- PDF-Lib carregat lazy sols quan s'usi -->
+
+    <script src="./sw-register.js" type="module" data-csp-nonce></script>
+  </head>
+  <body id="app-body" class="no-js hide-footer">
+    <!-- ========= ONBOARDING CAROUSEL (CON MEJORAS) ========= -->
+    <div id="onboarding-container" class="onboarding-container hidden">
+      <div class="onboarding-carousel">
+        <!-- SLIDE 1: Bienvenida -->
+        <div class="onboarding-slide active">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide1-welcome.svg"
+              alt="Icono de bienvenida a MisDietas."
+              class="onboarding-image"
+              loading="lazy"
+              width="200"
+              height="200"
+            />
+            <h2 class="onboarding-title">Te damos la bienvenida a MisDietas</h2>
+            <p class="onboarding-text">
+              La forma más rápida y sencilla de registrar tus servicios y tener
+              tus justificantes de dietas listos al momento.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="onboarding-slide">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide2-fast-fill.svg"
+              alt="Icono que muestra un formulario rellenándose rápidamente."
+              class="onboarding-image"
+              loading="lazy"
+              width="200"
+              height="200"
+            />
+            <h2 class="onboarding-title">Rellena a toda velocidad</h2>
+            <p class="onboarding-text">
+              Aprovecha funciones que te ahorran tiempo: escanea las horas en
+              servicios TSU, carga tus dotaciones guardadas y disfruta de una
+              interfaz ágil.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: Título modificado (sin "profesional") -->
+        <div class="onboarding-slide">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide3-pdf.svg"
+              alt="Icono de un documento PDF generado."
+              class="onboarding-image"
+              loading="lazy"
+              width="200"
+              height="200"
+            />
+            <h2 class="onboarding-title">Tu PDF, listo para entregar</h2>
+            <p class="onboarding-text">
+              Crea un justificante completo, con firmas y notas, listo para
+              compartir desde tu móvil.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: Título nuevo y más directo -->
+        <div class="onboarding-slide">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide4-security.svg"
+              alt="Icono de un escudo que representa seguridad y privacidad."
+              class="onboarding-image"
+              loading="lazy"
+            />
+            <h2 class="onboarding-title">Trabaja con confianza</h2>
+            <p class="onboarding-text">
+              ✓ Funciona sin conexión a internet.<br />
+              ✓ Tus datos se guardan de forma segura solo en tu dispositivo.
+            </p>
+          </div>
+          <button id="onboarding-finish-btn" class="onboarding-cta">
+            Crear mi primera dieta
+          </button>
+        </div>
+      </div>
+
+      <div class="onboarding-nav">
+        <span class="nav-dot active"></span><span class="nav-dot"></span
+        ><span class="nav-dot"></span><span class="nav-dot"></span>
+      </div>
+      <button id="onboarding-skip-btn" class="onboarding-skip">Saltar</button>
+    </div>
+    <div id="install-prompt" class="hidden">
+      <p>¿Quieres instalarla como aplicación?</p>
+      <div class="install-buttons">
+        <button id="dismiss-button">No, gracias</button>
+        <button id="install-button">Instalar</button>
+      </div>
+    </div>
+    <header class="top-bar">
+      <div class="top-bar__left">
+        <a class="logo-title" href="https://misdietas.com" title="MisDietas">
+          <h1 class="top-bar__title">MisDietas</h1>
+        </a>
+      </div>
+      <div class="button-group">
+        <button
+          id="settings"
+          class="ajustes-btn"
+          aria-label="Opciones y ajustes"
+        >
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+        <div
+          class="ajustes-panel"
+          id="settings-panel"
+          role="menu"
+          aria-labelledby="ajustes"
+        >
+          <button
+            type="button"
+            class="big-btn"
+            id="save-diet"
+            aria-label="Guardar dieta actual"
+            role="menuitem"
+            disabled
+          >
+            <img
+              src="assets/icons/save.svg"
+              alt="Icono de guardar dieta"
+              class="icon"
+            />
+            <span>Guardar</span>
+            <span id="last-saved" class="last-saved-info"></span>
+          </button>
+          <button
+            type="button"
+            class="big-btn generate-pdf"
+            aria-label="Generar y descargar PDF de la dieta"
+            role="menuitem"
+          >
+            <img
+              loading="lazy"
+              src="assets/icons/download_blue.svg"
+              alt="Icono de descargar PDF"
+              class="icon"
+            />
+            Descargar dieta actual
+          </button>
+          <button
+            type="button"
+            class="big-btn"
+            id="manage-diets"
+            aria-label="Abrir gestor de dietas guardadas"
+            role="menuitem"
+          >
+            <img
+              loading="lazy"
+              src="assets/icons/gear.svg"
+              alt="Icono de configuración"
+              class="icon"
+            />
+            Gestor de dietas
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <nav
+      class="tabs-container"
+      data-tabs-ready="false"
+      role="tablist"
+      aria-label="Pestañas del formulario"
+    >
+      <button
+        id="tab-dades"
+        class="tab active"
+        role="tab"
+        aria-controls="dades-tab-content"
+        aria-selected="true"
+      >
+        Datos
+      </button>
+      <button
+        id="tab-serveis"
+        class="tab"
+        role="tab"
+        aria-controls="serveis-tab-content"
+        aria-selected="false"
+      >
+        Servicios
+      </button>
+    </nav>
+
+    <main
+      id="main-content"
+      class="tab-content-container"
+      data-tabs-ready="false"
+    >
+      <section
+        id="dades-tab-content"
+        class="tab-content active"
+        role="tabpanel"
+        aria-labelledby="tab-dades"
+      >
+        <div class="form-group">
+          <label for="date">Fecha</label>
+          <input type="date" id="date" name="date" />
+        </div>
+        <div class="form-group">
+          <label for="diet-type">Franja horaria</label>
+          <select id="diet-type" name="diet-type">
+            <option value="" disabled selected hidden></option>
+            <option value="lunch">Comida</option>
+            <option value="dinner">Cena</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="service-type">Tipo de servicio</label>
+          <select id="service-type" name="service-type">
+            <option value="TSU" selected>TSU</option>
+            <option value="TSNU">TSNU</option>
+          </select>
+        </div>
+        <div class="group-header">
+          <h2 class="group-title">Dotación</h2>
+          <div class="group-btns">
+            <button
+              type="button"
+              class="group-btn btn-save"
+              id="add-dotacio"
+              aria-label="Nueva dotación"
+            >
+              <img src="assets/icons/save_white.svg" alt="Nueva dotación" />
+            </button>
+            <button
+              type="button"
+              class="group-btn btn-options"
+              id="open-dotacio-modal"
+              aria-label="Opciones"
+            >
+              <img src="assets/icons/id_card.svg" alt="Opciones" />
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="vehicle-number">Vehículo</label>
+          <input
+            type="text"
+            id="vehicle-number"
+            name="vehicle-number"
+            autocomplete="off"
+            maxlength="6"
+          />
+        </div>
+        <div class="form-group signature-group">
+          <label for="person1">Conductor</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="person1"
+              name="person1"
+              class="txt-person1"
+              autocomplete="off"
+              maxlength="28"
+            />
+            <button
+              type="button"
+              class="signature-btn"
+              id="sign-person1"
+              aria-label="Firma del conductor"
+            >
+              <img src="assets/icons/signature.svg" alt="" class="icon" />
+            </button>
+          </div>
+        </div>
+        <div class="form-group signature-group">
+          <label for="person2">Ayudante</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="person2"
+              name="person2"
+              class="txt-person2"
+              enterkeyhint="done"
+              inputmode="text"
+              autocomplete="off"
+              maxlength="28"
+            />
+            <button
+              type="button"
+              class="signature-btn"
+              id="sign-person2"
+              aria-label="Firma del ayudante"
+            >
+              <img src="assets/icons/signature.svg" alt="" class="icon" />
+            </button>
+          </div>
+        </div>
+      </section>
+      <section
+        id="serveis-tab-content"
+        class="tab-content"
+        role="tabpanel"
+        aria-labelledby="tab-serveis"
+      >
+        <div class="service-controls">
+          <div id="service-buttons-container"></div>
+          <div class="options-container">
+            <button
+              class="options-btn"
+              id="options-toggle"
+              aria-label="Más opciones"
+            >
+              <img src="assets/icons/submenu.svg" alt="Opciones" class="icon" />
+            </button>
+            <div class="options-dropdown hidden" id="options-menu">
+              <button
+                type="button"
+                class="option-btn clear-selected-btn notes-btn"
+                id="notes-selected-service"
+                aria-label="Añadir nota"
+              >
+                <img src="assets/icons/ic_note.svg" alt="Notas" class="icon" />
+                <span>Añadir Nota</span>
+              </button>
+              <button
+                type="button"
+                class="option-btn clear-selected-btn"
+                id="clear-selected-service"
+                aria-label="Borrar campos del servicio"
+              >
+                <img src="assets/icons/eraser.svg" alt="Borrar" class="icon" />
+                <span>Borrar campos</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="services-container">
+          <!-- SERVEI 1 -->
+          <div
+            class="service service-1"
+            aria-labelledby="servei-1"
+            tabindex="-1"
+          >
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-1">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-1"
+                name="service-number-1"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-1">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-1"
+                name="origin-1"
+                class="origin"
+                maxlength="35"
+                autocomplete="off"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-1">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-1"
+                name="destination-1"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                maxlength="35"
+                autocomplete="off"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-1">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-1"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-1"
+                  name="origin-time-1"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="destination-time-1">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-1"
+                  name="destination-time-1"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-1">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-1"
+                  name="end-time-1"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 2 -->
+          <div class="service service-2" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-2">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-2"
+                name="service-number-2"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-2">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-2"
+                name="origin-2"
+                class="origin"
+                maxlength="35"
+                autocomplete="off"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-2">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-2"
+                name="destination-2"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-2">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-2"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-2"
+                  name="origin-time-2"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-2">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-2"
+                  name="destination-time-2"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-2">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-2"
+                  name="end-time-2"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 3 -->
+          <div class="service service-3" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-3">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-3"
+                name="service-number-3"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-3">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-3"
+                name="origin-3"
+                class="origin"
+                maxlength="35"
+                autocomplete="off"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-3">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-3"
+                name="destination-3"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-3">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-3"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-3"
+                  name="origin-time-3"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-3">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-3"
+                  name="destination-time-3"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-3">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-3"
+                  name="end-time-3"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 4 -->
+          <div class="service service-4" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-4">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-4"
+                name="service-number-4"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-4">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-4"
+                name="origin-4"
+                class="origin"
+                autocomplete="off"
+                maxlength="35"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-4">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-4"
+                name="destination-4"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-4">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-4"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-4"
+                  name="origin-time-4"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-4">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-4"
+                  name="destination-time-4"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-4">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-4"
+                  name="end-time-4"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div
+        id="diet-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="diet-modal-title"
+      >
+        <div class="modal-content diet-modal-content">
+          <div class="diet-modal-header">
+            <h3 id="diet-modal-title">Gestor de dietas</h3>
+          </div>
+          <p id="no-diets-text" class="no-diets-text hidden">
+            No hay dietas guardadas.
+          </p>
+          <div
+            id="diet-options"
+            class="diet-list"
+            aria-label="Opciones de dietas"
+          ></div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              id="open-trash-modal"
+              class="trash-modal-footer-btn"
+            >
+              Papelera
+            </button>
+            <button id="close-diet-modal" class="close-modal-btn">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="trash-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="trash-modal-title"
+      >
+        <div class="modal-content trash-modal-content">
+          <div class="trash-top">
+            <div class="trash-header">
+              <h3 id="trash-modal-title">Papelera de dietas</h3>
+              <button
+                type="button"
+                class="trash-info-btn"
+                id="trash-info-btn"
+                aria-label="Mostrar información de la papelera"
+              >
+                <img
+                  src="/assets/icons/info.svg"
+                  alt=""
+                  aria-hidden="true"
+                  class="trash-info-icon"
+                />
+              </button>
+            </div>
+            <div class="trash-divider"></div>
+
+            <!-- Filtres -->
+            <div class="trash-filters">
+              <div class="filter-group">
+                <label for="trash-filter-type">Tipo:</label>
+                <select id="trash-filter-type" class="filter-select">
+                  <option value="all">Todas</option>
+                  <option value="lunch">Comida</option>
+                  <option value="dinner">Cena</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="trash-filter-date">Fecha:</label>
+                <input
+                  type="date"
+                  id="trash-filter-date"
+                  class="filter-input"
+                />
+              </div>
+              <button id="trash-clear-filters" class="filter-clear-btn">
+                Borrar filtros
+              </button>
+            </div>
+          </div>
+
+          <!-- Llista de dietes eliminades -->
+          <div class="trash-scroll-area">
+            <p id="no-trash-text" class="no-trash-text hidden">
+              No hay dietas eliminadas.
+            </p>
+            <div
+              id="trash-options"
+              class="trash-list"
+              aria-label="Dietes eliminades"
+            ></div>
+          </div>
+
+          <!-- Footer amb accions -->
+          <div class="trash-bottom">
+            <div class="trash-divider"></div>
+            <div class="modal-footer trash-footer">
+              <button id="close-trash-modal" class="close-modal-btn">
+                Volver
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        id="signature-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="signature-title"
+      >
+        <div class="modal-content signature-modal-content">
+          <h2 id="signature-title">Firma</h2>
+          <div class="signature-canvas-container">
+            <canvas id="signature-canvas"></canvas>
+          </div>
+          <p class="signature-instruction signature-instruction-small">
+            Para borrar la firma, haz doble clic en el área.
+          </p>
+          <div class="modal-buttons">
+            <button id="signature-cancel" class="modal-button cancel">
+              Cancelar
+            </button>
+            <button id="signature-accept" class="modal-button accept">
+              Aceptar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="toast-container"></div>
+      <div
+        id="dotacio-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dotacio-modal-title"
+      >
+        <div class="modal-content dotacio-modal-content">
+          <h3 id="dotacio-modal-title">Gestor de dotaciones</h3>
+          <div id="no-dotacio-text" class="hidden">
+            No hay dotaciones, guarde antes:
+            <img
+              loading="lazy"
+              src="assets/icons/save_green.svg"
+              alt="Guardar"
+              class="save-icon"
+            />
+          </div>
+          <div
+            id="dotacio-options"
+            class="dotacio-list"
+            aria-label="Opciones de dotaciones"
+          ></div>
+          <div class="modal-footer">
+            <button id="close-dotacio-modal" class="close-modal-btn">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="about-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="about-title"
+        tabindex="-1"
+      >
+        <!-- A index.html, dins de #about-modal -->
+        <div class="modal-content">
+          <h2 id="about-title">¡Bienvenido a MisDietas!</h2>
+          <div class="modal-scrollable-content">
+            <p>
+              ¿Cansado de hacer fotos del AL20 para luego tener que pasarlo todo
+              a papel? Con <strong>MisDietas</strong>, di adiós al trabajo
+              doble. Registra cada servicio sobre la marcha y genera un PDF
+              profesional al momento, listo para entregar.
+            </p>
+
+            <p class="about-kicker">¿Cómo funciona?</p>
+
+            <h3>1: Revisa tus datos</h3>
+            <p>
+              En la pestaña <strong>"Datos"</strong>, comprueba que la
+              <strong>Fecha</strong> y la
+              <strong>Franja Horaria</strong> automáticas son correctas.
+              Después, selecciona tu <strong>Tipo de Servicio</strong> (TSU o
+              TSNU) y completa tu
+              <strong
+                ><img
+                  loading="lazy"
+                  src="assets/icons/id_card_black.svg"
+                  alt=""
+                  class="icon-inline"
+                />Dotación</strong
+              >
+              añadiendo las
+              <strong>
+                <img
+                  src="assets/icons/signature.svg"
+                  alt=""
+                  class="icon-inline"
+                />firmas</strong
+              >.
+            </p>
+
+            <h3>2: Añade tus servicios</h3>
+            <p>
+              Ve a la pestaña <strong>"Servicios"</strong>. Rellena por completo
+              el primer panel (<strong>S1</strong>). Si tienes más servicios,
+              selecciónalos con los botones <strong>S2, S3 y S4</strong> y
+              complétalos siempre en orden.
+            </p>
+
+            <h3>3: ¡Descarga tu PDF!</h3>
+            <p>
+              Para obtener el PDF de la dieta que acabas de rellenar, haz clic
+              en el
+              <strong>menú</strong> (☰) y selecciona
+              <strong>
+                <img
+                  loading="lazy"
+                  src="assets/icons/download_blue.svg"
+                  alt=""
+                  class="icon-inline"
+                />
+                "Descargar dieta actual" </strong
+              >. ¡Se generará al momento!
+            </p>
+            <p>
+              ¿Necesitas una dieta de un día anterior? En el mismo menú, entra
+              en el
+              <strong>
+                <img
+                  loading="lazy"
+                  src="assets/icons/gear.svg"
+                  alt=""
+                  class="icon-inline"
+                />
+                "Gestor de dietas" </strong
+              >. Allí encontrarás todas las dietas que hayas guardado, listas
+              para descargar cuando quieras.
+            </p>
+
+            <h3 class="mt-25">Consejos:</h3>
+            <ul>
+              <li>
+                <strong>
+                  <img
+                    loading="lazy"
+                    src="assets/icons/no_photo.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  ¡Sáltate el paso de la foto!:
+                </strong>
+                En lugar de hacer fotos del AL20 para transcribir los datos más
+                tarde en MisDietas, ahórrate ese paso. Introduce la información
+                directamente en la app al finalizar cada servicio. Es más rápido
+                y la información se guarda al instante.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Escanear Horas (OCR):
+                </strong>
+                Si tu servicio es <strong>TSU</strong>, usa el botón
+                <strong>"Escanear"</strong> para rellenar las horas al momento
+                haciendo una foto al 'AL20' o subiendo una que ya tengas en tu
+                galería.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    loading="lazy"
+                    src="assets/icons/id_card_black.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Guardar y Cargar Dotación:
+                </strong>
+                Usa los botones junto al título "Dotación" para guardar los
+                datos del vehículo, conductor y ayudante. Así, podrás cargarlos
+                todos juntos la próxima vez que inicies una dieta, sin tener que
+                volver a escribirlos.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_glass.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Añade detalles a cada servicio:
+                </strong>
+                Si ha ocurrido alguna incidencia o necesitas aclarar algo, pulsa
+                el menú de opciones
+                <img
+                  loading="lazy"
+                  src="assets/icons/ic_submenu_gray.svg"
+                  alt="Menú de opciones"
+                  class="icon-inline"
+                />
+                y selecciona
+                <img
+                  loading="lazy"
+                  src="assets/icons/ic_note_gray.svg"
+                  alt="Añadir notas"
+                  class="icon-inline"
+                />
+                <strong>Añadir Notas</strong>. Todo lo que escribas quedará
+                registrado en el PDF final.
+              </li>
+              <li>
+                <strong>
+                  <img
+                    loading="lazy"
+                    src="assets/icons/cloud_off.svg"
+                    alt=""
+                    class="icon-inline"
+                  />
+                  Funciona sin conexión:
+                </strong>
+                Toda la información se guarda de forma segura en tu dispositivo,
+                por lo que puedes usar la app aunque no tengas internet.
+              </li>
+            </ul>
+          </div>
+
+          <div class="modal-buttons">
+            <button class="close-modal-btn">Entendido</button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="confirm-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-message"
+      >
+        <div class="modal-content">
+          <h3 class="modal-title"></h3>
+          <p id="confirm-message"></p>
+          <div class="modal-buttons">
+            <button id="confirm-no" class="modal-button no">No</button>
+            <button id="confirm-yes" class="modal-button yes">Sí</button>
+          </div>
+        </div>
+      </div>
+      <!-- Modal per notes -->
+      <div
+        id="notes-modal"
+        class="modal"
+        role="dialog"
+        aria-labelledby="notes-title"
+      >
+        <div class="modal-content">
+          <h2 id="notes-title">Notas del Servicio</h2>
+
+          <div class="notes-textarea-container">
+            <textarea
+              id="notes-textarea"
+              rows="6"
+              enterkeyhint="done"
+              placeholder=" "
+              maxlength="150"
+            ></textarea>
+            <label for="notes-textarea" class="notes-label"
+              >Añadir detalles</label
+            >
+            <div id="notes-char-counter" class="char-counter">0 / 150</div>
+          </div>
+
+          <div class="modal-buttons">
+            <button id="notes-cancel" class="modal-button cancel">
+              Cancelar
+            </button>
+            <button id="notes-save" class="modal-button accept">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Container per components React - no existeix per defecte (safe) -->
+      <div id="react-summary-container" class="hidden"></div>
+      <div id="react-progress-container" class="hidden"></div>
+      <div id="react-connection-container" class="hidden"></div>
+
+      <div id="camera-gallery-modal" class="modal-bottom hidden">
+        <div class="modal-bottom-content">
+          <div class="modal-title-container">
+            <h3 class="modal-bottom-title">Escanear</h3>
+            <span class="beta-tag">BETA</span>
+          </div>
+          <p class="modal-bottom-description">
+            Selecciona una foto de la galería o haz una foto con la cámara al
+            AL20 para extraer automáticamente las horas.
+          </p>
+          <div class="modal-bottom-row">
+            <button id="option-gallery" class="modal-bottom-btn">
+              <img src="assets/icons/gallery.svg" alt="Galería" />
+              <span class="modal-bottom-text">Galería</span>
+            </button>
+            <button id="option-camera" class="modal-bottom-btn">
+              <img src="assets/icons/camera.svg" alt="Cámara" />
+              <span class="modal-bottom-text">Cámara</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <template id="dotacio-template">
+        <div class="dotacio-item">
+          <div class="dotacio-item-content">
+            <span class="dotacio-info"></span>
+            <div class="button-container">
+              <!-- Només el botó de Cargar -->
+              <button class="dotacio-load" aria-label="Cargar dotació">
+                <img src="assets/icons/upload2.svg" alt="Cargar" class="icon" />
+                <span class="btn-text">Cargar</span>
+              </button>
+            </div>
+          </div>
+          <!-- Element per revelar en swipe -->
+          <div class="delete-reveal">
+            <div class="delete-reveal-content">
+              <img src="assets/icons/delete.svg" alt="Eliminar" class="icon" />
+              <span class="delete-text">Eliminar dotació</span>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template id="trash-item-template">
+        <div class="trash-item">
+          <div class="trash-item-content">
+            <div class="trash-item-date-row">
+              <span class="trash-item-date"></span>
+              <span class="trash-item-type-badge"></span>
+            </div>
+            <div class="trash-item-actions">
+              <button class="trash-restore-btn" aria-label="Restaurar dieta">
+                <img src="assets/icons/undo.svg" alt="Restaurar" class="icon" />
+                <span class="btn-text">Restaurar</span>
+              </button>
+              <button
+                class="trash-delete-btn"
+                aria-label="Eliminar permanentment"
+              >
+                <img
+                  src="assets/icons/delete.svg"
+                  alt="Eliminar"
+                  class="icon"
+                />
+                <span class="btn-text">Eliminar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+      <div id="save-pill" class="save-pill" role="status" aria-live="polite">
+        <span class="pill-icon" aria-hidden="true"></span>
+        <span class="pill-text"></span>
+      </div>
+      <script
+        type="module"
+        src="./dist/bundle.js?v=2.5.5"
+        data-csp-nonce
+      ></script>
+      <input type="file" accept="image/*" id="camera-input" class="hidden" />
+    </main>
+    <footer class="footer">
+      <div class="footer__content">
+        <div class="footer__icons">
+          <!-- Botó del tema -->
+          <button
+            id="theme-toggle-btn"
+            class="footer-btn"
+            aria-label="Canviar tema"
+          >
+            <img
+              id="theme-icon"
+              src="assets/icons/moon.svg"
+              alt="Icona de tema"
+              class="icon"
+              width="24"
+              height="24"
+            />
+            <span id="theme-btn-text" class="footer-btn-text">Oscuro</span>
+            <!-- ID nou i text inicial -->
+          </button>
+
+          <!-- Botó d'Informació -->
+          <a href="#about-modal" class="footer-btn" aria-label="Información">
+            <img src="assets/icons/info.svg" alt="" class="icon" />
+            <span class="footer-btn-text">Info</span>
+          </a>
+
+          <!-- Botó de Donacions -->
+          <a
+            id="openDonation"
+            href="https://www.paypal.com/donate/?hosted_button_id=XPFGNJ33CECHJ"
+            class="footer-btn"
+            aria-label="Colaborar con la aplicación"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="assets/icons/donation.svg"
+              alt="Icona de donacions"
+              class="icon"
+            />
+            <span class="footer-btn-text">Donar</span>
+          </a>
+        </div>
+        <div class="footer__text">
+          <span class="copyright-text">©2025 MisDietas</span>
+
+          <a href="/privacy-policy.html" target="_blank"
+            >Política de Privacidad</a
+          >
+          <span class="version-text" hidden>2.4.1</span>
+          <span id="offline-indicator" class="offline-indicator" hidden
+            >Offline</span
+          >
+        </div>
+      </div>
+    </footer>
+
+    <div id="cookie-consent-banner" class="cookie-banner hidden">
+      <div class="cookie-banner-content">
+        <p class="cookie-banner-text">
+          Utilizamos cookies para analizar el tráfico y mejorar tu experiencia.
+          Al hacer clic en "Aceptar", consientes su uso para análisis. Consulta
+          nuestra
+          <a href="/privacy-policy.html" target="_blank"
+            >Política de Privacidad</a
+          >
+          para más información.
+        </p>
+        <div class="cookie-banner-actions">
+          <button id="decline-cookies" class="cookie-btn cookie-btn-decline">
+            Rechazar
+          </button>
+          <button id="accept-cookies" class="cookie-btn cookie-btn-accept">
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- FIN DEL BANNER DE COOKIES -->
+
+    <!-- Datalists per suggeriments d'origen i destí -->
+    <datalist id="origin-datalist"></datalist>
+    <datalist id="destination-datalist"></datalist>
+  </body>
+</html>

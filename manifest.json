@@ -1,0 +1,81 @@
+{
+  "name": "MisDietas",
+  "short_name": "MisDietas",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a96e7",
+  "description": "Mis Dietas",
+  "icons": [
+    {
+      "src": "assets/images/icons-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/icons-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/icons-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/images/icons-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "assets/images/screenshot-desktop.png",
+      "sizes": "1280x993",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vista de escritorio de MisDietas"
+    },
+    {
+      "src": "assets/images/screenshot-mobile.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Vista móvil de MisDietas"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "orientation": "portrait",
+  "categories": ["productivity", "utilities"],
+  "dir": "ltr",
+  "iarc_rating_id": "e58c174a-81d2-5c3c-32cc-34b8de4a52e9",
+  "lang": "es",
+  "prefer_related_applications": false,
+
+  "id": "/",
+  "scope": "/",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "handle_links": "auto",
+  "shortcuts": [
+    {
+      "name": "Abrir formulario",
+      "short_name": "Formulario",
+      "description": "Abrir el formulario de la dieta",
+      "url": "./index.html",
+      "icons": [
+        {
+          "src": "assets/images/icons-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

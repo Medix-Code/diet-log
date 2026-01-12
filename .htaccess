@@ -1,0 +1,43 @@
+# 🔒 CONFIGURACIÓ DE SEGURETAT - Apache
+# Protegeix fitxers sensibles i de test
+
+# Bloquejar accés als fitxers de test i diagnòstic
+<FilesMatch "test-.*\.html$">
+    Require all denied
+</FilesMatch>
+
+# Bloquejar accés a la carpeta de tests
+<DirectoryMatch "^.*/tests/.*$">
+    Require all denied
+</DirectoryMatch>
+
+# Bloquejar accés a documentació de desenvolupament
+<DirectoryMatch "^.*/docs/.*$">
+    Require all denied
+</DirectoryMatch>
+
+# Bloquejar fitxers de configuració
+<FilesMatch "\.(config|env|log)$">
+    Require all denied
+</FilesMatch>
+
+# Headers de seguretat
+<IfModule mod_headers.c>
+    # Prevenir MIME sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Protecció XSS
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Prevenir clickjacking
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Content Security Policy
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self';"
+    
+    # Referrer Policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Permissions Policy
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>

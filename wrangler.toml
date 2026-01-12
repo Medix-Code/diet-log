@@ -1,0 +1,13 @@
+# Configuració de Cloudflare Worker per Diet-Log
+name = "diet-log-worker"
+main = "_worker.js"
+compatibility_date = "2024-01-01"
+
+# Variables d'entorn
+[vars]
+ENVIRONMENT = "production"
+
+# Routes - Configurar segons domini
+routes = [
+  { pattern = "misdietas.com/*", zone_name = "misdietas.com" }
+]
