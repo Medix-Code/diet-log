@@ -84,6 +84,7 @@ function createDietListItem(diet) {
   let displayText = ddmmaa;
 
   displayText += ` - ${capitalizeFirstLetter(franjaText)}`;
+
   dateSpan.textContent = displayText;
 
   const iconsContainer = document.createElement("div");
@@ -109,6 +110,23 @@ function createDietListItem(diet) {
   deleteContent.appendChild(deleteText);
   deleteReveal.appendChild(deleteContent);
 
+  // ✅ Afegir listener de clic al botó d'eliminar
+  deleteReveal.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // Animació d'eliminació
+    dietItem.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+    dietItem.style.transform = "translateX(-100%)";
+    dietItem.style.opacity = "0";
+
+    setTimeout(async () => {
+      dietItem.remove();
+      updateDietListVisibility();
+      await deleteDietHandler(displayId, diet.date, diet.dietType);
+    }, 300);
+  });
+
   const loadBtn = document.createElement("button");
   loadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} ${CSS_CLASSES.LIST_ITEM_BTN_LOAD} ${CSS_CLASSES.DIET_LOAD_BTN}`;
   loadBtn.setAttribute("aria-label", `Editar dieta ${ddmmaa}`);
@@ -132,14 +150,41 @@ function createDietListItem(diet) {
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_DATE, diet.date);
   loadBtn.setAttribute(DATA_ATTRIBUTES.DIET_TYPE, diet.dietType);
 
-  // Prevenir que els botons activin el swipe-to-delete
-  loadBtn.addEventListener("mousedown", (e) => e.stopPropagation());
-  loadBtn.addEventListener("touchstart", (e) => e.stopPropagation(), {
-    passive: true,
-  });
+  // Variable per detectar si s'ha fet swipe o tap
+  let loadBtnStartX = 0;
+  let loadBtnHasMoved = false;
 
-  // Afegir listener de clic directament al botó per garantir que funcioni
+  loadBtn.addEventListener("mousedown", (e) => {
+    loadBtnStartX = e.clientX;
+    loadBtnHasMoved = false;
+  });
+  loadBtn.addEventListener("mousemove", (e) => {
+    if (Math.abs(e.clientX - loadBtnStartX) > 10) loadBtnHasMoved = true;
+  });
+  loadBtn.addEventListener(
+    "touchstart",
+    (e) => {
+      loadBtnStartX = e.touches[0].clientX;
+      loadBtnHasMoved = false;
+    },
+    { passive: true }
+  );
+  loadBtn.addEventListener(
+    "touchmove",
+    (e) => {
+      if (Math.abs(e.touches[0].clientX - loadBtnStartX) > 10)
+        loadBtnHasMoved = true;
+    },
+    { passive: true }
+  );
+
+  // Només executar l'acció si NO s'ha fet swipe
   loadBtn.addEventListener("click", (e) => {
+    if (loadBtnHasMoved) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     e.stopPropagation();
     const rawId = loadBtn.getAttribute(DATA_ATTRIBUTES.DIET_ID);
     const dietDate = loadBtn.getAttribute(DATA_ATTRIBUTES.DIET_DATE);
@@ -176,7 +221,7 @@ function createDietListItem(diet) {
   downloadIcon.style.pointerEvents = "none"; // Evitar que la icona intercepti events
 
   const downloadText = document.createElement("span");
-  downloadText.className = "btn-text visually-hidden";
+  downloadText.className = "btn-text";
   downloadText.textContent = "PDF";
   downloadText.style.pointerEvents = "none"; // Evitar que el text intercepti events
 
@@ -185,14 +230,42 @@ function createDietListItem(diet) {
 
   downloadBtn.setAttribute(DATA_ATTRIBUTES.DIET_ID, displayId);
 
-  // Prevenir que el botó PDF activi el swipe-to-delete
-  downloadBtn.addEventListener("mousedown", (e) => e.stopPropagation());
-  downloadBtn.addEventListener("touchstart", (e) => e.stopPropagation(), {
-    passive: true,
-  });
+  // Variable per detectar si s'ha fet swipe o tap
+  let downloadBtnStartX = 0;
+  let downloadBtnHasMoved = false;
 
-  // Afegir listener de clic directament al botó per garantir que funcioni
+  downloadBtn.addEventListener("mousedown", (e) => {
+    downloadBtnStartX = e.clientX;
+    downloadBtnHasMoved = false;
+  });
+  downloadBtn.addEventListener("mousemove", (e) => {
+    if (Math.abs(e.clientX - downloadBtnStartX) > 10)
+      downloadBtnHasMoved = true;
+  });
+  downloadBtn.addEventListener(
+    "touchstart",
+    (e) => {
+      downloadBtnStartX = e.touches[0].clientX;
+      downloadBtnHasMoved = false;
+    },
+    { passive: true }
+  );
+  downloadBtn.addEventListener(
+    "touchmove",
+    (e) => {
+      if (Math.abs(e.touches[0].clientX - downloadBtnStartX) > 10)
+        downloadBtnHasMoved = true;
+    },
+    { passive: true }
+  );
+
+  // Només executar l'acció si NO s'ha fet swipe
   downloadBtn.addEventListener("click", (e) => {
+    if (downloadBtnHasMoved) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     e.stopPropagation();
     e.preventDefault();
     const dietId = downloadBtn.getAttribute(DATA_ATTRIBUTES.DIET_ID);
@@ -262,12 +335,19 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let isDragging = false;
   let isDeleting = false;
   let isSwipeActive = false;
+  let hasMoved = false; // Per detectar si és clic o drag
 
   // Handlers que s'afegiran/trauran dinàmicament
   const handleMouseMove = (event) => {
     if (!isSwipeActive) return;
     currentX = event.clientX;
     const diff = startX - currentX;
+
+    // Si s'ha mogut més de 10px, és un drag (no un clic)
+    if (Math.abs(diff) > 10) {
+      hasMoved = true;
+    }
+
     if (diff > 10 && !isDragging) {
       isDragging = true;
       dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
@@ -286,6 +366,7 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     if (!isSwipeActive || isDeleting) {
       isSwipeActive = false;
       isDragging = false;
+      hasMoved = false;
       return;
     }
 
@@ -311,6 +392,7 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     }
 
     isDragging = false;
+    hasMoved = false;
     setTimeout(() => {
       dietItem.style.transition = "";
       dietItem.style.opacity = "";
@@ -318,22 +400,12 @@ function initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   };
 
   dietItem.addEventListener("mousedown", (event) => {
-    // ⛔ IGNORAR si el clic és dins de botons o elements interactius
-    if (
-      event.target.closest("button") ||
-      event.target.closest(".diet-icons") ||
-      event.target.closest(".list-item-btn") ||
-      event.target.tagName === "BUTTON" ||
-      event.target.tagName === "IMG" ||
-      event.target.tagName === "SPAN"
-    ) {
-      return;
-    }
-
+    // Sempre iniciar el swipe, sense importar on es clica
     isSwipeActive = true;
     startX = event.clientX;
     currentX = startX;
     isDragging = false;
+    hasMoved = false;
 
     // Afegir listeners globals NOMÉS quan s'inicia un swipe vàlid
     document.addEventListener("mousemove", handleMouseMove);
@@ -347,11 +419,18 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   let isSwiping = false;
   let isDeleting = false;
   let isSwipeActive = false;
+  let hasMoved = false; // Per detectar si és tap o swipe
 
   const handleTouchMove = (event) => {
     if (!isSwipeActive) return;
     currentX = event.touches[0].clientX;
     const diff = startX - currentX;
+
+    // Si s'ha mogut més de 10px, és un swipe (no un tap)
+    if (Math.abs(diff) > 10) {
+      hasMoved = true;
+    }
+
     if (diff > 10 && !isSwiping) {
       isSwiping = true;
       dietItem.classList.add(CSS_CLASSES.DIET_ITEM_SWIPING);
@@ -372,6 +451,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     if (!isSwipeActive || isDeleting) {
       isSwipeActive = false;
       isSwiping = false;
+      hasMoved = false;
       if (dietModalElement) dietModalElement.style.overflow = "";
       return;
     }
@@ -399,6 +479,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
     }
 
     isSwiping = false;
+    hasMoved = false;
     setTimeout(() => {
       dietItem.style.transition = "";
       dietItem.style.opacity = "";
@@ -410,22 +491,12 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
   dietItem.addEventListener(
     "touchstart",
     (event) => {
-      // ⛔ IGNORAR si el touch és dins de botons o elements interactius
-      if (
-        event.target.closest("button") ||
-        event.target.closest(".diet-icons") ||
-        event.target.closest(".list-item-btn") ||
-        event.target.tagName === "BUTTON" ||
-        event.target.tagName === "IMG" ||
-        event.target.tagName === "SPAN"
-      ) {
-        return;
-      }
-
+      // Sempre iniciar el swipe, sense importar on es toca
       isSwipeActive = true;
       startX = event.touches[0].clientX;
       currentX = startX;
       isSwiping = false;
+      hasMoved = false;
 
       // Afegir listeners NOMÉS quan s'inicia un swipe vàlid
       dietItem.addEventListener("touchmove", handleTouchMove, {
@@ -433,7 +504,7 @@ function initSwipeToDelete(dietItem, dietId, dietDate, dietType) {
       });
       dietItem.addEventListener("touchend", handleTouchEnd);
     },
-    { passive: false }
+    { passive: true }
   );
 
   initMouseSwipeToDelete(dietItem, dietId, dietDate, dietType);

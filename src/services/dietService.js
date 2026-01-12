@@ -393,8 +393,21 @@ export async function loadDietById(dietId) {
       log.debug("🔓 Dieta desencriptada correctament");
     } catch (decryptError) {
       log.error("Error desencriptant dieta:", decryptError);
-      showToast("Error desencriptant dieta. Pot estar corrupta.", "error");
-      throw decryptError;
+
+      // Mostrar missatge informatiu
+      showToast(
+        "⚠️ Aquesta dieta no es pot desencriptar. " +
+          "Pot estar encriptada amb una clau diferent o estar corrupta. " +
+          "Les dades no es poden recuperar.",
+        "error",
+        5000
+      );
+
+      // Llançar error per evitar carregar dades corruptes
+      throw new Error(
+        "No es pot desencriptar aquesta dieta. " +
+          "Pot estar encriptada amb una clau antiga o diferent."
+      );
     }
   }
 

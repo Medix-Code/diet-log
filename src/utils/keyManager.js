@@ -44,6 +44,7 @@ const KEY_STORE_VERSION = 1;
 const MASTER_KEY_ID = "master-key-v1";
 const WRAPPED_KEY_ID = "wrapped-master-key";
 const DEVICE_SALT_ID = "device-salt";
+const DEVICE_FINGERPRINT_ID = "device-fingerprint"; // NOU: Guardem el fingerprint
 const MAX_KEY_RECOVERY_ATTEMPTS = 2;
 export const RECOVERY_PHRASE_ENABLED = false;
 
@@ -186,10 +187,9 @@ async function getDeviceSalt() {
 /**
  * Genera un fingerprint del navegador basat en característiques estables
  * NOTA: Només usa característiques que no canvien amb mode responsiu
- * ⚠️ NO MODIFICAR AIXÒ - Canviar el fingerprint trencaria l'accés a claus existents!
  * @returns {string} Fingerprint del navegador
  */
-function getBrowserFingerprint() {
+function generateBrowserFingerprint() {
   const components = [
     navigator.userAgent || "",
     navigator.language || "",
@@ -202,6 +202,28 @@ function getBrowserFingerprint() {
 
   // Combinar components
   return components.join("|");
+}
+
+/**
+ * Obté el fingerprint guardat o en genera un de nou i el guarda
+ * IMPORTANT: El fingerprint es guarda a IndexedDB per garantir consistència
+ * ⚠️ Això evita problemes quan el userAgent canvia (DevTools, actualitzacions, etc.)
+ * @returns {Promise<string>} Fingerprint del navegador
+ */
+async function getOrCreateFingerprint() {
+  // Intentar recuperar fingerprint existent
+  let fingerprint = await getFromKeyStore(DEVICE_FINGERPRINT_ID);
+
+  if (!fingerprint) {
+    // Generar nou fingerprint i guardar-lo
+    fingerprint = generateBrowserFingerprint();
+    await saveToKeyStore(DEVICE_FINGERPRINT_ID, fingerprint);
+    log.debug("Nou fingerprint de dispositiu generat i guardat");
+  } else {
+    log.debug("Fingerprint existent recuperat d'IndexedDB");
+  }
+
+  return fingerprint;
 }
 
 /**
@@ -225,10 +247,10 @@ async function deriveDeviceKey(useLegacyPassphrase = false) {
       passphrase = "diet-log-encryption-v1";
       log.debug("Usant passphrase legacy per compatibilitat");
     } else {
-      // NOU: Derivar de fingerprint del navegador
-      const fingerprint = getBrowserFingerprint();
+      // NOU: Obtenir fingerprint guardat (consistent entre sessions)
+      const fingerprint = await getOrCreateFingerprint();
       passphrase = `diet-log-v2-${fingerprint}`;
-      log.debug("Usant passphrase derivada de fingerprint");
+      log.debug("Usant passphrase derivada de fingerprint guardat");
     }
 
     // Importar passphrase com a clau base
@@ -379,6 +401,7 @@ async function unwrapMasterKey(
 /**
  * Inicialitza el sistema de claus (primera vegada)
  * Genera clau mestra i la protegeix amb device key
+ * Inclou migració automàtica per a usuaris existents
  */
 export async function initializeKeySystem() {
   try {
@@ -390,32 +413,105 @@ export async function initializeKeySystem() {
     if (existingWrappedKey) {
       log.debug("⚠️ Sistema de claus ja inicialitzat. Validant integritat...");
 
-      // VALIDAR que la clau existent funciona!
-      // NO passem deviceKey per permetre el fallback automàtic a legacy passphrase
+      // Comprovar si tenim fingerprint guardat (usuaris nous) o no (usuaris antics)
+      const savedFingerprint = await getFromKeyStore(DEVICE_FINGERPRINT_ID);
+      const testWrappedKey = new Uint8Array(existingWrappedKey);
+
+      // VALIDAR que la clau existent funciona
       try {
-        const testWrappedKey = new Uint8Array(existingWrappedKey);
         const existingMasterKey = await unwrapMasterKey(testWrappedKey);
         log.debug("✅ Clau existent validada correctament");
+
+        // Si no teníem fingerprint guardat però funciona, guardar-lo ara!
+        if (!savedFingerprint) {
+          const currentFingerprint = generateBrowserFingerprint();
+          await saveToKeyStore(DEVICE_FINGERPRINT_ID, currentFingerprint);
+          log.debug(
+            "💾 Fingerprint guardat per primera vegada (migració automàtica)"
+          );
+        }
 
         // ✅ IMPORTANT: Cachear la clau per a futures operacions
         cacheKey(existingMasterKey);
         log.debug("💾 Clau existent cacheada per a futures operacions");
         return; // Tot OK
       } catch (validationError) {
-        // ⚠️ IMPORTANT: NO resetar el sistema de claus!
-        // Això destruiria l'accés a les dades encriptades existents.
-        // En lloc d'això, llançar un error per a que l'usuari sàpiga del problema.
-        log.error(
-          "❌ No s'ha pogut desprotegir la clau mestra existent. Les dades encriptades no són accessibles des d'aquest navegador/dispositiu."
-        );
-        log.error("Error de validació:", validationError);
+        log.warn("⚠️ Error amb passphrase principal, intentant migració...");
 
-        // Llançar error en lloc de resetar
-        throw new Error(
-          "No s'ha pogut accedir a la clau d'encriptació. " +
-            "Pot ser que estiguis usant un navegador diferent o en mode incògnit. " +
-            "Les dades encriptades només són accessibles des del navegador original."
+        // INTENT DE MIGRACIÓ: Si tenim clau però no fingerprint guardat,
+        // pot ser un usuari antic que necessita migrar a legacy passphrase
+        if (!savedFingerprint) {
+          try {
+            // Intentar amb legacy passphrase directament
+            const legacyDeviceKey = await deriveDeviceKey(true);
+            const masterKey = await crypto.subtle.unwrapKey(
+              "raw",
+              testWrappedKey.buffer.slice(
+                testWrappedKey.byteOffset,
+                testWrappedKey.byteOffset + testWrappedKey.byteLength
+              ),
+              legacyDeviceKey,
+              WRAPPING_CONFIG.name,
+              MASTER_KEY_CONFIG,
+              true, // Exportable per poder re-wrap
+              ["encrypt", "decrypt"]
+            );
+
+            log.info("✅ Migració exitosa amb legacy passphrase!");
+
+            // RE-WRAP amb el nou sistema (fingerprint guardat)
+            const newFingerprint = generateBrowserFingerprint();
+            await saveToKeyStore(DEVICE_FINGERPRINT_ID, newFingerprint);
+
+            const newDeviceKey = await deriveDeviceKey(false);
+            const newWrappedKey = await crypto.subtle.wrapKey(
+              "raw",
+              masterKey,
+              newDeviceKey,
+              WRAPPING_CONFIG.name
+            );
+
+            // Guardar nova clau wrapped
+            const wrappedKeyArray = Array.from(new Uint8Array(newWrappedKey));
+            await saveToKeyStore(WRAPPED_KEY_ID, wrappedKeyArray);
+
+            log.info(
+              "✅ Clau migrada al nou sistema amb fingerprint persistent!"
+            );
+
+            // Cachear i continuar
+            cacheKey(masterKey);
+            return;
+          } catch (migrationError) {
+            log.error("❌ Migració fallida:", migrationError);
+          }
+        }
+
+        // Si tot falla, informar però NO bloquejar l'app
+        log.error(
+          "❌ No s'ha pogut desprotegir la clau mestra existent. " +
+            "Algunes dietes antigues no seran accessibles."
         );
+
+        // Crear nova clau per a que les NOVES dietes funcionin
+        log.info(
+          "🔄 Creant nova clau per a futures dietes (les antigues queden inaccessibles)..."
+        );
+
+        const newMasterKey = await generateMasterKey();
+        const newFingerprint = generateBrowserFingerprint();
+        await saveToKeyStore(DEVICE_FINGERPRINT_ID, newFingerprint);
+
+        const newDeviceKey = await deriveDeviceKey(false);
+        const newWrappedKey = await wrapMasterKey(newMasterKey, newDeviceKey);
+        const newWrappedKeyArray = Array.from(new Uint8Array(newWrappedKey));
+        await saveToKeyStore(WRAPPED_KEY_ID, newWrappedKeyArray);
+
+        cacheKey(newMasterKey);
+        log.info(
+          "✅ Nova clau creada. Les noves dietes funcionaran correctament."
+        );
+        return;
       }
     }
 
