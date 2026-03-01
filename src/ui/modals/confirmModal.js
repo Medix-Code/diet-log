@@ -41,7 +41,7 @@ export function setupConfirmModal() {
   ensureElements();
 }
 
-export function showConfirmModal(message, title = "Confirmar acció") {
+export function showConfirmModal(message, title = "Confirmar acción") {
   if (!ensureElements()) {
     log.warn("No s'ha trobat el modal de confirmació; es retorna false.");
     return Promise.resolve(false);

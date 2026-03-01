@@ -71,9 +71,7 @@ async function loadPdfLib() {
         } catch (localError) {
           log.error("❌ Error carregant pdf-lib (CDN i local):", localError);
           pdfLibLoadPromise = null;
-          throw new Error(
-            "No s'ha pogut carregar pdf-lib. Comprova la connexió a internet."
-          );
+          throw new Error("No se ha podido cargar PDFLib. Comprueba tu conexión a internet.");
         }
       }
     })();
@@ -191,7 +189,8 @@ export async function generateAndDownloadPdf() {
 
   try {
     const { generalData, servicesData } = gatherAllData();
-    if (!generalData || !servicesData) throw new Error("Dades no recollides.");
+    if (!generalData || !servicesData)
+      throw new Error("No se han podido recoger los datos.");
 
     await loadPdfLib();
     const pdfBytes = await fillPdf(generalData, servicesData);

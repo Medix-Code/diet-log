@@ -54,7 +54,7 @@ export const FIELD_COORDINATES = {
     start: { x: 65, y: 230, size: 16, color: "#333333" },
   },
   fixedText: {
-    website: { x: 250, y: 20, size: 6, color: "#EEEEEE" },
+    website: { x: 250, y: 20, size: 6, color: "#D6D6D6" },
   },
 };
 
@@ -111,8 +111,8 @@ function getPdfTemplateUrl() {
 
 export async function fillPdf(generalData, servicesData) {
   if (!generalData || !Array.isArray(servicesData))
-    throw new Error("Dades invàlides.");
-  if (!window.PDFLib) throw new Error("PDFLib no carregada.");
+    throw new Error("Datos no válidos.");
+  if (!window.PDFLib) throw new Error("PDFLib no está cargada.");
 
   const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
   const pdfTemplateUrl = getPdfTemplateUrl();
