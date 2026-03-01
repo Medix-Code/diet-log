@@ -371,7 +371,7 @@ export async function autoSaveDiet() {
 /* ───────────── dietService.js ───────────── */
 export async function loadDietById(dietId) {
   if (!dietId || typeof dietId !== "string") {
-    throw new Error("ID invàlid");
+    throw new Error("ID inválido");
   }
 
   // 1️⃣  Si ja ens arriba un hash (64 caràcters) el fem servir directament.
@@ -382,7 +382,7 @@ export async function loadDietById(dietId) {
       : await getDiet(await pseudoId(dietId)); // número → hash
 
   if (!diet) {
-    throw new Error(`Dieta no trobada: ${dietId}`);
+    throw new Error(`Dieta no encontrada: ${dietId}`);
   }
 
   // 🔓 DESENCRIPTACIÓ TRANSPARENT: Desencriptar si està encriptada

@@ -275,7 +275,7 @@ export async function fillPdf(generalData, servicesData) {
       color: rgb(0.8, 0.8, 0.8),
     });
 
-    const title = notes.length === 1 ? "Observació" : "Observacions";
+    const title = notes.length === 1 ? "Observación" : "Observaciones";
     page.drawText(title, {
       ...FIELD_COORDINATES.notesSection.title,
       font: helveticaFont,
@@ -290,7 +290,7 @@ export async function fillPdf(generalData, servicesData) {
     notes.forEach(({ num, text }) => {
       if (y < 40) return;
 
-      const prefix = `Servei ${num}: `;
+      const prefix = `Servicio ${num}: `;
       page.drawText(prefix, {
         x: LEFT_BOUNDARY,
         y,

@@ -5,6 +5,7 @@ import {
   capitalizeFirstLetter,
 } from "../../utils/utils.js";
 import { downloadDietPDF } from "../../services/pdfService.js";
+import { showToast } from "../toast.js";
 import {
   CSS_CLASSES,
   DATA_ATTRIBUTES,
@@ -203,6 +204,10 @@ function createDietListItem(diet) {
       })
       .catch((error) => {
         log.error("Error en carregar la dieta:", error);
+        showToast(
+          error?.message || "No se ha podido cargar la dieta.",
+          "error"
+        );
       });
   });
 
@@ -210,7 +215,7 @@ function createDietListItem(diet) {
   downloadBtn.className = `${CSS_CLASSES.LIST_ITEM_BTN} diet-download`;
   downloadBtn.setAttribute(
     "aria-label",
-    `Descarregar PDF de la dieta ${ddmmaa}`
+    `Descargar PDF de la dieta ${ddmmaa}`
   );
 
   // Seguretat XSS: usar createElement en lloc de innerHTML
@@ -307,6 +312,10 @@ function handleDietListClick(event) {
       })
       .catch((error) => {
         log.error("Error en carregar la dieta:", error);
+        showToast(
+          error?.message || "No se ha podido cargar la dieta.",
+          "error"
+        );
       });
   } else if (downloadButton) {
     event.stopPropagation();
