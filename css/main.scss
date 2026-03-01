@@ -255,12 +255,20 @@ input.destination {
   left: 0;
   height: var(--top-bar-height);
   width: 100%;
-  border-bottom: 1px solid var(--border-bottom-topbar);
-  background-color: var(--primary-color);
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(135deg, #0a4fae 0%, #004aad 62%, #004398 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1100;
+  box-shadow: 0 8px 20px rgba(0, 36, 84, 0.14);
+}
+
+.top-bar__left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .top-bar__center {
@@ -273,17 +281,17 @@ input.destination {
 
 .logo-title {
   display: flex;
-  align-items: center; // Alinea verticalment el logo i el títol
-  gap: 12px; // Espai entre el logo i el títol
+  align-items: center;
+  gap: 0;
   text-decoration: none;
 }
 
 .top-bar__title {
-  font-weight: 600;
+  font-weight: 620;
   margin: 0;
-  font-size: 30px;
-  padding-left: 20px;
-  letter-spacing: 0;
+  font-size: clamp(1.7rem, 2.4vw, 1.95rem);
+  padding-left: 0;
+  letter-spacing: -0.02em;
   color: var(--title-color);
   text-align: center;
 }
@@ -293,22 +301,24 @@ input.destination {
   position: relative;
   display: flex;
   gap: var(--space-sm);
-  padding-right: var(--space-md);
+  padding-right: 0;
 }
 
 .ajustes-btn {
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   outline: none;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   transition: all var(--transition-speed) var(--timing-smooth);
   position: relative;
   overflow: hidden;
-  border-radius: 50%;
+  border-radius: 12px;
   transform: scale(1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 
   &:focus-visible {
     outline: 2px solid var(--color-interactive-focus);
@@ -316,12 +326,12 @@ input.destination {
   }
 
   &:hover {
-    background-color: var(--color-interactive-hover);
-    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.1);
+    transform: none;
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 
   &::before {
@@ -591,12 +601,18 @@ input.destination {
   top: var(--tab-height);
   left: 0;
   width: 100%;
-  background-color: var(--bg-color);
+  padding: 0;
+  background: rgba(255, 255, 255, 0.98);
   display: flex;
   justify-content: center;
+  border: 0;
   border-bottom: 1px solid var(--grey-border);
+  border-radius: 0;
   z-index: 900;
-  box-shadow: 0 2px 5px var(--bg-transp-ajustes);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: none;
 }
 
 button {
@@ -613,25 +629,32 @@ button {
   text-align: center;
   align-items: center;
   justify-content: center;
-  padding: 15px 10px;
+  min-height: 48px;
+  padding: 13px 16px 12px;
   cursor: pointer;
-  background: var(--bg-tab-noactive);
+  background: transparent;
   border: none;
+  border-radius: 0;
   display: flex;
-  font-size: 1.01rem;
+  font-size: 0.98rem;
   font-family: inherit;
-  color: var(--txtcolor-tab-noactive);
-  transition: all var(--transition-speed) ease;
+  font-weight: 520;
+  color: rgba(32, 45, 69, 0.74);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
-    background-color: var(--bg-tab-hover);
+    background: rgba(0, 74, 173, 0.04);
+    color: rgba(20, 33, 56, 0.92);
   }
 
   &.active {
-    font-size: 1.125rem;
-    font-weight: 600;
-    background-color: var(--bg-tab-active);
-    color: var(--txtcolor-tab-active);
+    font-size: 0.98rem;
+    font-weight: 650;
+    color: #16345c;
+    background: transparent;
     box-shadow: inset 0 -3px 0 var(--line-tab);
   }
 }
@@ -4152,23 +4175,24 @@ body.modal-open {
 @media (max-width: 768px) {
   .top-bar {
     height: calc(var(--top-bar-height) + 10px);
-    padding: 0;
+    padding: 0 12px;
   }
 
   .top-bar__title {
-    font-size: 22px;
-    padding-left: 20px;
+    font-size: 1.95rem;
+    padding-left: 0;
   }
 
   .button-group {
     flex-direction: row;
     margin-left: auto;
-    padding-right: 10px;
+    padding-right: 0;
   }
 
   .ajustes-btn {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
   }
 
   .hamburger {
@@ -4196,12 +4220,12 @@ body.modal-open {
   }
 
   .tab {
-    min-height: 8px;
-    padding: 14px 16px;
-    font-size: 0.9rem;
+    min-height: 46px;
+    padding: 12px 12px 11px;
+    font-size: 0.94rem;
 
     &.active {
-      font-size: 1rem;
+      font-size: 0.94rem;
     }
   }
 
