@@ -43,12 +43,7 @@ const DEV_HOSTNAMES = new Set([
 ]);
 
 function shouldShowFooterForEnvironment() {
-  // Mostra el footer quan treballem en entorn de desenvolupament.
-  if (process.env.NODE_ENV && process.env.NODE_ENV !== "production") {
-    return true;
-  }
-
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") return true;
 
   const params = new URLSearchParams(window.location.search);
   const urlOverride = params.get("showFooter");
@@ -56,12 +51,7 @@ function shouldShowFooterForEnvironment() {
   if (urlOverride === "1") return true;
   if (urlOverride === "0") return false;
 
-  const hostname = window.location.hostname || "";
-  return (
-    DEV_HOSTNAMES.has(hostname) ||
-    hostname.endsWith(".local") ||
-    hostname === ""
-  );
+  return true;
 }
 
 function applyFooterVisibilityFlag() {
