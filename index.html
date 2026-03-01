@@ -69,8 +69,8 @@
       type="image/svg+xml"
     />
     <link rel="prefetch" href="assets/icons/sun.svg" />
-    <link rel="preload" href="/css/main.min.css?v=2.4.7" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css?v=2.4.7" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.8" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.8" />
     <style data-csp-nonce>
       #about-modal .about-modal-card {
         width: min(680px, 92vw);
@@ -93,8 +93,9 @@
 
       #about-modal .about-modal-header {
         position: relative;
-        padding: 28px 32px 22px;
+        padding: 22px 32px 18px;
         border-bottom: 1px solid rgba(0, 74, 173, 0.12);
+        background: rgba(255, 255, 255, 0.96);
       }
 
       #about-modal .about-close-btn {
@@ -124,7 +125,7 @@
       }
 
       #about-modal .about-eyebrow {
-        margin: 0 0 10px;
+        margin: 0;
         font-size: 0.78rem;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -133,7 +134,7 @@
       }
 
       #about-modal #about-title {
-        margin: 0;
+        margin: 0 0 12px;
         padding: 0;
         border: 0;
         text-align: left;
@@ -158,6 +159,10 @@
 
       #about-modal .about-modal-content {
         padding: 24px 32px 28px;
+      }
+
+      #about-modal .about-modal-content-intro {
+        margin-bottom: 24px;
       }
 
       #about-modal .about-steps,
@@ -255,7 +260,7 @@
 
         #about-modal .about-modal-header {
           padding-top: 22px;
-          padding-bottom: 18px;
+          padding-bottom: 16px;
         }
 
         #about-modal .about-modal-content {
@@ -1232,24 +1237,26 @@
         tabindex="-1"
       >
         <div class="modal-content about-modal-card">
+          <div class="about-modal-header">
+            <button
+              class="close-modal about-close-btn"
+              type="button"
+              aria-label="Cerrar ayuda"
+            >
+              ×
+            </button>
+            <p class="about-eyebrow">Ayuda rápida</p>
+          </div>
+
           <div class="modal-scrollable-content about-modal-body">
-            <div class="about-modal-header">
-              <button
-                class="close-modal about-close-btn"
-                type="button"
-                aria-label="Cerrar ayuda"
-              >
-                ×
-              </button>
-              <p class="about-eyebrow">Ayuda rápida</p>
+            <div class="about-modal-content">
+            <div class="about-modal-content-intro">
               <h2 id="about-title">Cómo usar MisDietas</h2>
               <p class="about-intro">
                 Guarda servicios, reutiliza dotaciones y descarga el PDF desde
                 el móvil en pocos pasos.
               </p>
             </div>
-
-            <div class="about-modal-content">
             <section class="about-steps" aria-label="Pasos principales">
               <article class="about-step">
                 <div class="about-step-number">01</div>
@@ -1450,7 +1457,7 @@
       </div>
       <script
         type="module"
-        src="./dist/bundle.js?v=2.4.7"
+        src="./dist/bundle.js?v=2.4.8"
         data-csp-nonce
       ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
@@ -1505,7 +1512,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text" hidden>2.4.7</span>
+          <span class="version-text" hidden>2.4.8</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
