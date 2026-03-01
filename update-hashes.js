@@ -17,8 +17,8 @@ console.log("📝 Actualitzant hashes d'integritat al Service Worker...");
 
 // Fitxers a verificar
 const files = {
-  "/dist/bundle.js?v=2.4.14": "dist/bundle.js",
-  "/css/main.min.css?v=2.4.14": "css/main.min.css",
+  "/dist/bundle.js?v=2.4.15": "dist/bundle.js",
+  "/css/main.min.css?v=2.4.15": "css/main.min.css",
 };
 
 // Calcular hashes
@@ -44,10 +44,10 @@ let swContent = fs.readFileSync(swPath, "utf8");
 // Actualitzar RESOURCE_INTEGRITY
 const resourceIntegrityRegex = /const RESOURCE_INTEGRITY = \{[^}]+\}/s;
 const newResourceIntegrity = `const RESOURCE_INTEGRITY = {
-  "/dist/bundle.js?v=2.4.14":
-    "${hashes["/dist/bundle.js?v=2.4.14"]}",
-  "/css/main.min.css?v=2.4.14":
-    "${hashes["/css/main.min.css?v=2.4.14"]}",
+  "/dist/bundle.js?v=2.4.15":
+    "${hashes["/dist/bundle.js?v=2.4.15"]}",
+  "/css/main.min.css?v=2.4.15":
+    "${hashes["/css/main.min.css?v=2.4.15"]}",
 }`;
 
 swContent = swContent.replace(resourceIntegrityRegex, newResourceIntegrity);
