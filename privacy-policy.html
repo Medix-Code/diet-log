@@ -6,44 +6,68 @@
     <title>Política de Privacidad - MisDietas</title>
     <link rel="stylesheet" href="/css/main.min.css" />
     <style>
+      :root {
+        color-scheme: light;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
       .body-privacy-policy {
-        background: var(--bg-color);
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(0, 74, 173, 0.06),
+            transparent 24%
+          ),
+          linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);
         color: var(--text-color);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           sans-serif;
         line-height: 1.6;
         margin: 0;
-        padding: 0;
+        padding: 40px 20px 56px;
       }
       .container {
-        width: 90%;
-        max-width: 800px;
+        width: min(920px, 100%);
         margin: 0 auto;
-        padding: 2rem;
+        padding: 48px 56px 56px;
         background: #ffffff;
-        min-height: 100vh;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        min-height: calc(100vh - 96px);
+        border-radius: 24px;
+        border: 1px solid rgba(0, 74, 173, 0.08);
+        box-shadow:
+          0 24px 60px rgba(15, 23, 42, 0.08),
+          0 6px 18px rgba(15, 23, 42, 0.05);
       }
       h1 {
         color: var(--primary-color);
         text-align: center;
-        margin-bottom: 1rem;
+        margin: 0 0 1.25rem;
+        font-size: clamp(2rem, 3vw, 2.75rem);
+        line-height: 1.1;
       }
       h2 {
         color: var(--primary-color);
-        margin-top: 2rem;
+        margin-top: 2.5rem;
         margin-bottom: 1rem;
         border-bottom: 1px solid var(--input-border);
         padding-bottom: 0.5rem;
+        font-size: clamp(1.35rem, 2vw, 1.8rem);
+        line-height: 1.2;
       }
       h3 {
         color: var(--text-color);
-        margin-top: 1.5rem;
+        margin-top: 1.75rem;
         margin-bottom: 0.5rem;
+        font-size: 1.15rem;
       }
       p,
       li {
         margin-bottom: 1rem;
+        max-width: 74ch;
+        font-size: 1.03rem;
       }
       ul {
         padding-left: 1.5rem;
@@ -70,30 +94,30 @@
         color: var(--primary-color);
         font-weight: bold;
       }
-      @media (max-width: 600px) {
-        .container {
-          padding: 1rem;
-        }
-        h1 {
-          font-size: 1.8em;
-        }
-        h2 {
-          font-size: 1.4em;
-        }
+      .policy-intro {
+        font-size: 1.05rem;
+        color: var(--subtext-color);
       }
-      @media (min-width: 601px) {
+      .policy-updated {
+        margin: 0 0 1.5rem;
+      }
+      @media (max-width: 600px) {
+        .body-privacy-policy {
+          padding: 0;
+        }
         .container {
-          width: 65%;
-          padding: 3rem;
+          width: 100%;
+          min-height: 100vh;
+          padding: 24px 20px 36px;
+          border-radius: 0;
+          box-shadow: none;
+          border: none;
         }
         h1 {
-          font-size: 2.5em;
+          font-size: 1.9rem;
         }
         h2 {
-          font-size: 1.8em;
-        }
-        h3 {
-          font-size: 1.2em;
+          font-size: 1.45rem;
         }
       }
     </style>
@@ -101,9 +125,11 @@
   <body class="body-privacy-policy">
     <div class="container">
       <h1>Política de Privacidad</h1>
-      <p><strong>Última actualización:</strong> 1 de marzo de 2026</p>
+      <p class="policy-updated">
+        <strong>Última actualización:</strong> 1 de marzo de 2026
+      </p>
 
-      <p>
+      <p class="policy-intro">
         Esta Política de Privacidad explica cómo se tratan los datos en
         <strong>MisDietas</strong>. La aplicación está diseñada para funcionar
         principalmente en tu dispositivo, con un tratamiento limitado de datos
