@@ -1336,6 +1336,7 @@ button {
   box-sizing: border-box;
   box-shadow: 0 2px 4px var(--bg-transp-ajustes);
   border: none;
+  outline: none;
   color: var(--text-color);
   cursor: pointer;
   transition: filter 0.2s ease, transform 0.2s ease;
@@ -1359,6 +1360,12 @@ button {
     /* Feedback hàptic virtual - polsació visual en prémer */
     animation: haptic-pulse 0.1s ease-out;
   }
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 3px rgba(0, 74, 173, 0.2),
+      0 2px 4px var(--bg-transp-ajustes);
+  }
 }
 
 .service-button.active-square {
@@ -1366,6 +1373,12 @@ button {
   border: 1px solid rgba(0, 74, 173, 0.25); /* More subtle active border with primary color */
   box-shadow: 0 2px 4px rgba(0, 74, 173, 0.15); /* Slight elevation shadow on active */
   transform: scale(1.05);
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 3px rgba(0, 74, 173, 0.22),
+      0 2px 4px rgba(0, 74, 173, 0.15);
+  }
 }
 
 .service-button:not(.active-square) {

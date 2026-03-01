@@ -26,6 +26,23 @@
         display: none !important;
       }
     </style>
+    <style data-csp-nonce>
+      .service-button {
+        outline: none;
+      }
+
+      .service-button:focus-visible {
+        box-shadow:
+          0 0 0 3px rgba(0, 74, 173, 0.2),
+          0 2px 4px var(--bg-transp-ajustes);
+      }
+
+      .service-button.active-square:focus-visible {
+        box-shadow:
+          0 0 0 3px rgba(0, 74, 173, 0.22),
+          0 2px 4px rgba(0, 74, 173, 0.15);
+      }
+    </style>
 
     <!-- Content Security Policy: Primer el Cloudflare Worker (_worker.js) intentarà afegir CSP amb nonces -->
     <!-- Si el Worker falla, aquest CSP fallback proporciona protecció bàsica -->
@@ -69,8 +86,8 @@
       type="image/svg+xml"
     />
     <link rel="prefetch" href="assets/icons/sun.svg" />
-    <link rel="preload" href="/css/main.min.css?v=2.4.11" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css?v=2.4.11" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.12" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.12" />
     <style data-csp-nonce>
       #about-modal .about-modal-card {
         width: min(620px, 92vw);
@@ -1462,7 +1479,7 @@
       </div>
       <script
         type="module"
-        src="./dist/bundle.js?v=2.4.11"
+        src="./dist/bundle.js?v=2.4.12"
         data-csp-nonce
       ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
@@ -1517,7 +1534,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text" hidden>2.4.11</span>
+          <span class="version-text" hidden>2.4.12</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
