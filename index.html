@@ -10,7 +10,7 @@
     <meta name="author" content="TESHub" />
     <meta
       name="description"
-      content="Aplicació per gestionar dietes amb formularis accessibles i funcionalitat PWA."
+      content="Aplicación para gestionar dietas y justificantes con soporte móvil, funcionamiento offline y experiencia PWA."
     />
     <!-- Desactivar la barra de progrés de càrrega del navegador -->
     <style>
@@ -1025,33 +1025,31 @@
       >
         <!-- A index.html, dins de #about-modal -->
         <div class="modal-content">
-          <h2 id="about-title">¡Bienvenido a MisDietas!</h2>
+          <h2 id="about-title">Guía rápida de MisDietas</h2>
           <div class="modal-scrollable-content">
             <p>
-              ¿Cansado de hacer fotos del AL20 para luego tener que pasarlo todo
-              a papel? Con <strong>MisDietas</strong>, di adiós al trabajo
-              doble. Registra cada servicio sobre la marcha y genera un PDF
-              profesional al momento, listo para entregar.
+              <strong>MisDietas</strong> te permite registrar servicios,
+              completar la dieta y generar el PDF final desde el móvil, con un
+              flujo más ágil y ordenado para el trabajo diario.
             </p>
 
-            <p class="about-kicker">¿Cómo funciona?</p>
+            <p class="about-kicker">Cómo empezar</p>
 
-            <h3>1: Revisa tus datos</h3>
+            <h3>1. Revisa los datos generales</h3>
             <p>
-              En la pestaña <strong>"Datos"</strong>, comprueba que la
-              <strong>Fecha</strong> y la
-              <strong>Franja Horaria</strong> automáticas son correctas.
-              Después, selecciona tu <strong>Tipo de Servicio</strong> (TSU o
-              TSNU) y completa tu
+              En la pestaña <strong>Datos</strong>, revisa la
+              <strong>fecha</strong> y la <strong>franja horaria</strong>.
+              Después, selecciona el <strong>tipo de servicio</strong> y
+              completa la
               <strong
                 ><img
                   loading="lazy"
                   src="assets/icons/id_card_black.svg"
                   alt=""
                   class="icon-inline"
-                />Dotación</strong
+                />dotación</strong
               >
-              añadiendo las
+              junto con las
               <strong>
                 <img
                   src="assets/icons/signature.svg"
@@ -1061,19 +1059,17 @@
               >.
             </p>
 
-            <h3>2: Añade tus servicios</h3>
+            <h3>2. Añade los servicios</h3>
             <p>
-              Ve a la pestaña <strong>"Servicios"</strong>. Rellena por completo
-              el primer panel (<strong>S1</strong>). Si tienes más servicios,
-              selecciónalos con los botones <strong>S2, S3 y S4</strong> y
-              complétalos siempre en orden.
+              En la pestaña <strong>Servicios</strong>, completa el primer panel
+              (<strong>S1</strong>). Si necesitas añadir más, utiliza
+              <strong>S2, S3 y S4</strong> y rellénalos en orden.
             </p>
 
-            <h3>3: ¡Descarga tu PDF!</h3>
+            <h3>3. Genera el PDF</h3>
             <p>
-              Para obtener el PDF de la dieta que acabas de rellenar, haz clic
-              en el
-              <strong>menú</strong> (☰) y selecciona
+              Cuando la dieta esté completa, abre el <strong>menú</strong> (☰)
+              y selecciona
               <strong>
                 <img
                   loading="lazy"
@@ -1081,12 +1077,12 @@
                   alt=""
                   class="icon-inline"
                 />
-                "Descargar dieta actual" </strong
-              >. ¡Se generará al momento!
+                Descargar dieta actual</strong
+              >.
             </p>
             <p>
-              ¿Necesitas una dieta de un día anterior? En el mismo menú, entra
-              en el
+              Si necesitas recuperar una dieta anterior, desde ese mismo menú
+              entra en
               <strong>
                 <img
                   loading="lazy"
@@ -1094,12 +1090,12 @@
                   alt=""
                   class="icon-inline"
                 />
-                "Gestor de dietas" </strong
-              >. Allí encontrarás todas las dietas que hayas guardado, listas
-              para descargar cuando quieras.
+                Gestor de dietas</strong
+              >. Allí verás las dietas guardadas para consultarlas o volver a
+              descargarlas cuando lo necesites.
             </p>
 
-            <h3 class="mt-25">Consejos:</h3>
+            <h3 class="mt-25">Consejos útiles</h3>
             <ul>
               <li>
                 <strong>
@@ -1109,12 +1105,11 @@
                     alt=""
                     class="icon-inline"
                   />
-                  ¡Sáltate el paso de la foto!:
+                  Evita pasos innecesarios:
                 </strong>
-                En lugar de hacer fotos del AL20 para transcribir los datos más
-                tarde en MisDietas, ahórrate ese paso. Introduce la información
-                directamente en la app al finalizar cada servicio. Es más rápido
-                y la información se guarda al instante.
+                Si puedes, introduce la información directamente al finalizar
+                cada servicio. Reducirás tareas duplicadas y tendrás la dieta
+                lista antes.
               </li>
               <li>
                 <strong>
@@ -1124,11 +1119,10 @@
                     alt=""
                     class="icon-inline"
                   />
-                  Escanear Horas (OCR):
+                  Escanear horas con OCR:
                 </strong>
-                Si tu servicio es <strong>TSU</strong>, usa el botón
-                <strong>"Escanear"</strong> para rellenar las horas al momento
-                haciendo una foto al 'AL20' o subiendo una que ya tengas en tu
+                Si el servicio lo requiere, utiliza <strong>Escanear</strong>
+                para capturar las horas desde una foto o una imagen de la
                 galería.
               </li>
               <li>
@@ -1139,12 +1133,10 @@
                     alt=""
                     class="icon-inline"
                   />
-                  Guardar y Cargar Dotación:
+                  Guardar y cargar dotación:
                 </strong>
-                Usa los botones junto al título "Dotación" para guardar los
-                datos del vehículo, conductor y ayudante. Así, podrás cargarlos
-                todos juntos la próxima vez que inicies una dieta, sin tener que
-                volver a escribirlos.
+                Guarda los datos del vehículo, conductor y ayudante para
+                recuperarlos más tarde con un solo toque.
               </li>
               <li>
                 <strong>
@@ -1154,10 +1146,10 @@
                     alt=""
                     class="icon-inline"
                   />
-                  Añade detalles a cada servicio:
+                  Añade contexto cuando sea necesario:
                 </strong>
-                Si ha ocurrido alguna incidencia o necesitas aclarar algo, pulsa
-                el menú de opciones
+                Si hay una incidencia o necesitas dejar una aclaración, abre el
+                menú de opciones
                 <img
                   loading="lazy"
                   src="assets/icons/ic_submenu_gray.svg"
@@ -1171,8 +1163,8 @@
                   alt="Añadir notas"
                   class="icon-inline"
                 />
-                <strong>Añadir Notas</strong>. Todo lo que escribas quedará
-                registrado en el PDF final.
+                <strong>Añadir notas</strong>. El contenido quedará reflejado en
+                el PDF final.
               </li>
               <li>
                 <strong>
@@ -1182,10 +1174,10 @@
                     alt=""
                     class="icon-inline"
                   />
-                  Funciona sin conexión:
+                  Disponible sin conexión:
                 </strong>
-                Toda la información se guarda de forma segura en tu dispositivo,
-                por lo que puedes usar la app aunque no tengas internet.
+                Puedes seguir trabajando aunque no tengas internet y continuar
+                con normalidad desde el dispositivo.
               </li>
             </ul>
           </div>

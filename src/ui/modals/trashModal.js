@@ -188,7 +188,7 @@ async function handleRestore(id) {
 
 async function handleDeletePermanently(id, dietName) {
   const confirmed = confirm(
-    `Vols eliminar permanentment "${dietName}"?\n\nAquesta acció no es pot desfer.`
+    `¿Quieres eliminar definitivamente "${dietName}"?\n\nEsta acción no se puede deshacer.`
   );
 
   if (!confirmed) return;

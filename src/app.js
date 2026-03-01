@@ -116,24 +116,24 @@ function showCriticalError(error) {
 
   const heading = document.createElement("h2");
   heading.style.cssText = "color: #d32f2f; margin-bottom: 16px;";
-  heading.textContent = "⚠️ Error d'inicialització";
+  heading.textContent = "⚠️ Error de inicialización";
 
   const description = document.createElement("p");
   description.style.cssText = "margin-bottom: 20px; color: #333;";
   description.textContent =
-    "L'aplicació no s'ha pogut inicialitzar correctament. Prova a recarregar la pàgina.";
+    "La aplicación no ha podido iniciarse correctamente. Prueba a recargar la página.";
 
   const supportText = document.createElement("p");
   supportText.style.cssText = "margin-bottom: 20px; color: #666; font-size: 14px;";
   supportText.textContent =
-    "Si el problema persisteix, contacta amb el suport tècnic. Les teves dietes estan guardades de forma segura.";
+    "Si el problema persiste, ponte en contacto con soporte técnico. Tus dietas seguirán disponibles en el dispositivo.";
 
   const details = document.createElement("details");
   details.style.cssText = "margin-bottom: 20px; text-align: left;";
 
   const summary = document.createElement("summary");
   summary.style.cssText = "cursor: pointer; color: #666;";
-  summary.textContent = "Detalls tècnics";
+  summary.textContent = "Detalles técnicos";
 
   const pre = document.createElement("pre");
   pre.style.cssText =
@@ -147,7 +147,7 @@ function showCriticalError(error) {
   reloadBtn.id = "reload-btn";
   reloadBtn.style.cssText =
     "background: #004aad; color: white; border: none; padding: 12px 30px; border-radius: 4px; cursor: pointer; font-size: 16px;";
-  reloadBtn.textContent = "Recarregar aplicació";
+  reloadBtn.textContent = "Recargar aplicación";
 
   contentDiv.appendChild(heading);
   contentDiv.appendChild(description);

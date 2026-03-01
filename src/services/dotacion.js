@@ -270,7 +270,7 @@ class DotacionService {
         } catch (decryptError) {
           log.error("❌ Error CRÍTIC desencriptant dotacions:", decryptError);
           showToast(
-            "Dotaciones antiguas no compatibles con la actualización. Vuelve a crearlas en el formulario principal.",
+            "Algunas dotaciones anteriores no son compatibles con esta versión. Vuelve a crearlas desde el formulario principal.",
             "error",
             7000
           );
@@ -298,7 +298,7 @@ class DotacionService {
           try {
             await this.saveDotacionsToStorage();
             showToast(
-              "✅ Dotaciones migradas y encriptadas a IndexedDB.",
+              "✅ Las dotaciones se han actualizado y protegido correctamente.",
               "success",
               5000
             );
@@ -306,7 +306,7 @@ class DotacionService {
           } catch (migrationError) {
             log.error("❌ Error migrant dotacions:", migrationError);
             showToast(
-              "⚠️ No se han podido encriptar las dotaciones. Guárdalas de nuevo para encriptarlas.",
+              "⚠️ No se ha podido completar la protección de las dotaciones. Guárdalas de nuevo para actualizar su formato.",
               "error",
               7000
             );
@@ -351,7 +351,7 @@ class DotacionService {
           "❌ Sistema de claus NO inicialitzat. NO es poden guardar dotacions."
         );
         showToast(
-          "Error de seguretat: Sistema d'encriptació no disponible. Proveu recarregar la pàgina.",
+          "Error de seguridad: el sistema de cifrado no está disponible. Prueba a recargar la página.",
           "error",
           5000
         );

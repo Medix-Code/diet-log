@@ -276,10 +276,10 @@ async function performSave(requestedManual) {
           "❌ Sistema de claus no inicialitzat. NO es pot guardar la dieta."
         );
         const errorMsg =
-          "Error de seguretat: Sistema d'encriptació no disponible. Proveu recarregar la pàgina.";
+          "Error de seguridad: el sistema de cifrado no está disponible. Prueba a recargar la página.";
         showToast(errorMsg, "error", 5000);
         if (isManual) {
-          indicateSaveError("Sistema d'encriptació no disponible");
+          indicateSaveError("Sistema de cifrado no disponible");
         }
         return; // BLOQUEJAR el guardat
       }
@@ -292,10 +292,10 @@ async function performSave(requestedManual) {
       } catch (encryptError) {
         log.error("❌ Error CRÍTIC encriptant dieta:", encryptError);
         const errorMsg =
-          "Error crític d'encriptació. Les dades NO s'han desat per seguretat.";
+          "Error crítico de cifrado. Los datos no se han guardado por seguridad.";
         showToast(errorMsg, "error", 5000);
         if (isManual) {
-          indicateSaveError("Error d'encriptació");
+          indicateSaveError("Error de cifrado");
         }
         return; // BLOQUEJAR el guardat si falla l'encriptació
       }
@@ -396,17 +396,17 @@ export async function loadDietById(dietId) {
 
       // Mostrar missatge informatiu
       showToast(
-        "⚠️ Aquesta dieta no es pot desencriptar. " +
-          "Pot estar encriptada amb una clau diferent o estar corrupta. " +
-          "Les dades no es poden recuperar.",
+        "⚠️ Esta dieta no puede descifrarse. " +
+          "Puede estar asociada a una clave distinta o contener datos dañados. " +
+          "No es posible recuperarla desde esta sesión.",
         "error",
         5000
       );
 
       // Llançar error per evitar carregar dades corruptes
       throw new Error(
-        "No es pot desencriptar aquesta dieta. " +
-          "Pot estar encriptada amb una clau antiga o diferent."
+        "No se puede descifrar esta dieta. " +
+          "Puede estar asociada a una clave anterior o distinta."
       );
     }
   }
