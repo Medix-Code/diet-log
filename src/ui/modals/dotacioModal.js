@@ -49,7 +49,7 @@ export function updateDotacioListVisibility() {
 
   if (!hasItems) {
     // Seguretat XSS: usar createElement en lloc de innerHTML
-    noDotacioText.textContent = "No hay dotaciones, guarde abans: ";
+    noDotacioText.textContent = "No hay dotaciones, guarda antes: ";
     const saveIcon = document.createElement("img");
     saveIcon.src = "assets/icons/save_green.svg";
     saveIcon.alt = "Guardar";

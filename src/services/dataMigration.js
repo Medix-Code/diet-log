@@ -296,7 +296,7 @@ export class DataMigration {
    * @param {number} total - Total de dietes a migrar
    */
   showMigrationStartNotification(total) {
-    showToast(`🔒 Protegint ${total} dietes...`, {
+    showToast(`🔒 Protegiendo ${total} dietas...`, {
       duration: 2000,
       type: "info",
     });
@@ -311,7 +311,7 @@ export class DataMigration {
     const percent = Math.round((current / total) * 100);
     log.debug(`🔄 Migració: ${current}/${total} (${percent}%)`);
 
-    showToast(`🔒 Protegint dades... ${current}/${total}`, {
+    showToast(`🔒 Protegiendo datos... ${current}/${total}`, {
       duration: 1000,
       id: MIGRATION_PROGRESS_TOAST_ID,
       type: "info",
@@ -327,14 +327,14 @@ export class DataMigration {
   showMigrationResult(migrated, errors, total) {
     if (errors === 0) {
       // Migració perfecta
-      showToast(`✅ ${migrated} dietes ara estan protegides`, {
+      showToast(`✅ ${migrated} dietas ya están protegidas`, {
         duration: 4000,
         type: "success",
       });
     } else if (migrated > 0 && errors < total) {
       // Migració parcial
       showToast(
-        `⚠️ ${migrated}/${total} dietes protegides. ${errors} amb errors (es reintentaran automàticament)`,
+        `⚠️ ${migrated}/${total} dietas protegidas. ${errors} con errores (se reintentará automáticamente)`,
         {
           duration: 7000,
           type: "warning",
@@ -343,7 +343,7 @@ export class DataMigration {
     } else if (migrated === 0) {
       // Tot ha fallat
       showToast(
-        `❌ No s'han pogut migrar les dietes. Proveu recarregar la pàgina.`,
+        "❌ No se han podido migrar las dietas. Prueba a recargar la página.",
         {
           duration: 8000,
           type: "error",
@@ -351,7 +351,7 @@ export class DataMigration {
       );
     } else {
       // Cas general
-      showToast(`ℹ️ ${migrated} dietes migrades, ${errors} amb errors`, {
+      showToast(`ℹ️ ${migrated} dietas migradas, ${errors} con errores`, {
         duration: 5000,
         type: "warning",
       });
@@ -363,7 +363,7 @@ export class DataMigration {
    * @param {Error} error - Error
    */
   showMigrationError(error) {
-    showToast(`❌ Error en la migració: ${error.message}`, {
+    showToast(`❌ Error en la migración: ${error.message}`, {
       duration: 5000,
       type: "error",
     });

@@ -308,7 +308,7 @@ function _processAndFillForm(ocrText, updateFieldsCallback = null) {
   const ocrValidation = validateOCRResult(ocrText);
   if (!ocrValidation.valid) {
     log.warn("Resultat OCR invàlid:", ocrValidation.reason);
-    showToast(`Error de validació: ${ocrValidation.reason}`, "error");
+    showToast(`Error de validación: ${ocrValidation.reason}`, "error");
     return { hasData: false, allFieldsStatus: [] };
   }
 
@@ -474,7 +474,7 @@ async function _handleFileChange(event) {
   if (!ocrRateLimiter.canMakeRequest()) {
     const remaining = ocrRateLimiter.getRemainingRequests();
     showToast(
-      `Has superat el límit d'escaneigs. Espera uns segons abans de tornar-ho a intentar. (${remaining} disponibles)`,
+      `Has superado el límite de escaneos. Espera unos segundos antes de volver a intentarlo. (${remaining} disponibles)`,
       "warning"
     );
     if (cameraInput) cameraInput.value = "";
@@ -483,7 +483,7 @@ async function _handleFileChange(event) {
 
   if (Date.now() - lastOcrProcessAt < MIN_OCR_INTERVAL_MS) {
     showToast(
-      "OCR massa freqüent. Espera un segon abans de reintentar.",
+      "OCR demasiado frecuente. Espera un segundo antes de reintentarlo.",
       "warning"
     );
     if (cameraInput) cameraInput.value = "";
@@ -491,7 +491,7 @@ async function _handleFileChange(event) {
   }
 
   if (!(await _isAllowedImageFile(file))) {
-    showToast("Format d'imatge no suportat. Usa PNG, JPG o WEBP.", "error");
+    showToast("Formato de imagen no compatible. Usa PNG, JPG o WEBP.", "error");
     if (cameraInput) cameraInput.value = "";
     return;
   }
@@ -499,7 +499,7 @@ async function _handleFileChange(event) {
   const maxSizeBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
   if (file.size > maxSizeBytes) {
     showToast(
-      `Imatge massa gran. El màxim permès és ${MAX_IMAGE_SIZE_MB}MB.`,
+      `Imagen demasiado grande. El tamaño máximo permitido es ${MAX_IMAGE_SIZE_MB}MB.`,
       "error"
     );
     if (cameraInput) cameraInput.value = "";
