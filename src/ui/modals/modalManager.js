@@ -122,7 +122,11 @@ function attachBackdropTouchBlocker(modalElement) {
 }
 
 function applyModalStyles(modalElement) {
-  modalElement.style.display = "block";
+  const isAboutModal = modalElement.id === DOM_IDS.ABOUT_MODAL;
+  const isMobileViewport = window.matchMedia("(max-width: 600px)").matches;
+
+  modalElement.style.display =
+    isAboutModal && isMobileViewport ? "flex" : "block";
   modalElement.style.position = "fixed";
   modalElement.style.top = "0";
   modalElement.style.left = "0";
@@ -130,6 +134,18 @@ function applyModalStyles(modalElement) {
   modalElement.style.height = "100vh";
   modalElement.style.background = "rgba(0,0,0,0.5)";
   modalElement.style.setProperty("pointer-events", "auto");
+
+  if (isAboutModal && isMobileViewport) {
+    modalElement.style.alignItems = "center";
+    modalElement.style.justifyContent = "center";
+    modalElement.style.padding = "16px";
+    modalElement.style.overflow = "hidden";
+  } else {
+    modalElement.style.removeProperty("align-items");
+    modalElement.style.removeProperty("justify-content");
+    modalElement.style.removeProperty("padding");
+    modalElement.style.removeProperty("overflow");
+  }
 }
 
 function focusFirstElement(modalElement) {
