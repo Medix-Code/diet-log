@@ -69,8 +69,8 @@
       type="image/svg+xml"
     />
     <link rel="prefetch" href="assets/icons/sun.svg" />
-    <link rel="preload" href="/css/main.min.css?v=2.4.6" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css?v=2.4.6" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.7" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.7" />
     <style data-csp-nonce>
       #about-modal .about-modal-card {
         width: min(680px, 92vw);
@@ -151,9 +151,13 @@
       }
 
       #about-modal .about-modal-body {
-        padding: 24px 32px 28px;
+        padding: 0;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+      }
+
+      #about-modal .about-modal-content {
+        padding: 24px 32px 28px;
       }
 
       #about-modal .about-steps,
@@ -243,7 +247,7 @@
         }
 
         #about-modal .about-modal-header,
-        #about-modal .about-modal-body,
+        #about-modal .about-modal-content,
         #about-modal .about-modal-actions {
           padding-left: 20px;
           padding-right: 20px;
@@ -254,7 +258,7 @@
           padding-bottom: 18px;
         }
 
-        #about-modal .about-modal-body {
+        #about-modal .about-modal-content {
           padding-top: 18px;
           padding-bottom: 20px;
         }
@@ -1228,23 +1232,24 @@
         tabindex="-1"
       >
         <div class="modal-content about-modal-card">
-          <div class="about-modal-header">
-            <button
-              class="close-modal about-close-btn"
-              type="button"
-              aria-label="Cerrar ayuda"
-            >
-              ×
-            </button>
-            <p class="about-eyebrow">Ayuda rápida</p>
-            <h2 id="about-title">Cómo usar MisDietas</h2>
-            <p class="about-intro">
-              Guarda servicios, reutiliza dotaciones y descarga el PDF desde el
-              móvil en pocos pasos.
-            </p>
-          </div>
-
           <div class="modal-scrollable-content about-modal-body">
+            <div class="about-modal-header">
+              <button
+                class="close-modal about-close-btn"
+                type="button"
+                aria-label="Cerrar ayuda"
+              >
+                ×
+              </button>
+              <p class="about-eyebrow">Ayuda rápida</p>
+              <h2 id="about-title">Cómo usar MisDietas</h2>
+              <p class="about-intro">
+                Guarda servicios, reutiliza dotaciones y descarga el PDF desde
+                el móvil en pocos pasos.
+              </p>
+            </div>
+
+            <div class="about-modal-content">
             <section class="about-steps" aria-label="Pasos principales">
               <article class="about-step">
                 <div class="about-step-number">01</div>
@@ -1307,6 +1312,7 @@
                 </li>
               </ul>
             </section>
+            </div>
           </div>
 
           <div class="modal-buttons about-modal-actions">
@@ -1444,7 +1450,7 @@
       </div>
       <script
         type="module"
-        src="./dist/bundle.js?v=2.4.6"
+        src="./dist/bundle.js?v=2.4.7"
         data-csp-nonce
       ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
@@ -1499,7 +1505,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text" hidden>2.4.6</span>
+          <span class="version-text" hidden>2.4.7</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
