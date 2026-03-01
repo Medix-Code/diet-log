@@ -1,4 +1,4 @@
-const VERSION = "2.4.12";
+const VERSION = "2.4.13";
 const CACHE_PREFIX = "misdietas-cache";
 const CACHE_NAME = `${CACHE_PREFIX}-v${VERSION}`;
 
@@ -6,8 +6,8 @@ const PRECACHE_URLS = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/css/main.min.css?v=2.4.12",
-  "/dist/bundle.js?v=2.4.12",
+  "/css/main.min.css?v=2.4.13",
+  "/dist/bundle.js?v=2.4.13",
   "/assets/images/icons-192.png",
   "/assets/images/icons-512.png",
   "/assets/images/icons-192-maskable.png",
@@ -28,9 +28,9 @@ const STATIC_EXTENSIONS = [
   ".ico",
 ];
 const RESOURCE_INTEGRITY = {
-  "/dist/bundle.js?v=2.4.12":
+  "/dist/bundle.js?v=2.4.13":
     "aab7bce7273d042cfc440102c3df2b1feca7b24cde5643dda33c8cf7311d938f3f949561b97fe80a32390ac4f8ca3e02",
-  "/css/main.min.css?v=2.4.12":
+  "/css/main.min.css?v=2.4.13":
     "dbe2fc48e961ef4d5241c1528d1b35c497abc2a49369cadb888faa8960b5e262ea0c92dd51314f0dfb03f31339afff20",
 };
 

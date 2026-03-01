@@ -27,11 +27,29 @@
       }
     </style>
     <style data-csp-nonce>
-      .service-button {
+      :where(
+          .service-button,
+          .options-btn,
+          .chip,
+          .btn-ocr-inline,
+          .btn-ocr-scan,
+          .trash-modal-footer-btn,
+          .footer .footer-btn,
+          .about-close-btn,
+          .ocr-close-btn
+        ) {
         outline: none;
       }
 
-      .service-button:focus-visible {
+      :where(
+          .service-button,
+          .options-btn,
+          .chip,
+          .btn-ocr-inline,
+          .btn-ocr-scan,
+          .trash-modal-footer-btn,
+          .footer .footer-btn
+        ):focus-visible {
         box-shadow:
           0 0 0 3px rgba(0, 74, 173, 0.2),
           0 2px 4px var(--bg-transp-ajustes);
@@ -86,8 +104,8 @@
       type="image/svg+xml"
     />
     <link rel="prefetch" href="assets/icons/sun.svg" />
-    <link rel="preload" href="/css/main.min.css?v=2.4.12" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css?v=2.4.12" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.13" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.13" />
     <style data-csp-nonce>
       #about-modal .about-modal-card {
         width: min(620px, 92vw);
@@ -1479,7 +1497,7 @@
       </div>
       <script
         type="module"
-        src="./dist/bundle.js?v=2.4.12"
+        src="./dist/bundle.js?v=2.4.13"
         data-csp-nonce
       ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
@@ -1534,7 +1552,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text" hidden>2.4.12</span>
+          <span class="version-text" hidden>2.4.13</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
