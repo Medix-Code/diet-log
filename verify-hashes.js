@@ -17,8 +17,8 @@ console.log("🔍 Verificant hashes d'integritat...\n");
 
 // Fitxers a verificar
 const files = {
-  "/dist/bundle.js?v=2.4.20": "dist/bundle.js",
-  "/css/main.min.css?v=2.4.20": "css/main.min.css",
+  "/dist/bundle.js?v=2.4.22": "dist/bundle.js",
+  "/css/main.min.css?v=2.4.22": "css/main.min.css",
 };
 
 // Service Worker path
