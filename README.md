@@ -1,185 +1,123 @@
-# 🚑 Diet Log
+# MisDietas
 
-Una aplicació PWA especialment dissenyada per gestionar i documentar dietes i serveis en una empresa de transport sanitari. Permet registrar detalls de serveis, generar informes PDF professionals amb signatures digitals, capturar dades via OCR des de la càmera, i assegurar validacions estrictes per als fluxos de treball de la companyia.
+Aplicación web progresiva orientada a la gestión de dietas, servicios y justificantes operativos en movilidad. El proyecto está pensado para funcionar bien en móvil, reducir fricción en la captura de datos y facilitar la generación de documentación lista para entregar.
 
-[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)  
-[![PWA](https://img.shields.io/badge/PWA-Compatible-blue.svg)]()  
-[![Tecnología: Vanilla JS](https://img.shields.io/badge/Tecnología-Vanilla%20JS-yellow.svg)]()
+![Licencia](https://img.shields.io/badge/licencia-ISC-2f6fed)
+![PWA](https://img.shields.io/badge/PWA-s%C3%AD-0a7f5a)
+![Stack](https://img.shields.io/badge/stack-Vanilla%20JS%20%2B%20React-informational)
 
-## 📖 Taula de Continguts
+## Resumen
 
-- [🎯 Descripció](#-descripció)
-- [✨ Característiques Clau](#-característiques-clau)
-- [🏗️ Tecnologies Utilitzades](#️-tecnologies-utilitzades)
-- [🚀 Instal·lació i Accés](#-instal·lació-i-accés)
-- [📱 Ús](#-ús)
-  - [Registrar un Servei](#registrar-un-servei)
-  - [Generar Informe PDF](#generar-informe-pdf)
-  - [ Gestionar Firmes](#gestionar-firmes)
-  - [Captura amb OCR](#captura-amb-ocr)
-- [🧪 Tests](#-tests)
-- [🤝 Contribucions](#-contribucions)
-- [📄 Llicència](#-llicència)
-- [📞 Contacte](#-contacte)
+MisDietas combina captura rápida de datos, guardado local, soporte offline y generación de PDF en una única interfaz. La aplicación está diseñada como una PWA instalable y prioriza un flujo de trabajo ágil para uso diario.
 
----
+## Qué ofrece
 
-## 🎯 Descripció
+- Registro y edición de dietas con múltiples servicios.
+- Generación de justificantes PDF desde la propia aplicación.
+- Captura asistida mediante OCR para acelerar la introducción de datos.
+- Gestión de firmas dentro del flujo de trabajo.
+- Soporte offline y actualización mediante Service Worker.
+- Instalación como aplicación desde navegador compatible.
+- Interfaz optimizada para móvil, con onboarding y acciones rápidas.
+- Gestión de dietas guardadas, papelera y restauración.
+- Plantillas y utilidades auxiliares para acelerar la carga de datos repetitivos.
 
-**Diet Log** és una aplicació PWA (Progressive Web App) dissenyada específicament per a una empresa de transport sanitari, simplificant la gestió diària de dietes i serveis. Permet registrar detalls de temps (entrades, sortides, pausas), generar informes PDF professionals amb signatures digitals, i capturar dades via OCR des de la càmera del mòbil. Tot emmagatzemat localment mitjançant IndexedDB, assegurant privacitat, offline-first i compliment amb processos interns de la companyia.
+## Capturas
 
-Per què triar Diet Log?
+![Vista desktop](assets/images/screenshot-desktop.png)
 
-![Screenshot Desktop](assets/images/screenshot-desktop.png)  
-_Captura de pantalla de la versió desktop_
+![Vista móvil](assets/images/screenshot-mobile.png)
 
-![Screenshot Mobile](assets/images/screenshot-mobile.png)  
-_Captura de pantalla de la versió mòbil_
+## Stack técnico
 
----
+- HTML, SCSS y JavaScript modular.
+- Componentes React incrementales para partes concretas de la interfaz.
+- `esbuild` para bundling de la aplicación.
+- `pdf-lib` para generación de documentos PDF.
+- `tesseract.js` para OCR.
+- `Vitest` + `jsdom` para tests.
+- Cloudflare Worker para despliegue y cabeceras en entorno productivo.
 
-## ✨ Característiques Clau
+## Estructura del proyecto
 
-- **📝 Registre Flexiblot de Serveis**: Afegeix, edita o esborra serveis amb camps com número, origen/destí, dates i signatures. Suport per múltiples línies de servei en una dieta.
-- **📄 Generació Professional de PDFs**: Crea informes PDF automàtics amb totes les dades, signatures del conductor i ajudant, validats per dades temporals.
-- **🖊️ Signatures Digitals**: Dibuixa o importa signatures via canvas HTML5, emmagatzemades localment i exportades als PDFs.
-- **📸 OCR via Càmera**: Estalvia temps capturant números de servei o detalls directament des de fotos o càmera mòbil amb Tesseract.js.
-- **🌙/☀️ Tema Dark/Light**: Canvia entre modes per comoditat visual, amb record automàtic de preferències.
-- **🔒 Validacions Estrictes**: Assegura formats correctes (e.g., 9 dígit per números de servei, coherència temporal) amb missatges d'error clar.
-- **📱 PWA Offline**: Funciona sense connexió internet, amb instal·lació com app nativa al mòbil.
-- **💾 Emmagatzematge Local Seguí**: Dades en IndexedDB, sense núvols o comptes necessaris.
-- **🌐 Multilingue i Accessible**: Interfaç intuitiva amb suport per captures de pantalla, i accessibilitat bàsica (alt-texts).
+```text
+.
+├── assets/                # Iconos, animaciones e imágenes
+├── css/                   # Estilos fuente y compilados
+├── src/
+│   ├── components/        # Componentes de UI
+│   ├── config/            # Constantes y configuración
+│   ├── db/                # Persistencia local
+│   ├── models/            # Modelos de dominio
+│   ├── services/          # Casos de uso y lógica principal
+│   ├── ui/                # Interacciones y vistas
+│   └── utils/             # Utilidades transversales
+├── tests/                 # Suite de pruebas
+├── service-worker.js      # Cache y soporte offline
+├── _worker.js             # Worker de Cloudflare
+└── index.html             # Entrada principal
+```
 
----
+## Requisitos
 
-## 🏗️ Tecnologies Utilitzades
+- Node.js 20 o superior.
+- `pnpm` 10.
 
-- **🟨 JavaScript Vanilla**: Lògica principal sense frameworks pesats per major control i rendiment.
-- **🗄️ IndexedDB**: Base de dades local del navegador per persistència offline i segura.
-- **📋 PDF-lib (^1.17.1)**: Generació i manipulació de PDFs amb signatures i layouts professionals.
-- **📷 Tesseract.js (v6)**: Reconnaixement òptic de caràcters (OCR) per càmera i imatges.
-- **🎨 HTML5 & SCSS/CSS**: Estructura, estils i animacions responsives, amb minificació automàtica.
-- **🔧 Vite + Vitest**: Eines per desenvolupament ràpid, builds i tests unitaris.
-- **🔒 Servei Worker**: Cache offline i actualitzacions de recursos per PWA.
+## Puesta en marcha local
 
----
-
-## 🚀 Instal·lació i Accés
-
-No es necessita instal·lació! Diet Log és una aplicació web pura que funciona al navegador.
-
-1. **Accedeix directament**: Visita [l'enllaç de producció](#) (o host local durant desenvolupament).
-2. **Instal·la com PWA** (opcional, per millor experiència offline):
-   - Obre el navegador mòbil o desktop.
-   - Navega a la pàgina.
-   - Fes clic a "Instal·lar App" al banner d'instal·lació o menú del navegador.
-
-Per desenvolupament local:
-
-- Clona el repositori.
-- Executa `pnpm install` (seguiu les regles globals per evitar sobreescriptures).
-- Executa `pnpm dev` per veure-ho al navegador (porta 3000 típicament).
-
----
-
-## 📱 Ús
-
-### Registrar un Servei
-
-1. Obre l'app i ves a la pestanya "Serveis".
-2. Toca el botó "+" per afegir un nou servei.
-3. Omple els camps obligatoris:
-   - Número de servei (9 dígit).
-   - Origen i destí (màx. 35 caràcters).
-   - Horaris d'entrada/sortida (format HH:mm).
-   - Opcional: Notes addicionals o pausas.
-4. Fes clic a "Guardar". Els validating s'activen automàticament per evitar errors.
-
-**Exemple de validació:**  
-Si introdueixes un hora de sortida anterior a l'entrada, veuràs un missatge: "L'hora de sortida no pot ser anterior a l'entrada."
-
-### Generar Informe PDF
-
-1. Assegura't que al menys un servei està registrat.
-2. Ves a la pestanya "PDF" o "Informes".
-3. Selecciona el periode (diari/setmanal).
-4. Toca "Generar PDF".
-5. Descarrega el fitxer automàticament amb totes les dades i signatures.
-
-**Nota:** El PDF inclou una taula resumida amb total d'hores, signatures validades, i capçalera amb dades del vehicle/conductor.
-
-### Gestionar Firmes
-
-1. Ves a "Configuració > Firmes".
-2. Selecciona si és firma de conductor o ajudant.
-3. Dibuixa al canvas amb el ratolí o dit (tactil).
-4. Guarda per usar en futurs PDFs.
-
-**Tip:** Importa firmes des d'imatges si ho prefereixes, però s'emmagatzemen localment.
-
-### Captura amb OCR
-
-1. Al formular de servei, toca l'icona càmera al camp número/detalls.
-2. Permet accés a la càmera.
-3. Fes foto al document (e.g.,.targeta de servei).
-4. L'app processa i emplena automàticament els camps.
-
-**Exemple:** Fotografia un número de servei imprès; l'OCR el detecta i el posa al camp, estalviant temps.
-
----
-
-## 🧪 Tests
-
-Executa tests amb Vitest per assegurar funcions clau:
-
-- Validacions (e.g., `validateServiceNumber()`).
-- Generació PDF.
-- OCR en entorns simulats.
-
-Exemple comanda:
+1. Instala dependencias:
 
 ```bash
-pnpm test
+pnpm install
 ```
 
-Els tests usen dades fictícies (sense dades reals d'usuaris).
+2. Genera los assets principales:
 
----
-
-## 🪵 Logging
-
-S'ha incorporat un logger centralitzat (`src/utils/logger.js`) per controlar els missatges. Per utilitzar-lo:
-
-```js
-import { logger } from "../utils/logger.js";
-
-const log = logger.withScope("NomDelMòdul");
-
-log.debug("Missatge de debug");
-log.info("Informació rellevant");
-log.warn("Avís important");
-log.error("Error greu", error);
+```bash
+pnpm build
+pnpm build:css
 ```
 
-En entorns de producció es mostren només avisos i errors. Pots canviar el nivell en temps real amb `logger.setLevel("debug")`. Fitxers pendents de migrar encara fan servir `console.*`; consulta `docs/logging.md` per al seguiment.
+3. Sirve el proyecto con un servidor estático desde la raíz del repositorio.
 
----
+Notas:
 
-## 📄 Llicència
+- El script `pnpm dev` no levanta un servidor; actualmente es solo un placeholder.
+- Para probar la experiencia PWA, Service Worker y rutas estáticas, conviene servir la aplicación en local con un servidor real en lugar de abrir `index.html` directamente.
 
-Aquest projecte està sota la **Llicència MIT**, permetent ús, modificació i distribució lliure sempre que es mantingui l'autor original.
+## Scripts disponibles
 
-Per detalls, consulta [LICENSE](./LICENSE).
+```bash
+pnpm build         # Compila la app JS y actualiza hashes
+pnpm build:css     # Compila CSS y actualiza hashes
+pnpm test          # Ejecuta la suite de tests
+pnpm worker:dev    # Desarrollo del Worker de Cloudflare
+pnpm worker:deploy # Despliegue del Worker
+pnpm worker:tail   # Logs remotos del Worker
+```
 
----
+## Calidad y pruebas
 
-## 📞 Contacte
+La base del proyecto cuenta con pruebas unitarias e integradas para validaciones, OCR, flujos de guardado, migraciones y comportamiento de servicios principales.
 
-Tens preguntes o suggerències?
+Ejecución:
 
-- **GitHub**: [@Medix-Code/diet-log](https://github.com/Medix-Code/diet-log)
-- **Email**: (\***\*\*\*\*\*\*\***)
+```bash
+pnpm test -- --run
+```
 
----
+## Despliegue
 
-> 💡 **Nota d'ús**: Per privacitat, totes les dades s'emmagatzemen localment. No enviïs PDFs amb dades sensibles sense consentiment. Documentat amb ordagla a [privacy-policy.html](./privacy-policy.html).
+El repositorio incluye configuración para Cloudflare Worker en [wrangler.toml](wrangler.toml). El sitio productivo está orientado a un despliegue web estático con soporte adicional del Worker para aspectos de entrega y cabeceras.
+
+## Privacidad y tratamiento de datos
+
+Este README evita documentar detalles operativos sensibles o internos sobre el tratamiento de datos. Para la política funcional de privacidad y uso, consulta [privacy-policy.html](privacy-policy.html).
+
+## Estado del proyecto
+
+MisDietas está activo y mantiene una base de código modular con cobertura de pruebas, soporte PWA y orientación clara a uso real en producción.
+
+## Licencia
+
+Proyecto distribuido bajo licencia ISC, tal y como figura en `package.json`.
