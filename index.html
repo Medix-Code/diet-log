@@ -69,8 +69,212 @@
       type="image/svg+xml"
     />
     <link rel="prefetch" href="assets/icons/sun.svg" />
-    <link rel="preload" href="/css/main.min.css?v=2.4.3" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css?v=2.4.3" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.4" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.4" />
+    <style>
+      #about-modal .about-modal-card {
+        width: min(680px, 92vw);
+        max-width: 680px;
+        max-block-size: min(88svh, 760px);
+        padding: 0;
+        border-radius: 24px;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            circle at top right,
+            rgba(0, 74, 173, 0.08),
+            transparent 32%
+          ),
+          linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        box-shadow:
+          0 24px 70px rgba(15, 23, 42, 0.22),
+          0 8px 24px rgba(15, 23, 42, 0.1);
+      }
+
+      #about-modal .about-modal-header {
+        position: relative;
+        padding: 28px 32px 22px;
+        border-bottom: 1px solid rgba(0, 74, 173, 0.12);
+      }
+
+      #about-modal .about-close-btn {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 999px;
+        background: rgba(0, 74, 173, 0.08);
+        color: var(--primary-color);
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+      }
+
+      #about-modal .about-close-btn:hover {
+        background: rgba(0, 74, 173, 0.14);
+        transform: scale(1.03);
+      }
+
+      #about-modal .about-close-btn:focus-visible {
+        outline: 2px solid rgba(0, 74, 173, 0.4);
+        outline-offset: 2px;
+      }
+
+      #about-modal .about-eyebrow {
+        margin: 0 0 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--primary-color);
+      }
+
+      #about-modal #about-title {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        text-align: left;
+        font-size: clamp(1.55rem, 3vw, 2rem);
+        font-weight: 700;
+        line-height: 1.15;
+      }
+
+      #about-modal .about-intro {
+        margin: 12px 0 0;
+        max-width: 52ch;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--subtext-color);
+      }
+
+      #about-modal .about-modal-body {
+        padding: 24px 32px 28px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #about-modal .about-steps,
+      #about-modal .about-tips {
+        display: grid;
+        gap: 16px;
+      }
+
+      #about-modal .about-step {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 16px;
+        align-items: start;
+        padding: 18px 18px 16px;
+        border: 1px solid rgba(0, 74, 173, 0.1);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      #about-modal .about-step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: rgba(0, 74, 173, 0.1);
+        color: var(--primary-color);
+        font-size: 0.95rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      #about-modal .about-step-copy h3,
+      #about-modal .about-section-title {
+        margin: 0 0 8px;
+        padding: 0;
+        border: 0;
+        text-align: left;
+        font-size: 1.08rem;
+        font-weight: 700;
+        color: var(--text-color);
+        background: none;
+      }
+
+      #about-modal .about-step-copy p,
+      #about-modal .about-tips li {
+        margin: 0;
+        font-size: 0.98rem;
+        line-height: 1.65;
+        color: var(--subtext-color);
+      }
+
+      #about-modal .about-tips-section {
+        margin-top: 24px;
+      }
+
+      #about-modal .about-tips {
+        padding: 0;
+        list-style: none;
+      }
+
+      #about-modal .about-tips li {
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: rgba(0, 74, 173, 0.06);
+      }
+
+      #about-modal .about-modal-actions {
+        justify-content: flex-end;
+        padding: 18px 32px 24px;
+        margin: 0;
+        border-top: 1px solid rgba(0, 74, 173, 0.12);
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      #about-modal .about-modal-actions .close-modal-btn {
+        margin-top: 0;
+        min-width: 132px;
+      }
+
+      @media (max-width: 600px) {
+        #about-modal .about-modal-card {
+          width: min(94vw, 680px);
+          max-block-size: min(90svh, 760px);
+          border-radius: 20px;
+        }
+
+        #about-modal .about-modal-header,
+        #about-modal .about-modal-body,
+        #about-modal .about-modal-actions {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+
+        #about-modal .about-modal-header {
+          padding-top: 22px;
+          padding-bottom: 18px;
+        }
+
+        #about-modal .about-modal-body {
+          padding-top: 18px;
+          padding-bottom: 20px;
+        }
+
+        #about-modal .about-step {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        #about-modal .about-step-number {
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+        }
+
+        #about-modal .about-modal-actions .close-modal-btn {
+          width: 100%;
+        }
+      }
+    </style>
 
     <!-- Tesseract.js carregat dinàmicament sols quan s'usi OCR -->
 
@@ -1023,167 +1227,90 @@
         aria-labelledby="about-title"
         tabindex="-1"
       >
-        <!-- A index.html, dins de #about-modal -->
-        <div class="modal-content">
-          <h2 id="about-title">Guía rápida de MisDietas</h2>
-          <div class="modal-scrollable-content">
-            <p>
-              <strong>MisDietas</strong> te permite registrar servicios,
-              completar la dieta y generar el PDF final desde el móvil, con un
-              flujo más ágil y ordenado para el trabajo diario.
+        <div class="modal-content about-modal-card">
+          <div class="about-modal-header">
+            <button
+              class="close-modal about-close-btn"
+              type="button"
+              aria-label="Cerrar ayuda"
+            >
+              ×
+            </button>
+            <p class="about-eyebrow">Ayuda rápida</p>
+            <h2 id="about-title">Cómo usar MisDietas</h2>
+            <p class="about-intro">
+              Guarda servicios, reutiliza dotaciones y descarga el PDF desde el
+              móvil en pocos pasos.
             </p>
-
-            <p class="about-kicker">Cómo empezar</p>
-
-            <h3>1. Revisa los datos generales</h3>
-            <p>
-              En la pestaña <strong>Datos</strong>, revisa la
-              <strong>fecha</strong> y la <strong>franja horaria</strong>.
-              Después, selecciona el <strong>tipo de servicio</strong> y
-              completa la
-              <strong
-                ><img
-                  loading="lazy"
-                  src="assets/icons/id_card_black.svg"
-                  alt=""
-                  class="icon-inline"
-                />dotación</strong
-              >
-              junto con las
-              <strong>
-                <img
-                  src="assets/icons/signature.svg"
-                  alt=""
-                  class="icon-inline"
-                />firmas</strong
-              >.
-            </p>
-
-            <h3>2. Añade los servicios</h3>
-            <p>
-              En la pestaña <strong>Servicios</strong>, completa el primer panel
-              (<strong>S1</strong>). Si necesitas añadir más, utiliza
-              <strong>S2, S3 y S4</strong> y rellénalos en orden.
-            </p>
-
-            <h3>3. Genera el PDF</h3>
-            <p>
-              Cuando la dieta esté completa, abre el <strong>menú</strong> (☰)
-              y selecciona
-              <strong>
-                <img
-                  loading="lazy"
-                  src="assets/icons/download_blue.svg"
-                  alt=""
-                  class="icon-inline"
-                />
-                Descargar dieta actual</strong
-              >.
-            </p>
-            <p>
-              Si necesitas recuperar una dieta anterior, desde ese mismo menú
-              entra en
-              <strong>
-                <img
-                  loading="lazy"
-                  src="assets/icons/gear.svg"
-                  alt=""
-                  class="icon-inline"
-                />
-                Gestor de dietas</strong
-              >. Allí verás las dietas guardadas para consultarlas o volver a
-              descargarlas cuando lo necesites.
-            </p>
-
-            <h3 class="mt-25">Consejos útiles</h3>
-            <ul>
-              <li>
-                <strong>
-                  <img
-                    loading="lazy"
-                    src="assets/icons/no_photo.svg"
-                    alt=""
-                    class="icon-inline"
-                  />
-                  Evita pasos innecesarios:
-                </strong>
-                Si puedes, introduce la información directamente al finalizar
-                cada servicio. Reducirás tareas duplicadas y tendrás la dieta
-                lista antes.
-              </li>
-              <li>
-                <strong>
-                  <img
-                    loading="lazy"
-                    src="assets/icons/ic_ocr.svg"
-                    alt=""
-                    class="icon-inline"
-                  />
-                  Escanear horas con OCR:
-                </strong>
-                Si el servicio lo requiere, utiliza <strong>Escanear</strong>
-                para capturar las horas desde una foto o una imagen de la
-                galería.
-              </li>
-              <li>
-                <strong>
-                  <img
-                    loading="lazy"
-                    src="assets/icons/id_card_black.svg"
-                    alt=""
-                    class="icon-inline"
-                  />
-                  Guardar y cargar dotación:
-                </strong>
-                Guarda los datos del vehículo, conductor y ayudante para
-                recuperarlos más tarde con un solo toque.
-              </li>
-              <li>
-                <strong>
-                  <img
-                    loading="lazy"
-                    src="assets/icons/ic_glass.svg"
-                    alt=""
-                    class="icon-inline"
-                  />
-                  Añade contexto cuando sea necesario:
-                </strong>
-                Si hay una incidencia o necesitas dejar una aclaración, abre el
-                menú de opciones
-                <img
-                  loading="lazy"
-                  src="assets/icons/ic_submenu_gray.svg"
-                  alt="Menú de opciones"
-                  class="icon-inline"
-                />
-                y selecciona
-                <img
-                  loading="lazy"
-                  src="assets/icons/ic_note_gray.svg"
-                  alt="Añadir notas"
-                  class="icon-inline"
-                />
-                <strong>Añadir notas</strong>. El contenido quedará reflejado en
-                el PDF final.
-              </li>
-              <li>
-                <strong>
-                  <img
-                    loading="lazy"
-                    src="assets/icons/cloud_off.svg"
-                    alt=""
-                    class="icon-inline"
-                  />
-                  Disponible sin conexión:
-                </strong>
-                Puedes seguir trabajando aunque no tengas internet y continuar
-                con normalidad desde el dispositivo.
-              </li>
-            </ul>
           </div>
 
-          <div class="modal-buttons">
-            <button class="close-modal-btn">Entendido</button>
+          <div class="modal-scrollable-content about-modal-body">
+            <section class="about-steps" aria-label="Pasos principales">
+              <article class="about-step">
+                <div class="about-step-number">01</div>
+                <div class="about-step-copy">
+                  <h3>Completa los datos</h3>
+                  <p>
+                    En <strong>Datos</strong>, revisa la fecha, la franja
+                    horaria, el tipo de servicio y la
+                    <strong>dotación</strong>. Añade las firmas cuando
+                    corresponda.
+                  </p>
+                </div>
+              </article>
+
+              <article class="about-step">
+                <div class="about-step-number">02</div>
+                <div class="about-step-copy">
+                  <h3>Añade los servicios</h3>
+                  <p>
+                    En <strong>Servicios</strong>, completa primero
+                    <strong>S1</strong>. Añade <strong>S2, S3</strong> o
+                    <strong>S4</strong> solo cuando los necesites.
+                  </p>
+                </div>
+              </article>
+
+              <article class="about-step">
+                <div class="about-step-number">03</div>
+                <div class="about-step-copy">
+                  <h3>Genera el PDF</h3>
+                  <p>
+                    Abre el menú y pulsa <strong>Descargar dieta actual</strong>
+                    para generar el PDF. Desde <strong>Gestor de dietas</strong>
+                    puedes recuperar dietas guardadas y volver a descargarlas.
+                  </p>
+                </div>
+              </article>
+            </section>
+
+            <section class="about-tips-section" aria-labelledby="about-tips">
+              <h3 id="about-tips" class="about-section-title">
+                Consejos útiles
+              </h3>
+              <ul class="about-tips">
+                <li>
+                  <strong>Guarda una dotación</strong> para reutilizar vehículo
+                  y personal con un solo toque.
+                </li>
+                <li>
+                  <strong>Usa Escanear</strong> para capturar horas desde una
+                  imagen cuando el servicio lo requiera.
+                </li>
+                <li>
+                  <strong>Añade notas</strong> solo cuando necesites dejar
+                  contexto o una incidencia en el PDF.
+                </li>
+                <li>
+                  <strong>La app puede seguir funcionando sin conexión</strong>
+                  para que no pierdas ritmo de trabajo.
+                </li>
+              </ul>
+            </section>
+          </div>
+
+          <div class="modal-buttons about-modal-actions">
+            <button class="close-modal-btn" type="button">Entendido</button>
           </div>
         </div>
       </div>
@@ -1317,7 +1444,7 @@
       </div>
       <script
         type="module"
-        src="./dist/bundle.js?v=2.4.3"
+        src="./dist/bundle.js?v=2.4.4"
         data-csp-nonce
       ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
@@ -1372,7 +1499,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text" hidden>2.4.3</span>
+          <span class="version-text" hidden>2.4.4</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
