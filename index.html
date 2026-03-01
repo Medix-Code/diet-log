@@ -69,8 +69,8 @@
       type="image/svg+xml"
     />
     <link rel="prefetch" href="assets/icons/sun.svg" />
-    <link rel="preload" href="/css/main.min.css?v=2.4.9" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css?v=2.4.9" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.10" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.10" />
     <style data-csp-nonce>
       #about-modal .about-modal-card {
         width: min(620px, 92vw);
@@ -93,14 +93,17 @@
 
       #about-modal .about-modal-header {
         position: relative;
-        padding: 18px 24px 14px;
+        display: flex;
+        align-items: center;
+        min-height: 60px;
+        padding: 12px 24px;
         border-bottom: 1px solid rgba(0, 74, 173, 0.12);
         background: rgba(255, 255, 255, 0.96);
       }
 
       #about-modal .about-close-btn {
         position: absolute;
-        top: 12px;
+        top: 50%;
         right: 12px;
         width: 36px;
         height: 36px;
@@ -111,12 +114,13 @@
         font-size: 22px;
         line-height: 1;
         cursor: pointer;
+        transform: translateY(-50%);
         transition: background-color 0.2s ease, transform 0.2s ease;
       }
 
       #about-modal .about-close-btn:hover {
         background: rgba(0, 74, 173, 0.14);
-        transform: scale(1.03);
+        transform: translateY(-50%) scale(1.03);
       }
 
       #about-modal .about-close-btn:focus-visible {
@@ -259,8 +263,9 @@
         }
 
         #about-modal .about-modal-header {
-          padding-top: 16px;
-          padding-bottom: 12px;
+          min-height: 56px;
+          padding-top: 10px;
+          padding-bottom: 10px;
         }
 
         #about-modal .about-modal-content {
@@ -1457,7 +1462,7 @@
       </div>
       <script
         type="module"
-        src="./dist/bundle.js?v=2.4.9"
+        src="./dist/bundle.js?v=2.4.10"
         data-csp-nonce
       ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
@@ -1512,7 +1517,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text" hidden>2.4.9</span>
+          <span class="version-text" hidden>2.4.10</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
