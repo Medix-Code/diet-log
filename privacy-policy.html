@@ -20,7 +20,7 @@
         max-width: 800px;
         margin: 0 auto;
         padding: 2rem;
-        background: var(--card-bg);
+        background: #ffffff;
         min-height: 100vh;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
       }
@@ -30,10 +30,10 @@
         margin-bottom: 1rem;
       }
       h2 {
-        color: var(--accent-color);
+        color: var(--primary-color);
         margin-top: 2rem;
         margin-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--input-border);
         padding-bottom: 0.5rem;
       }
       h3 {
@@ -58,7 +58,7 @@
         color: var(--primary-color);
       }
       a {
-        color: var(--accent-color);
+        color: var(--primary-color);
         text-decoration: none;
       }
       a:hover {
@@ -101,199 +101,177 @@
   <body class="body-privacy-policy">
     <div class="container">
       <h1>Política de Privacidad</h1>
-      <p><strong>Última actualización:</strong> 1 de novembre de 2025</p>
+      <p><strong>Última actualización:</strong> 1 de marzo de 2026</p>
 
       <p>
-        Esta Política de Privacidad describe cómo se gestiona la información en
-        la aplicación web MisDietas. Tu privacidad es nuestra máxima prioridad.
+        Esta Política de Privacidad explica cómo se tratan los datos en
+        <strong>MisDietas</strong>. La aplicación está diseñada para funcionar
+        principalmente en tu dispositivo, con un tratamiento limitado de datos
+        y sin crear una cuenta de usuario.
       </p>
 
       <h2>1. Responsable del tratamiento</h2>
       <p>
-        La aplicación MisDietas es un proyecto personal desarrollado de forma
-        independiente. Dado que la aplicación funciona de manera completamente
-        local en tu dispositivo, no se recogen datos personales que requieran un
-        punto de contacto directo para la gestión de la privacidad. Los derechos
-        de acceso, rectificación y supresión se ejercen directamente en tu
-        navegador, como se describe en la sección 5.
+        MisDietas es una aplicación web desarrollada de forma independiente.
+        Su funcionamiento no requiere registro de usuario ni una base de datos
+        remota asociada a tu cuenta. La mayor parte de la información que
+        introduces se conserva localmente en tu navegador.
       </p>
 
       <h2>2. Datos que se gestionan en la Aplicación</h2>
       <p>
-        MisDietas está diseñada para funcionar de forma completamente local en
-        tu dispositivo. Distinguimos dos tipos de datos:
+        En MisDietas se distinguen dos categorías de datos:
       </p>
 
-      <h3>a) Datos de la aplicación (Dietas, Dotaciones, Firmas)</h3>
+      <h3>a) Datos funcionales de la aplicación</h3>
       <p>
         <strong
-          >Toda la información que introduces en los formularios (fechas,
-          números de servicio, nombres, vehículos, firmas, etc.) se guarda
-          exclusivamente en el almacenamiento local de tu navegador</strong
-        >
-        (usando la tecnología IndexedDB). Estos datos nunca son enviados a
-        ningún servidor externo, y el desarrollador no tiene acceso a ellos en
-        ningún momento.
+          >La información que introduces en los formularios, como fechas,
+          servicios, dotaciones, nombres, vehículos, notas y firmas, se guarda
+          localmente en el navegador</strong
+        >, utilizando mecanismos de almacenamiento del propio dispositivo,
+        incluida IndexedDB.
       </p>
       <p>
-        <strong>Encriptación avanzada:</strong> Los
-        <strong>datos sensibles</strong> (nombres de conductores y ayudantes,
-        números de servicio, firmas biométricas, y otra información personal) se
-        protegen con <strong>encriptación AES-GCM 256-bit</strong> de nivel
-        militar. Las claves de encriptación se quedan únicamente en tu
-        dispositivo (encriptación zero-knowledge), así que ni siquiera el
-        desarrollador puede ver tus datos.
+        Estos datos se usan exclusivamente para ofrecer la funcionalidad de la
+        aplicación: completar formularios, guardar dietas, reutilizar
+        dotaciones, generar documentos PDF y recuperar información guardada
+        desde el propio dispositivo.
       </p>
       <p>
-        <strong>Control total:</strong> Tú eres el único propietario y gestor de
-        esta información. Si borras los datos de tu navegador, esta información
-        se eliminará de forma permanente. Si pierdes las claves de encriptación,
-        los datos encriptados se vuelven irrecuperables.
+        Los datos sensibles se protegen mediante mecanismos de cifrado y control
+        de integridad implementados en la propia aplicación. Las claves y
+        materiales necesarios para ese proceso permanecen en tu dispositivo.
+      </p>
+      <p>
+        Si borras los datos del sitio en tu navegador o pierdes el entorno de
+        almacenamiento local, la información guardada puede eliminarse de forma
+        permanente.
       </p>
 
-      <h3>b) Datos de análisis (Google Analytics)</h3>
+      <h3>b) Datos de análisis de uso</h3>
       <p>
         Si otorgas tu consentimiento explícito a través del banner de cookies,
-        utilizamos Google Analytics para recoger información **agregada y
-        anónima** sobre el uso de la Aplicación. El objetivo es puramente
-        estadístico, para entender qué funcionalidades son más utilizadas y cómo
-        podemos mejorar la herramienta. Los datos recopilados incluyen:
+        se utiliza Google Analytics para recopilar información estadística sobre
+        el uso de la aplicación. Esta información se utiliza para entender el
+        uso general del servicio y mejorar su funcionamiento.
       </p>
+      <p>Los datos de análisis pueden incluir, entre otros:</p>
       <ul>
         <li>Número de visitas y sesiones.</li>
         <li>
-          Interacciones con la aplicación, como la descarga de un PDF (evento
-          `download_pdf`).
+          Interacciones generales con la aplicación, como la descarga de un PDF.
         </li>
         <li>
-          Datos demográficos generales (país) y tecnológicos (tipo de
-          dispositivo, navegador).
+          Información técnica básica, como tipo de dispositivo, navegador o país
+          aproximado.
         </li>
       </ul>
       <p>
-        Esta información se procesa de forma que no permite tu identificación
-        personal. Google Analytics utiliza cookies para este fin. Puedes
-        consultar la
+        Google Analytics utiliza cookies u otros identificadores equivalentes
+        para esta finalidad. Puedes consultar la
         <a
           href="https://policies.google.com/privacy"
           target="_blank"
           rel="noopener noreferrer"
           >política de privacidad de Google</a
         >
-        para más detalles.
+        para obtener más información.
       </p>
 
       <h2>3. Finalidad del tratamiento de datos</h2>
       <ul>
         <li>
-          <strong>Datos de la aplicación:</strong> La única finalidad es
-          proporcionarte la funcionalidad principal de la herramienta:
-          registrar, gestionar y generar tus partes de dietas de forma privada y
-          offline.
+          <strong>Datos funcionales:</strong> Permitir el uso normal de la
+          aplicación, el guardado local de información y la generación de
+          justificantes o documentos asociados.
         </li>
         <li>
-          <strong>Datos de análisis:</strong> La finalidad es realizar
-          mediciones estadísticas para mejorar la usabilidad, el rendimiento y
-          las características de la Aplicación.
+          <strong>Datos de análisis:</strong> Obtener métricas agregadas para
+          mejorar la usabilidad, el rendimiento y la evolución del producto.
         </li>
       </ul>
 
       <h2>4. Base legal para el tratamiento</h2>
       <ul>
         <li>
-          El tratamiento de los <strong>datos de la aplicación</strong> se basa
-          en la necesidad de ejecutar la funcionalidad que tú, como usuario,
-          solicitas al utilizarla.
+          El tratamiento de los <strong>datos funcionales</strong> se apoya en
+          la necesidad de prestar la funcionalidad solicitada al utilizar la
+          aplicación.
         </li>
         <li>
           El tratamiento de los <strong>datos de análisis</strong> se basa
           exclusivamente en tu <strong>consentimiento explícito</strong>, que
-          puedes otorgar o denegar a través del banner de cookies.
+          puedes aceptar o rechazar a través del banner de cookies.
         </li>
       </ul>
 
       <h2>5. Tus derechos como usuario</h2>
       <p>
-        De acuerdo con la normativa de protección de datos (GDPR), tienes los
-        siguientes derechos:
+        Puedes gestionar la información almacenada por la aplicación desde el
+        propio navegador y desde las funciones disponibles en MisDietas. En
+        particular:
       </p>
       <ul>
         <li>
-          <strong>Derecho de acceso y rectificación:</strong> Puedes acceder y
-          modificar los datos de cualquier dieta guardada en cualquier momento.
-          Simplemente carga la dieta desde el "Gestor de dietas", realiza los
-          cambios en el formulario y vuelve a guardarla.
+          <strong>Acceso y rectificación:</strong> Puedes abrir una dieta
+          guardada, modificar sus datos y volver a guardarla.
         </li>
         <li>
-          <strong>Derecho de supresión ("al olvido"):</strong> Tienes dos formas
-          de eliminar tus datos de forma permanente:
+          <strong>Eliminación:</strong> Puedes borrar dietas concretas desde el
+          gestor de dietas o eliminar todos los datos del sitio desde la
+          configuración de tu navegador.
           <ul>
             <li>
-              <strong>Eliminación individual:</strong> Desde el "Gestor de
-              dietas", puedes eliminar una dieta específica deslizando el
-              elemento hacia la izquierda.
+              <strong>Eliminación individual:</strong> Desde el gestor de
+              dietas o la papelera.
             </li>
             <li>
-              <strong>Eliminación total:</strong> Puedes eliminar toda la
-              información guardada por la aplicación (dietas, dotaciones, etc.)
-              borrando los datos del sitio web desde la configuración de tu
-              navegador.
+              <strong>Eliminación total:</strong> Desde la configuración del
+              navegador, borrando los datos almacenados por el sitio.
             </li>
           </ul>
         </li>
         <li>
-          <strong>Derecho a retirar el consentimiento (para Analytics):</strong>
-          Puedes retirar tu consentimiento para el uso de cookies de análisis en
-          cualquier momento. Si ya las aceptaste, simplemente borra las cookies
-          de este sitio en la configuración de tu navegador. La próxima vez que
-          visites la web, el banner de consentimiento volverá a aparecer.
+          <strong>Retirada del consentimiento para análisis:</strong> Puedes
+          rechazar las cookies de análisis desde el banner inicial y, si ya las
+          aceptaste, puedes eliminar las cookies del sitio desde tu navegador.
         </li>
       </ul>
 
       <h2>6. Seguridad de los datos</h2>
       <p>
-        La seguridad de tus datos reside en tu propio dispositivo. La aplicación
-        no transmite esta información a través de internet, lo que elimina los
-        riesgos asociados a transferencias de datos.
+        MisDietas incorpora medidas técnicas orientadas a proteger la
+        confidencialidad e integridad de la información almacenada localmente.
       </p>
       <p>
-        <strong>Protección fail-closed:</strong> Si por algún motivo el sistema
-        de encriptación no funciona, la aplicación
-        <strong>bloquea el guardado automáticamente</strong> para evitar que se
-        guarden datos sin protección. En ese caso, verás un mensaje claro
-        explicándote qué pasa.
+        Si el sistema de protección de datos no está disponible o detecta un
+        estado no válido, la aplicación puede bloquear determinadas operaciones
+        para evitar guardar información sin las garantías previstas.
       </p>
       <p>
-        <strong>Validación de integridad:</strong> La aplicación comprueba
-        constantemente que tus datos estén bien mediante códigos de verificación
-        criptográficos. Si nota algo raro, te avisa enseguida para que puedas
-        hacer algo al respecto.
-      </p>
-      <p>
-        <strong>Headers de seguridad:</strong> Hemos añadido medidas de
-        seguridad extra en las comunicaciones web (como X-Content-Type-Options,
-        X-XSS-Protection, X-Frame-Options) para proteger contra ataques comunes.
+        Además, la aplicación realiza comprobaciones de integridad y aplica
+        medidas de seguridad en el entorno web para reducir riesgos comunes de
+        manipulación o carga insegura de recursos.
       </p>
 
       <h2>7. Integridad y recuperación de datos</h2>
       <p>
-        <strong>Alertas de integridad:</strong> Si la aplicación nota que algo
-        no cuadra con tus datos (por corrupción o manipulación), te saldrá una
-        notificación clara en pantalla. Así puedes comprobarlo y, si hace falta,
-        recuperar tus datos desde una copia de seguridad.
+        Si la aplicación detecta problemas de integridad o incompatibilidades en
+        datos previamente guardados, puede mostrar avisos en pantalla para
+        impedir cargas incorrectas o para indicar que determinados registros no
+        pueden recuperarse en esa sesión.
       </p>
       <p>
-        <strong>Migración automática:</strong> Cuando actualizamos la aplicación
-        con mejoras de seguridad, tus datos antiguos se pasan automáticamente
-        manteniendo toda la protección. Si hay algún problema temporal, el
-        sistema lo intenta varias veces hasta que funciona.
+        En determinadas actualizaciones, MisDietas puede ejecutar procesos de
+        migración local de datos para mantener la compatibilidad y reforzar la
+        seguridad de la información ya existente.
       </p>
       <p>
-        <strong>Recuperación de claves:</strong> Las claves de encriptación se
-        crean y guardan de forma segura en tu dispositivo. Si se pierden (por
-        ejemplo, borrando el historial del navegador), los datos encriptados ya
-        no se pueden recuperar. Por eso es buena idea hacer copias de seguridad
-        de vez en cuando de tus datos importantes.
+        Como la información se conserva localmente, su disponibilidad depende
+        del estado del navegador y del dispositivo. Si borras el almacenamiento
+        local o pierdes el entorno donde estaban los datos, puede que no sea
+        posible recuperarlos.
       </p>
 
       <p>Gracias por utilizar MisDietas.</p>
