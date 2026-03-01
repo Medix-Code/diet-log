@@ -3285,7 +3285,8 @@ button {
   margin-top: 0px;
   background-color: var(--bg-footer);
   color: var(--text-color-footer);
-  padding: 20px;
+  padding: 16px 20px calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   text-align: center;
   font-family: sans-serif;
 }
@@ -3293,70 +3294,90 @@ button {
 .footer .footer__content {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
 .footer .footer__icons {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 50px;
-  margin-bottom: 30px;
+  gap: clamp(20px, 7vw, 36px);
+  margin-bottom: 0;
 }
 
 /* Contenidor del text centrat per defecte */
 .footer .footer__text {
-  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  line-height: 1.3;
+  font-size: 0.8rem;
+  opacity: 0.92;
 }
 
 /* Estil pel text del copyright */
 .footer .copyright-text {
-  font-size: 0.9rem;
-  opacity: 0.9;
+  font-size: 0.82rem;
+  opacity: 0.82;
 }
 
 /* Estil pel text de la versió */
 .footer .version-text {
-  display: block;
-  margin-top: 15px;
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
   opacity: 0.7;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .offline-indicator {
-  color: #ff6b6b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffd0d0;
   font-weight: 600;
-  font-size: 0.8rem;
-  margin-left: 10px;
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 107, 107, 0.16);
 }
 
 .footer .footer-btn {
-  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   outline: none;
   flex-direction: column;
-  gap: 8px;
-  height: auto;
-  padding: 8px 4px;
-  width: 65px;
+  gap: 6px;
+  min-height: 52px;
+  padding: 6px 8px;
+  width: 72px;
 }
 
 .footer .footer-btn-text {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-family: sans-serif;
   color: var(--text-color-footer);
-  opacity: 0.9;
+  opacity: 0.92;
   pointer-events: none;
   display: inline-block;
-  min-width: 6ch;
+  min-width: 0;
   text-align: center;
+  line-height: 1.15;
 }
 
 .footer .footer-btn:hover {
@@ -3376,6 +3397,11 @@ button {
 .footer .footer-btn:active {
   background-color: rgba(255, 255, 255, 0.2);
   transform: scale(0.92);
+}
+
+.footer .footer-btn .icon {
+  width: 22px;
+  height: 22px;
 }
 
 .footer .footer-btn .icon {
@@ -3838,9 +3864,14 @@ body.modal-open {
 // 3. Estil per a l'enllaç dins del peu de pàgina
 .footer__text a {
   color: var(--text-color-footer);
-  text-decoration: underline;
+  text-decoration: none;
   font-size: 0.8rem;
-  margin: 0 10px;
+  opacity: 0.92;
+}
+
+.footer__text a:hover,
+.footer__text a:focus-visible {
+  text-decoration: underline;
 }
 
 /* Onboarding Styles */
