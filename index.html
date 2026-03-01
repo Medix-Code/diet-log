@@ -68,6 +68,24 @@
           0 2px 4px var(--bg-transp-ajustes);
       }
 
+      .chip {
+        appearance: none;
+        -webkit-appearance: none;
+        -webkit-touch-callout: none;
+        user-select: none;
+      }
+
+      .chip:active {
+        transform: none;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+      }
+
+      .chip.chip-active:active {
+        box-shadow:
+          inset 0 1px 2px rgba(15, 23, 42, 0.06),
+          0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+
       .service-button.active-square:focus-visible {
         box-shadow:
           0 0 0 3px rgba(0, 74, 173, 0.22),
@@ -117,8 +135,8 @@
       type="image/svg+xml"
     />
     <link rel="prefetch" href="assets/icons/sun.svg" />
-    <link rel="preload" href="/css/main.min.css?v=2.4.15" as="style" />
-    <link rel="stylesheet" href="/css/main.min.css?v=2.4.15" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.16" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.16" />
     <style data-csp-nonce>
       #about-modal .about-modal-card {
         width: min(620px, 92vw);
@@ -1510,7 +1528,7 @@
       </div>
       <script
         type="module"
-        src="./dist/bundle.js?v=2.4.15"
+        src="./dist/bundle.js?v=2.4.16"
         data-csp-nonce
       ></script>
       <input type="file" accept="image/*" id="camera-input" class="hidden" />
@@ -1565,7 +1583,7 @@
           <a href="/privacy-policy.html" target="_blank"
             >Política de Privacidad</a
           >
-          <span class="version-text" hidden>2.4.15</span>
+          <span class="version-text" hidden>2.4.16</span>
           <span id="offline-indicator" class="offline-indicator" hidden
             >Offline</span
           >
