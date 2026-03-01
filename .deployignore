@@ -1,0 +1,27 @@
+# 🔒 FITXERS EXCLOSOS DEL DEPLOY DE PRODUCCIÓ
+# Per motius de seguretat (OWASP A05 - Security Misconfiguration)
+
+# Fitxers de test i diagnòstic
+test-manual-dotacions.html
+tests/
+*.test.js
+*.spec.js
+
+# Documentació de desenvolupament
+docs/
+TESTING.md
+tests/TESTING-DOTACIONS.md
+DEBUG-KEY-RESET.md
+
+# Fitxers de desenvolupament
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+
+# Configuració de test
+vitest.config.mjs
+jest.config.js
+
+# Codi font (només servir bundle)
+src/

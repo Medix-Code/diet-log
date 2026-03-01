@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#004aad" />
+    <meta name="author" content="TESHub" />
+    <meta
+      name="description"
+      content="Aplicación para gestionar dietas y justificantes con soporte móvil, funcionamiento offline y experiencia PWA."
+    />
+    <!-- Desactivar la barra de progrés de càrrega del navegador -->
+    <style data-csp-nonce>
+      #nprogress,
+      [role="progressbar"],
+      ::-webkit-progress-bar,
+      ::-webkit-progress-value {
+        display: none !important;
+        opacity: 0 !important;
+      }
+
+      body.hide-footer .footer {
+        display: none !important;
+      }
+    </style>
+    <style data-csp-nonce>
+      :where(
+          .group-btn,
+          .btn-save,
+          .btn-options,
+          .service-button,
+          .options-btn,
+          .chip,
+          .btn-ocr-inline,
+          .btn-ocr-scan,
+          .modal-button,
+          .diet-icons button,
+          .close-dotacio-button,
+          .close-diet-button,
+          .trash-modal-footer-btn,
+          .footer .footer-btn,
+          .about-close-btn,
+          .ocr-close-btn
+        ) {
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+        background-clip: padding-box;
+        overflow: hidden;
+      }
+
+      :where(
+          .group-btn,
+          .btn-save,
+          .btn-options,
+          .service-button,
+          .options-btn,
+          .chip,
+          .btn-ocr-inline,
+          .btn-ocr-scan,
+          .trash-modal-footer-btn,
+          .footer .footer-btn
+        ):focus-visible {
+        box-shadow:
+          0 0 0 3px rgba(0, 74, 173, 0.2),
+          0 2px 4px var(--bg-transp-ajustes);
+      }
+
+      .chip {
+        appearance: none;
+        -webkit-appearance: none;
+        -webkit-touch-callout: none;
+        user-select: none;
+      }
+
+      .chip:active {
+        transform: none;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+      }
+
+      .chip.chip-active:active {
+        box-shadow:
+          inset 0 1px 2px rgba(15, 23, 42, 0.06),
+          0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+
+      .top-bar {
+        padding: 0 16px 0 14px;
+        border-bottom: none;
+        background:
+          linear-gradient(135deg, #0a4fae 0%, #004aad 58%, #003b86 100%);
+        box-shadow:
+          0 10px 30px rgba(0, 36, 84, 0.18),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+      }
+
+      .top-bar__left {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .logo-title {
+        gap: 0;
+      }
+
+      .top-bar__title {
+        padding-left: 0;
+        font-size: clamp(1.8rem, 2.4vw, 2.1rem);
+        font-weight: 650;
+        letter-spacing: -0.025em;
+      }
+
+      .button-group {
+        padding-right: 0;
+      }
+
+      .ajustes-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .ajustes-btn:hover {
+        background: rgba(255, 255, 255, 0.14);
+        transform: translateY(-1px);
+      }
+
+      .ajustes-btn:active {
+        transform: scale(0.96);
+      }
+
+      .tabs-container {
+        top: calc(var(--top-bar-height) - 10px);
+        left: 50%;
+        width: min(420px, calc(100% - 28px));
+        padding: 6px;
+        border: 1px solid rgba(0, 74, 173, 0.1);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow:
+          0 14px 34px rgba(15, 23, 42, 0.14),
+          0 2px 10px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        transform: translateX(-50%);
+        justify-content: stretch;
+      }
+
+      .tab {
+        min-height: 42px;
+        padding: 10px 18px;
+        border-radius: 13px;
+        background: transparent;
+        font-size: 0.98rem;
+        font-weight: 520;
+        color: rgba(32, 45, 69, 0.72);
+        transition:
+          background-color 0.2s ease,
+          color 0.2s ease,
+          transform 0.15s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .tab:hover {
+        background: rgba(0, 74, 173, 0.07);
+        color: rgba(20, 33, 56, 0.88);
+      }
+
+      .tab.active {
+        font-size: 0.98rem;
+        font-weight: 620;
+        color: #0f2748;
+        background: #ffffff;
+        box-shadow:
+          0 8px 18px rgba(15, 23, 42, 0.08),
+          inset 0 0 0 1px rgba(0, 74, 173, 0.08);
+      }
+
+      .tab-content-container {
+        margin-top: 126px;
+      }
+
+      .footer {
+        padding: 14px 18px calc(16px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .footer .footer__content {
+        gap: 10px;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+
+      .footer .footer__icons {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        padding: 8px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          0 8px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 0;
+      }
+
+      .footer .footer__text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px 14px;
+        width: 100%;
+        line-height: 1.3;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .footer .footer__legal {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 12px;
+      }
+
+      .footer .copyright-text {
+        font-size: 0.78rem;
+        opacity: 0.78;
+      }
+
+      .footer .footer-btn {
+        border-radius: 14px;
+        gap: 5px;
+        min-height: 58px;
+        padding: 8px 10px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .footer .footer-btn .icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      .footer .footer-btn-text {
+        font-size: 0.71rem;
+        opacity: 0.9;
+        min-width: 0;
+        line-height: 1.1;
+      }
+
+      .footer .footer__text a {
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.88);
+        font-weight: 500;
+        margin: 0;
+      }
+
+      .footer .footer__text a:hover,
+      .footer .footer__text a:focus-visible {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 640px) {
+        .top-bar {
+          padding: 0 12px;
+        }
+
+        .top-bar__title {
+          font-size: 2rem;
+        }
+
+        .ajustes-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+        }
+
+        .tabs-container {
+          top: calc(var(--top-bar-height) + 2px);
+          width: min(360px, calc(100% - 20px));
+          padding: 5px;
+          border-radius: 16px;
+        }
+
+        .tab {
+          min-height: 40px;
+          padding: 9px 12px;
+          font-size: 0.93rem;
+        }
+
+        .tab.active {
+          font-size: 0.93rem;
+        }
+
+        .tab-content-container {
+          margin-top: 130px;
+        }
+
+        .footer {
+          padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        }
+
+        .footer .footer__content {
+          max-width: 360px;
+          gap: 9px;
+        }
+
+        .footer .footer__icons {
+          gap: 6px;
+          padding: 6px;
+        }
+
+        .footer .footer__text {
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 5px 10px;
+        }
+
+        .footer .footer__legal {
+          justify-content: center;
+        }
+
+        .footer .footer-btn {
+          min-height: 54px;
+          padding: 7px 8px;
+        }
+      }
+
+      .service-button.active-square:focus-visible {
+        box-shadow:
+          0 0 0 3px rgba(0, 74, 173, 0.22),
+          0 2px 4px rgba(0, 74, 173, 0.15);
+      }
+    </style>
+
+    <!-- Content Security Policy: Primer el Cloudflare Worker (_worker.js) intentarà afegir CSP amb nonces -->
+    <!-- Si el Worker falla, aquest CSP fallback proporciona protecció bàsica -->
+    <!-- NOTA: 'unsafe-inline' eliminat per seguretat (XSS protection) -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: blob: https://www.google-analytics.com;
+        connect-src 'self' https://cdn.jsdelivr.net https://www.google-analytics.com https://region1.google-analytics.com data: blob:;
+        worker-src 'self' blob:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+      "
+    />
+    <!-- NOTA: frame-ancestors no funciona en <meta> CSP, només en HTTP headers (el Worker ho gestiona) -->
+    <!-- NOTA: style-src manté 'unsafe-inline' per <style> tag dins <head> (només CSS, no JS) -->
+
+    <!-- Altres headers de seguretat -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <title>MisDietas</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" href="assets/images/icons-192.png" type="image/png" />
+
+    <!-- Preconnects crítics per rendiment (millora connexions 2025) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+
+    <!-- Preloads de recursos crítics -->
+    <link
+      rel="preload"
+      href="assets/icons/moon.svg"
+      as="image"
+      type="image/svg+xml"
+    />
+    <link rel="prefetch" href="assets/icons/sun.svg" />
+    <link rel="preload" href="/css/main.min.css?v=2.4.24" as="style" />
+    <link rel="stylesheet" href="/css/main.min.css?v=2.4.24" />
+    <style data-csp-nonce>
+      .top-bar {
+        padding: 0 14px 0 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+        background:
+          linear-gradient(135deg, #0a4fae 0%, #004aad 62%, #004398 100%);
+        box-shadow: 0 8px 20px rgba(0, 36, 84, 0.14);
+      }
+
+      .top-bar__left {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .logo-title {
+        gap: 0;
+      }
+
+      .top-bar__title {
+        padding-left: 0;
+        font-size: clamp(1.7rem, 2.4vw, 1.95rem);
+        font-weight: 620;
+        letter-spacing: -0.02em;
+      }
+
+      .button-group {
+        padding-right: 0;
+      }
+
+      .ajustes-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+
+      .ajustes-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: none;
+      }
+
+      .ajustes-btn:active {
+        transform: scale(0.96);
+      }
+
+      .tabs-container {
+        top: var(--tab-height);
+        left: 0;
+        width: 100%;
+        padding: 0;
+        border: 0;
+        border-bottom: 1px solid var(--grey-border);
+        border-radius: 0;
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        transform: none;
+        justify-content: center;
+      }
+
+      .tab {
+        min-height: 48px;
+        padding: 13px 16px 12px;
+        border-radius: 0;
+        background: transparent;
+        font-size: 0.98rem;
+        font-weight: 520;
+        color: rgba(32, 45, 69, 0.74);
+        box-shadow: none;
+        transition:
+          color 0.2s ease,
+          background-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .tab:hover {
+        background: rgba(0, 74, 173, 0.04);
+        color: rgba(20, 33, 56, 0.92);
+      }
+
+      .tab.active {
+        font-size: 0.98rem;
+        font-weight: 650;
+        color: #16345c;
+        background: transparent;
+        box-shadow: inset 0 -3px 0 var(--line-tab);
+      }
+
+      .tab-content-container {
+        margin-top: 120px;
+      }
+
+      @media (max-width: 768px) {
+        .top-bar {
+          padding: 0 12px;
+        }
+
+        .top-bar__title {
+          font-size: 1.95rem;
+        }
+
+        .ajustes-btn {
+          width: 38px;
+          height: 38px;
+          border-radius: 11px;
+        }
+
+        .tabs-container {
+          top: calc(var(--tab-height) + 10px);
+        }
+
+        .tab {
+          min-height: 46px;
+          padding: 12px 12px 11px;
+          font-size: 0.94rem;
+        }
+
+        .tab.active {
+          font-size: 0.94rem;
+        }
+
+        .tab-content-container {
+          margin-top: 125px;
+        }
+      }
+
+      #about-modal .about-modal-card {
+        width: min(620px, 92vw);
+        max-width: 620px;
+        max-block-size: min(88svh, 760px);
+        padding: 0;
+        border-radius: 20px;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            circle at top right,
+            rgba(0, 74, 173, 0.08),
+            transparent 32%
+          ),
+          linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        box-shadow:
+          0 24px 70px rgba(15, 23, 42, 0.22),
+          0 8px 24px rgba(15, 23, 42, 0.1);
+      }
+
+      #about-modal .about-modal-header {
+        position: relative;
+        display: flex;
+        align-items: center;
+        min-height: 60px;
+        padding: 12px 24px;
+        border-bottom: 1px solid rgba(0, 74, 173, 0.12);
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      #about-modal .about-close-btn {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 999px;
+        background: rgba(0, 74, 173, 0.08);
+        color: var(--primary-color);
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+        transform: translateY(-50%);
+        transition: background-color 0.2s ease, transform 0.2s ease;
+      }
+
+      #about-modal .about-close-btn:hover {
+        background: rgba(0, 74, 173, 0.14);
+        transform: translateY(-50%) scale(1.03);
+      }
+
+      #about-modal .about-close-btn:focus-visible {
+        outline: 2px solid rgba(0, 74, 173, 0.4);
+        outline-offset: 2px;
+      }
+
+      #about-modal .about-eyebrow {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--primary-color);
+      }
+
+      #about-modal #about-title {
+        margin: 0 0 8px;
+        padding: 0;
+        border: 0;
+        text-align: left;
+        font-size: clamp(1.28rem, 2.6vw, 1.65rem);
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      #about-modal .about-intro {
+        margin: 8px 0 0;
+        max-width: 50ch;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        color: var(--subtext-color);
+      }
+
+      #about-modal .about-modal-body {
+        padding: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #about-modal .about-modal-content {
+        padding: 18px 24px 20px;
+      }
+
+      #about-modal .about-modal-content-intro {
+        margin-bottom: 18px;
+      }
+
+      #about-modal .about-steps,
+      #about-modal .about-tips {
+        display: grid;
+        gap: 12px;
+      }
+
+      #about-modal .about-step {
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 14px 14px 12px;
+        border: 1px solid rgba(0, 74, 173, 0.1);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      #about-modal .about-step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(0, 74, 173, 0.1);
+        color: var(--primary-color);
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+      }
+
+      #about-modal .about-step-copy h3,
+      #about-modal .about-section-title {
+        margin: 0 0 6px;
+        padding: 0;
+        border: 0;
+        text-align: left;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--text-color);
+        background: none;
+      }
+
+      #about-modal .about-step-copy p,
+      #about-modal .about-tips li {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        color: var(--subtext-color);
+      }
+
+      #about-modal .about-tips-section {
+        margin-top: 18px;
+      }
+
+      #about-modal .about-tips {
+        padding: 0;
+        list-style: none;
+      }
+
+      #about-modal .about-tips li {
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(0, 74, 173, 0.06);
+      }
+
+      #about-modal .about-modal-actions {
+        justify-content: flex-end;
+        padding: 14px 24px 18px;
+        margin: 0;
+        border-top: 1px solid rgba(0, 74, 173, 0.12);
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      #about-modal .about-modal-actions .close-modal-btn {
+        margin-top: 0;
+        min-width: 124px;
+      }
+
+      @media (max-width: 600px) {
+        #about-modal .about-modal-card {
+          width: min(94vw, 620px);
+          max-block-size: min(90svh, 760px);
+          border-radius: 18px;
+        }
+
+        #about-modal .about-modal-header,
+        #about-modal .about-modal-content,
+        #about-modal .about-modal-actions {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        #about-modal .about-modal-header {
+          min-height: 56px;
+          padding-top: 10px;
+          padding-bottom: 10px;
+        }
+
+        #about-modal .about-modal-content {
+          padding-top: 14px;
+          padding-bottom: 16px;
+        }
+
+        #about-modal .about-step {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        #about-modal .about-step-number {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+        }
+
+        #about-modal .about-modal-actions .close-modal-btn {
+          width: 100%;
+        }
+      }
+    </style>
+
+    <!-- Tesseract.js carregat dinàmicament sols quan s'usi OCR -->
+
+    <!-- PDF-Lib carregat lazy sols quan s'usi -->
+
+    <script src="./sw-register.js" type="module" data-csp-nonce></script>
+  </head>
+  <body id="app-body" class="no-js hide-footer">
+    <!-- ========= ONBOARDING CAROUSEL (CON MEJORAS) ========= -->
+    <div id="onboarding-container" class="onboarding-container hidden">
+      <div class="onboarding-carousel">
+        <!-- SLIDE 1: Bienvenida -->
+        <div class="onboarding-slide active">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide1-welcome.svg"
+              alt="Icono de bienvenida a MisDietas."
+              class="onboarding-image"
+              loading="lazy"
+              width="200"
+              height="200"
+            />
+            <h2 class="onboarding-title">Te damos la bienvenida a MisDietas</h2>
+            <p class="onboarding-text">
+              La forma más rápida y sencilla de registrar tus servicios y tener
+              tus justificantes de dietas listos al momento.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="onboarding-slide">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide2-fast-fill.svg"
+              alt="Icono que muestra un formulario rellenándose rápidamente."
+              class="onboarding-image"
+              loading="lazy"
+              width="200"
+              height="200"
+            />
+            <h2 class="onboarding-title">Rellena a toda velocidad</h2>
+            <p class="onboarding-text">
+              Aprovecha funciones que te ahorran tiempo: escanea las horas en
+              servicios TSU, carga tus dotaciones guardadas y disfruta de una
+              interfaz ágil.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: Título modificado (sin "profesional") -->
+        <div class="onboarding-slide">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide3-pdf.svg"
+              alt="Icono de un documento PDF generado."
+              class="onboarding-image"
+              loading="lazy"
+              width="200"
+              height="200"
+            />
+            <h2 class="onboarding-title">Tu PDF, listo para entregar</h2>
+            <p class="onboarding-text">
+              Crea un justificante completo, con firmas y notas, listo para
+              compartir desde tu móvil.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: Título nuevo y más directo -->
+        <div class="onboarding-slide">
+          <div class="onboarding-content-wrapper">
+            <img
+              src="/assets/animations/slide4-security.svg"
+              alt="Icono de un escudo que representa seguridad y privacidad."
+              class="onboarding-image"
+              loading="lazy"
+            />
+            <h2 class="onboarding-title">Trabaja con confianza</h2>
+            <p class="onboarding-text">
+              ✓ Funciona sin conexión a internet.<br />
+              ✓ Tus datos se guardan de forma segura solo en tu dispositivo.
+            </p>
+          </div>
+          <button id="onboarding-finish-btn" class="onboarding-cta">
+            Crear mi primera dieta
+          </button>
+        </div>
+      </div>
+
+      <div class="onboarding-nav">
+        <span class="nav-dot active"></span><span class="nav-dot"></span
+        ><span class="nav-dot"></span><span class="nav-dot"></span>
+      </div>
+      <button id="onboarding-skip-btn" class="onboarding-skip">Saltar</button>
+    </div>
+    <div id="install-prompt" class="hidden">
+      <p>¿Quieres instalarla como aplicación?</p>
+      <div class="install-buttons">
+        <button id="dismiss-button">No, gracias</button>
+        <button id="install-button">Instalar</button>
+      </div>
+    </div>
+    <header class="top-bar">
+      <div class="top-bar__left">
+        <a class="logo-title" href="https://misdietas.com" title="MisDietas">
+          <h1 class="top-bar__title">MisDietas</h1>
+        </a>
+      </div>
+      <div class="button-group">
+        <button
+          id="settings"
+          class="ajustes-btn"
+          aria-label="Opciones y ajustes"
+        >
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+        <div
+          class="ajustes-panel"
+          id="settings-panel"
+          role="menu"
+          aria-labelledby="ajustes"
+        >
+          <button
+            type="button"
+            class="big-btn"
+            id="save-diet"
+            aria-label="Guardar dieta actual"
+            role="menuitem"
+            disabled
+          >
+            <img
+              src="assets/icons/save.svg"
+              alt="Icono de guardar dieta"
+              class="icon"
+            />
+            <span>Guardar</span>
+            <span id="last-saved" class="last-saved-info"></span>
+          </button>
+          <button
+            type="button"
+            class="big-btn generate-pdf"
+            aria-label="Generar y descargar PDF de la dieta"
+            role="menuitem"
+          >
+            <img
+              loading="lazy"
+              src="assets/icons/download_blue.svg"
+              alt="Icono de descargar PDF"
+              class="icon"
+            />
+            Descargar dieta actual
+          </button>
+          <button
+            type="button"
+            class="big-btn"
+            id="manage-diets"
+            aria-label="Abrir gestor de dietas guardadas"
+            role="menuitem"
+          >
+            <img
+              loading="lazy"
+              src="assets/icons/gear.svg"
+              alt="Icono de configuración"
+              class="icon"
+            />
+            Gestor de dietas
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <nav
+      class="tabs-container"
+      data-tabs-ready="false"
+      role="tablist"
+      aria-label="Pestañas del formulario"
+    >
+      <button
+        id="tab-dades"
+        class="tab active"
+        role="tab"
+        aria-controls="dades-tab-content"
+        aria-selected="true"
+      >
+        Datos
+      </button>
+      <button
+        id="tab-serveis"
+        class="tab"
+        role="tab"
+        aria-controls="serveis-tab-content"
+        aria-selected="false"
+      >
+        Servicios
+      </button>
+    </nav>
+
+    <main
+      id="main-content"
+      class="tab-content-container"
+      data-tabs-ready="false"
+    >
+      <section
+        id="dades-tab-content"
+        class="tab-content active"
+        role="tabpanel"
+        aria-labelledby="tab-dades"
+      >
+        <div class="form-group">
+          <label for="date">Fecha</label>
+          <input type="date" id="date" name="date" />
+        </div>
+        <div class="form-group">
+          <label for="diet-type">Franja horaria</label>
+          <select id="diet-type" name="diet-type">
+            <option value="" disabled selected hidden></option>
+            <option value="lunch">Comida</option>
+            <option value="dinner">Cena</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="service-type">Tipo de servicio</label>
+          <select id="service-type" name="service-type">
+            <option value="TSU" selected>TSU</option>
+            <option value="TSNU">TSNU</option>
+          </select>
+        </div>
+        <div class="group-header">
+          <h2 class="group-title">Dotación</h2>
+          <div class="group-btns">
+            <button
+              type="button"
+              class="group-btn btn-save"
+              id="add-dotacio"
+              aria-label="Nueva dotación"
+            >
+              <img src="assets/icons/save_white.svg" alt="Nueva dotación" />
+            </button>
+            <button
+              type="button"
+              class="group-btn btn-options"
+              id="open-dotacio-modal"
+              aria-label="Opciones"
+            >
+              <img src="assets/icons/id_card.svg" alt="Opciones" />
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="vehicle-number">Vehículo</label>
+          <input
+            type="text"
+            id="vehicle-number"
+            name="vehicle-number"
+            autocomplete="off"
+            maxlength="6"
+          />
+        </div>
+        <div class="form-group signature-group">
+          <label for="person1">Conductor</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="person1"
+              name="person1"
+              class="txt-person1"
+              autocomplete="off"
+              maxlength="28"
+            />
+            <button
+              type="button"
+              class="signature-btn"
+              id="sign-person1"
+              aria-label="Firma del conductor"
+            >
+              <img src="assets/icons/signature.svg" alt="" class="icon" />
+            </button>
+          </div>
+        </div>
+        <div class="form-group signature-group">
+          <label for="person2">Ayudante</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="person2"
+              name="person2"
+              class="txt-person2"
+              enterkeyhint="done"
+              inputmode="text"
+              autocomplete="off"
+              maxlength="28"
+            />
+            <button
+              type="button"
+              class="signature-btn"
+              id="sign-person2"
+              aria-label="Firma del ayudante"
+            >
+              <img src="assets/icons/signature.svg" alt="" class="icon" />
+            </button>
+          </div>
+        </div>
+      </section>
+      <section
+        id="serveis-tab-content"
+        class="tab-content"
+        role="tabpanel"
+        aria-labelledby="tab-serveis"
+      >
+        <div class="service-controls">
+          <div id="service-buttons-container"></div>
+          <div class="options-container">
+            <button
+              class="options-btn"
+              id="options-toggle"
+              aria-label="Más opciones"
+            >
+              <img src="assets/icons/submenu.svg" alt="Opciones" class="icon" />
+            </button>
+            <div class="options-dropdown hidden" id="options-menu">
+              <button
+                type="button"
+                class="option-btn clear-selected-btn notes-btn"
+                id="notes-selected-service"
+                aria-label="Añadir nota"
+              >
+                <img src="assets/icons/ic_note.svg" alt="Notas" class="icon" />
+                <span>Añadir Nota</span>
+              </button>
+              <button
+                type="button"
+                class="option-btn clear-selected-btn"
+                id="clear-selected-service"
+                aria-label="Borrar campos del servicio"
+              >
+                <img src="assets/icons/eraser.svg" alt="Borrar" class="icon" />
+                <span>Borrar campos</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="services-container">
+          <!-- SERVEI 1 -->
+          <div
+            class="service service-1"
+            aria-labelledby="servei-1"
+            tabindex="-1"
+          >
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-1">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-1"
+                name="service-number-1"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-1">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-1"
+                name="origin-1"
+                class="origin"
+                maxlength="35"
+                autocomplete="off"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-1">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-1"
+                name="destination-1"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                maxlength="35"
+                autocomplete="off"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-1">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-1"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-1"
+                  name="origin-time-1"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="destination-time-1">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-1"
+                  name="destination-time-1"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-1">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-1"
+                  name="end-time-1"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 2 -->
+          <div class="service service-2" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-2">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-2"
+                name="service-number-2"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-2">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-2"
+                name="origin-2"
+                class="origin"
+                maxlength="35"
+                autocomplete="off"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-2">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-2"
+                name="destination-2"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-2">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-2"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-2"
+                  name="origin-time-2"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-2">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-2"
+                  name="destination-time-2"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-2">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-2"
+                  name="end-time-2"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 3 -->
+          <div class="service service-3" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-3">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-3"
+                name="service-number-3"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-3">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-3"
+                name="origin-3"
+                class="origin"
+                maxlength="35"
+                autocomplete="off"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-3">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-3"
+                name="destination-3"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-3">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-3"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-3"
+                  name="origin-time-3"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-3">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-3"
+                  name="destination-time-3"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-3">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-3"
+                  name="end-time-3"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- SERVEI 4 -->
+          <div class="service service-4" tabindex="-1">
+            <div class="ocr-progress-container hidden">
+              <div class="ocr-spinner"></div>
+              <p class="ocr-progress-text">Procesando...</p>
+            </div>
+            <p class="chip-group-title">Resultado del servicio</p>
+            <div class="chip-group">
+              <button class="chip chip-active" data-mode="3.6">3.6</button>
+              <button class="chip" data-mode="3.51">3.51</button>
+              <button class="chip" data-mode="3.52">3.52</button>
+              <button class="chip" data-mode="3.22">3.22</button>
+              <button class="chip" data-mode="3.11">3.11</button>
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <label for="service-number-4">N.º de servicio</label>
+              <input
+                type="text"
+                id="service-number-4"
+                name="service-number-4"
+                class="service-number"
+                maxlength="9"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="origin-4">Origen (municipio)</label>
+              <input
+                type="text"
+                id="origin-4"
+                name="origin-4"
+                class="origin"
+                autocomplete="off"
+                maxlength="35"
+                list="origin-datalist"
+              />
+            </div>
+            <div class="form-group destination-group">
+              <label for="destination-4">Destino (hospital, centro...)</label>
+              <input
+                type="text"
+                id="destination-4"
+                name="destination-4"
+                class="destination"
+                enterkeyhint="done"
+                inputmode="text"
+                autocomplete="off"
+                maxlength="35"
+                list="destination-datalist"
+              />
+            </div>
+            <hr class="section-divider" />
+            <div class="form-group">
+              <div class="label-action-container">
+                <label for="origin-time-4">Hora de activación</label>
+                <button
+                  type="button"
+                  class="btn-ocr-inline"
+                  id="camera-for-service-4"
+                  aria-label="Escanear Horas"
+                >
+                  <img
+                    loading="lazy"
+                    src="assets/icons/ic_ocr.svg"
+                    class="icon"
+                  />
+                  <span>Escanear</span>
+                </button>
+              </div>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="origin-time-4"
+                  name="origin-time-4"
+                  class="origin-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group destination-time-group">
+              <label for="destination-time-4">Hora en destino</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="destination-time-4"
+                  name="destination-time-4"
+                  class="destination-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="end-time-4">Hora final</label>
+              <div class="time-wrapper">
+                <input
+                  type="time"
+                  id="end-time-4"
+                  name="end-time-4"
+                  class="end-time"
+                  placeholder="HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div
+        id="diet-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="diet-modal-title"
+      >
+        <div class="modal-content diet-modal-content">
+          <div class="diet-modal-header">
+            <h3 id="diet-modal-title">Gestor de dietas</h3>
+          </div>
+          <p id="no-diets-text" class="no-diets-text hidden">
+            No hay dietas guardadas.
+          </p>
+          <div
+            id="diet-options"
+            class="diet-list"
+            aria-label="Opciones de dietas"
+          ></div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              id="open-trash-modal"
+              class="trash-modal-footer-btn"
+            >
+              Papelera
+            </button>
+            <button id="close-diet-modal" class="close-modal-btn">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="trash-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="trash-modal-title"
+      >
+        <div class="modal-content trash-modal-content">
+          <div class="trash-top">
+            <div class="trash-header">
+              <h3 id="trash-modal-title">Papelera de dietas</h3>
+              <button
+                type="button"
+                class="trash-info-btn"
+                id="trash-info-btn"
+                aria-label="Mostrar información de la papelera"
+              >
+                <img
+                  src="/assets/icons/info.svg"
+                  alt=""
+                  aria-hidden="true"
+                  class="trash-info-icon"
+                />
+              </button>
+            </div>
+            <div class="trash-divider"></div>
+
+            <!-- Filtres -->
+            <div class="trash-filters">
+              <div class="filter-group">
+                <label for="trash-filter-type">Tipo:</label>
+                <select id="trash-filter-type" class="filter-select">
+                  <option value="all">Todas</option>
+                  <option value="lunch">Comida</option>
+                  <option value="dinner">Cena</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="trash-filter-date">Fecha:</label>
+                <input
+                  type="date"
+                  id="trash-filter-date"
+                  class="filter-input"
+                />
+              </div>
+              <button id="trash-clear-filters" class="filter-clear-btn">
+                Borrar filtros
+              </button>
+            </div>
+          </div>
+
+          <!-- Llista de dietes eliminades -->
+          <div class="trash-scroll-area">
+            <p id="no-trash-text" class="no-trash-text hidden">
+              No hay dietas eliminadas.
+            </p>
+            <div
+              id="trash-options"
+              class="trash-list"
+              aria-label="Dietas eliminadas"
+            ></div>
+          </div>
+
+          <!-- Footer amb accions -->
+          <div class="trash-bottom">
+            <div class="trash-divider"></div>
+            <div class="modal-footer trash-footer">
+              <button id="close-trash-modal" class="close-modal-btn">
+                Volver
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        id="signature-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="signature-title"
+      >
+        <div class="modal-content signature-modal-content">
+          <h2 id="signature-title">Firma</h2>
+          <div class="signature-canvas-container">
+            <canvas id="signature-canvas"></canvas>
+          </div>
+          <p class="signature-instruction signature-instruction-small">
+            Para borrar la firma, haz doble clic en el área.
+          </p>
+          <div class="modal-buttons">
+            <button id="signature-cancel" class="modal-button cancel">
+              Cancelar
+            </button>
+            <button id="signature-accept" class="modal-button accept">
+              Aceptar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="toast-container"></div>
+      <div
+        id="dotacio-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dotacio-modal-title"
+      >
+        <div class="modal-content dotacio-modal-content">
+          <h3 id="dotacio-modal-title">Gestor de dotaciones</h3>
+          <div id="no-dotacio-text" class="hidden">
+            No hay dotaciones, guarda antes:
+            <img
+              loading="lazy"
+              src="assets/icons/save_green.svg"
+              alt="Guardar"
+              class="save-icon"
+            />
+          </div>
+          <div
+            id="dotacio-options"
+            class="dotacio-list"
+            aria-label="Opciones de dotaciones"
+          ></div>
+          <div class="modal-footer">
+            <button id="close-dotacio-modal" class="close-modal-btn">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="about-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="about-title"
+        tabindex="-1"
+      >
+        <div class="modal-content about-modal-card">
+          <div class="about-modal-header">
+            <button
+              class="close-modal about-close-btn"
+              type="button"
+              aria-label="Cerrar ayuda"
+            >
+              ×
+            </button>
+            <p class="about-eyebrow">Ayuda rápida</p>
+          </div>
+
+          <div class="modal-scrollable-content about-modal-body">
+            <div class="about-modal-content">
+            <div class="about-modal-content-intro">
+              <h2 id="about-title">Cómo usar MisDietas</h2>
+              <p class="about-intro">
+                Guarda servicios, reutiliza dotaciones y descarga el PDF desde
+                el móvil en pocos pasos.
+              </p>
+            </div>
+            <section class="about-steps" aria-label="Pasos principales">
+              <article class="about-step">
+                <div class="about-step-number">01</div>
+                <div class="about-step-copy">
+                  <h3>Completa los datos</h3>
+                  <p>
+                    En <strong>Datos</strong>, revisa la fecha, la franja
+                    horaria, el tipo de servicio y la
+                    <strong>dotación</strong>. Añade las firmas cuando
+                    corresponda.
+                  </p>
+                </div>
+              </article>
+
+              <article class="about-step">
+                <div class="about-step-number">02</div>
+                <div class="about-step-copy">
+                  <h3>Añade los servicios</h3>
+                  <p>
+                    En <strong>Servicios</strong>, completa primero
+                    <strong>S1</strong>. Añade <strong>S2, S3</strong> o
+                    <strong>S4</strong> solo cuando los necesites.
+                  </p>
+                </div>
+              </article>
+
+              <article class="about-step">
+                <div class="about-step-number">03</div>
+                <div class="about-step-copy">
+                  <h3>Genera el PDF</h3>
+                  <p>
+                    Abre el menú y pulsa <strong>Descargar dieta actual</strong>
+                    para generar el PDF. Desde <strong>Gestor de dietas</strong>
+                    puedes recuperar dietas guardadas y volver a descargarlas.
+                  </p>
+                </div>
+              </article>
+            </section>
+
+            <section class="about-tips-section" aria-labelledby="about-tips">
+              <h3 id="about-tips" class="about-section-title">
+                Consejos útiles
+              </h3>
+              <ul class="about-tips">
+                <li>
+                  <strong>Guarda una dotación</strong> para reutilizar vehículo
+                  y personal con un solo toque.
+                </li>
+                <li>
+                  <strong>Usa Escanear</strong> para capturar horas desde una
+                  imagen cuando el servicio lo requiera.
+                </li>
+                <li>
+                  <strong>Añade notas</strong> solo cuando necesites dejar
+                  contexto o una incidencia en el PDF.
+                </li>
+                <li>
+                  <strong>La app puede seguir funcionando sin conexión</strong>
+                  para que no pierdas ritmo de trabajo.
+                </li>
+              </ul>
+            </section>
+            </div>
+          </div>
+
+          <div class="modal-buttons about-modal-actions">
+            <button class="close-modal-btn" type="button">Entendido</button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="confirm-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-message"
+      >
+        <div class="modal-content">
+          <h3 class="modal-title"></h3>
+          <p id="confirm-message"></p>
+          <div class="modal-buttons">
+            <button id="confirm-no" class="modal-button no">No</button>
+            <button id="confirm-yes" class="modal-button yes">Sí</button>
+          </div>
+        </div>
+      </div>
+      <!-- Modal per notes -->
+      <div
+        id="notes-modal"
+        class="modal"
+        role="dialog"
+        aria-labelledby="notes-title"
+      >
+        <div class="modal-content">
+          <h2 id="notes-title">Notas del Servicio</h2>
+
+          <div class="notes-textarea-container">
+            <textarea
+              id="notes-textarea"
+              rows="6"
+              enterkeyhint="done"
+              placeholder=" "
+              maxlength="150"
+            ></textarea>
+            <label for="notes-textarea" class="notes-label"
+              >Añadir detalles</label
+            >
+            <div id="notes-char-counter" class="char-counter">0 / 150</div>
+          </div>
+
+          <div class="modal-buttons">
+            <button id="notes-cancel" class="modal-button cancel">
+              Cancelar
+            </button>
+            <button id="notes-save" class="modal-button accept">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Container per components React - no existeix per defecte (safe) -->
+      <div id="react-summary-container" class="hidden"></div>
+      <div id="react-progress-container" class="hidden"></div>
+      <div id="react-connection-container" class="hidden"></div>
+
+      <div id="camera-gallery-modal" class="modal-bottom hidden">
+        <div class="modal-bottom-content">
+          <div class="modal-title-container">
+            <h3 class="modal-bottom-title">Escanear</h3>
+            <span class="beta-tag">BETA</span>
+          </div>
+          <p class="modal-bottom-description">
+            Selecciona una foto de la galería o haz una foto con la cámara al
+            AL20 para extraer automáticamente las horas.
+          </p>
+          <div class="modal-bottom-row">
+            <button id="option-gallery" class="modal-bottom-btn">
+              <img src="assets/icons/gallery.svg" alt="Galería" />
+              <span class="modal-bottom-text">Galería</span>
+            </button>
+            <button id="option-camera" class="modal-bottom-btn">
+              <img src="assets/icons/camera.svg" alt="Cámara" />
+              <span class="modal-bottom-text">Cámara</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <template id="dotacio-template">
+        <div class="dotacio-item">
+          <div class="dotacio-item-content">
+            <span class="dotacio-info"></span>
+            <div class="button-container">
+              <!-- Només el botó de Cargar -->
+              <button class="dotacio-load" aria-label="Cargar dotación">
+                <img src="assets/icons/upload2.svg" alt="Cargar" class="icon" />
+                <span class="btn-text">Cargar</span>
+              </button>
+            </div>
+          </div>
+          <!-- Element per revelar en swipe -->
+          <div class="delete-reveal">
+            <div class="delete-reveal-content">
+              <img src="assets/icons/delete.svg" alt="Eliminar" class="icon" />
+              <span class="delete-text">Eliminar dotación</span>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template id="trash-item-template">
+        <div class="trash-item">
+          <div class="trash-item-content">
+            <div class="trash-item-date-row">
+              <span class="trash-item-date"></span>
+              <span class="trash-item-type-badge"></span>
+            </div>
+            <div class="trash-item-actions">
+              <button class="trash-restore-btn" aria-label="Restaurar dieta">
+                <img src="assets/icons/undo.svg" alt="Restaurar" class="icon" />
+                <span class="btn-text">Restaurar</span>
+              </button>
+              <button
+                class="trash-delete-btn"
+                aria-label="Eliminar permanentemente"
+              >
+                <img
+                  src="assets/icons/delete.svg"
+                  alt="Eliminar"
+                  class="icon"
+                />
+                <span class="btn-text">Eliminar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+      <div id="save-pill" class="save-pill" role="status" aria-live="polite">
+        <span class="pill-icon" aria-hidden="true"></span>
+        <span class="pill-text"></span>
+      </div>
+      <script
+        type="module"
+        src="./dist/bundle.js?v=2.4.24"
+        data-csp-nonce
+      ></script>
+      <input type="file" accept="image/*" id="camera-input" class="hidden" />
+    </main>
+    <footer class="footer">
+      <div class="footer__content">
+        <div class="footer__icons">
+          <!-- Botó del tema -->
+          <button
+            id="theme-toggle-btn"
+            class="footer-btn"
+            aria-label="Cambiar tema"
+          >
+            <img
+              id="theme-icon"
+              src="assets/icons/moon.svg"
+              alt="Icono de tema"
+              class="icon"
+              width="24"
+              height="24"
+            />
+            <span id="theme-btn-text" class="footer-btn-text">Oscuro</span>
+            <!-- ID nou i text inicial -->
+          </button>
+
+          <!-- Botón de ayuda -->
+          <a href="#about-modal" class="footer-btn" aria-label="Ayuda">
+            <img src="assets/icons/info.svg" alt="" class="icon" />
+            <span class="footer-btn-text">Ayuda</span>
+          </a>
+
+          <!-- Botó de Donacions -->
+          <a
+            id="openDonation"
+            href="https://www.paypal.com/donate/?hosted_button_id=XPFGNJ33CECHJ"
+            class="footer-btn"
+            aria-label="Colaborar con la aplicación"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="assets/icons/donation.svg"
+              alt="Icona de donacions"
+              class="icon"
+            />
+            <span class="footer-btn-text">Colaborar</span>
+          </a>
+        </div>
+        <div class="footer__text">
+          <div class="footer__legal">
+            <span class="copyright-text">© 2025 MisDietas</span>
+            <a href="/privacy-policy.html" target="_blank">Privacidad</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <div id="cookie-consent-banner" class="cookie-banner hidden">
+      <div class="cookie-banner-content">
+        <p class="cookie-banner-text">
+          Utilizamos cookies para analizar el tráfico y mejorar tu experiencia.
+          Al hacer clic en "Aceptar", consientes su uso para análisis. Consulta
+          nuestra
+          <a href="/privacy-policy.html" target="_blank"
+            >Política de Privacidad</a
+          >
+          para más información.
+        </p>
+        <div class="cookie-banner-actions">
+          <button id="decline-cookies" class="cookie-btn cookie-btn-decline">
+            Rechazar
+          </button>
+          <button id="accept-cookies" class="cookie-btn cookie-btn-accept">
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- FIN DEL BANNER DE COOKIES -->
+
+    <!-- Datalists per suggeriments d'origen i destí -->
+    <datalist id="origin-datalist"></datalist>
+    <datalist id="destination-datalist"></datalist>
+  </body>
+</html>
